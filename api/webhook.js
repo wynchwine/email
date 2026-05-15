@@ -1,0 +1,166 @@
+import crypto from 'crypto';
+import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+const KLAVIYO_BASE = 'https://a.klaviyo.com/api';
+const KLAVIYO_REVISION = '2024-10-15';
+const SHOPIFY_BASE = `https://${process.env.SHOPIFY_SHOP}/admin/api/2024-01`;
+
+function verifyShopifyHmac(rawBody, hmacHeader) {
+  const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
+  const digest = crypto.createHmac('sha256', secret).update(rawBody).digest('base64');
+  return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(hmacHeader));
+}
+
+async function fetchProductTags(productId) {
+  const res = await fetch(`${SHOPIFY_BASE}/products/${productId}.json?fields=tags`, {
+    headers: { 'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN },
+  });
+  if (!res.ok) return {};
+  const { product } = await res.json();
+  const tags = (product.tags || '').split(',').map(t => t.trim());
+  const data = {};
+  for (const tag of tags) {
+    const parts = tag.split('::');
+    if (parts[0] === 'secondary' && parts.length >= 3) {
+      const key = parts[1]; // region, grape, aroma
+      data[key] = parts.slice(2).join('::');
+    }
+  }
+  return data;
+}
+
+async function getKlaviyoProfileByEmail(email) {
+  const filter = encodeURIComponent(`equals(email,"${email}")`);
+  const res = await fetch(`${KLAVIYO_BASE}/profiles/?filter=${filter}&fields[profile]=id,properties`, {
+    headers: {
+      Authorization: `Klaviyo-API-Key ${process.env.KLAVIYO_API_KEY}`,
+      revision: KLAVIYO_REVISION,
+    },
+  });
+  if (!res.ok) return null;
+  const { data } = await res.json();
+  return data?.[0] ?? null;
+}
+
+async function updateKlaviyoProfile(profileId, properties) {
+  const res = await fetch(`${KLAVIYO_BASE}/profiles/${profileId}/`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Klaviyo-API-Key ${process.env.KLAVIYO_API_KEY}`,
+      revision: KLAVIYO_REVISION,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      data: {
+        type: 'profile',
+        id: profileId,
+        attributes: { properties },
+      },
+    }),
+  });
+  return res.ok;
+}
+
+async function generateSommelierNote({ wineName, region, grape, aromas, preferences, locale }) {
+  const userPrompt = [
+    `Wine: ${wineName}`,
+    region && `Region: ${region}`,
+    grape && `Grape: ${grape}`,
+    aromas && `Aromas: ${aromas}`,
+    preferences && `Customer preferences: ${preferences}`,
+    locale && `Language: ${locale}`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
+      temperature: 0.8,
+      system:
+        'You are a warm, knowledgeable sommelier writing a personal note to a wine customer. ' +
+        'The note goes inside a shipping notification email. Write 3-4 sentences max. ' +
+        'Be specific about this wine\'s aromas and character. ' +
+        'Reference the customer\'s taste preferences naturally. ' +
+        'Mention serving temperature and one food pairing. ' +
+        'Tone: personal, expert, never generic. ' +
+        'Language: match the customer locale (de-DE → German, default → English).',
+      messages: [{ role: 'user', content: userPrompt }],
+    });
+    return message.content[0].text.trim();
+  } catch {
+    return `We hope you enjoy this ${wineName}. It pairs beautifully at the right temperature and promises a memorable experience.`;
+  }
+}
+
+async function processOrder(order) {
+  const customerEmail = order.email;
+  if (!customerEmail) return;
+
+  const lineItem = order.line_items?.[0];
+  if (!lineItem) return;
+
+  const orderId = String(order.id);
+  const wineName = lineItem.title;
+
+  const [profile, productData] = await Promise.all([
+    getKlaviyoProfileByEmail(customerEmail),
+    fetchProductTags(lineItem.product_id),
+  ]);
+
+  if (!profile) return;
+
+  const existingOrderId = profile.attributes?.properties?.sommelier_note_order;
+  if (existingOrderId === orderId) return; // deduplicate
+
+  const preferences = profile.attributes?.properties?.wine_preferences ?? '';
+  const locale = order.customer_locale ?? 'en';
+
+  const note = await generateSommelierNote({
+    wineName,
+    region: productData.region,
+    grape: productData.grape,
+    aromas: productData.aroma,
+    preferences,
+    locale,
+  });
+
+  await updateKlaviyoProfile(profile.id, {
+    sommelier_note: note,
+    sommelier_note_wine: wineName,
+    sommelier_note_order: orderId,
+    sommelier_note_updated_at: new Date().toISOString(),
+  });
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).end();
+  }
+
+  const hmac = req.headers['x-shopify-hmac-sha256'];
+  if (!hmac) return res.status(401).end();
+
+  let rawBody = '';
+  for await (const chunk of req) {
+    rawBody += chunk;
+  }
+
+  if (!verifyShopifyHmac(rawBody, hmac)) {
+    return res.status(401).end();
+  }
+
+  res.status(200).end();
+
+  let order;
+  try {
+    order = JSON.parse(rawBody);
+  } catch {
+    return;
+  }
+
+  processOrder(order).catch(() => {});
+}

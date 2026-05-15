@@ -1,0 +1,9 @@
+{
+  "name": "wynch-sommelier-microservice",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^4.0.0"
+  }
+}
