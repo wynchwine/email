@@ -1,10 +1,10 @@
 {
   "mcpServers": {
     "klaviyo": {
-      "command": "npx",
-      "args": ["-y", "@klaviyo/klaviyo-mcp"],
+      "command": "uvx",
+      "args": ["klaviyo-mcp-server@latest"],
       "env": {
-        "KLAVIYO_API_KEY": "${KLAVIYO_API_KEY}"
+        "PRIVATE_API_KEY": "${KLAVIYO_API_KEY}"
       }
     }
   }
