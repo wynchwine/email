@@ -161,14 +161,13 @@ export default async function handler(req, res) {
     return res.status(401).end();
   }
 
-  res.status(200).end();
-
   let order;
   try {
     order = JSON.parse(rawBody);
   } catch {
-    return;
+    return res.status(200).end();
   }
 
-  processOrder(order).catch(() => {});
+  await processOrder(order).catch(err => console.error('[sommelier] error:', err));
+  res.status(200).end();
 }
