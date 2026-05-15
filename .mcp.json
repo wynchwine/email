@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "klaviyo": {
+      "command": "npx",
+      "args": ["-y", "@klaviyo/klaviyo-mcp"],
+      "env": {
+        "KLAVIYO_API_KEY": "${KLAVIYO_API_KEY}"
+      }
+    }
+  }
+}
