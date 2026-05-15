@@ -9,7 +9,11 @@
     },
     "shopify": {
       "command": "npx",
-      "args": ["-y", "@shopify/dev-mcp@latest"]
+      "args": ["-y", "@shopify/dev-mcp@latest"],
+      "env": {
+        "SHOPIFY_ACCESS_TOKEN": "${SHOPIFY_ACCESS_TOKEN}",
+        "SHOPIFY_STORE_URL": "https://${SHOPIFY_SHOP}"
+      }
     }
   }
 }
