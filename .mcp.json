@@ -6,6 +6,10 @@
       "env": {
         "PRIVATE_API_KEY": "${KLAVIYO_API_KEY}"
       }
+    },
+    "shopify": {
+      "command": "npx",
+      "args": ["-y", "@shopify/dev-mcp@latest"]
     }
   }
 }
