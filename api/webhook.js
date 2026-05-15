@@ -63,36 +63,37 @@ async function updateKlaviyoProfile(profileId, properties) {
   return res.ok;
 }
 
-async function generateSommelierNote({ wineName, region, grape, aromas, preferences, locale }) {
+async function generateSommelierNote({ wines, preferences, locale }) {
+  const winesText = wines.map((w, i) =>
+    [`Wine ${i + 1}: ${w.name}`, w.region && `Region: ${w.region}`, w.grape && `Grape: ${w.grape}`, w.aromas && `Aromas: ${w.aromas}`].filter(Boolean).join(', ')
+  ).join('\n');
+
   const userPrompt = [
-    `Wine: ${wineName}`,
-    region && `Region: ${region}`,
-    grape && `Grape: ${grape}`,
-    aromas && `Aromas: ${aromas}`,
+    winesText,
     preferences && `Customer preferences: ${preferences}`,
     locale && `Language: ${locale}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  ].filter(Boolean).join('\n');
 
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 400,
+      max_tokens: 600,
       temperature: 0.8,
       system:
         'You are a warm, knowledgeable sommelier writing a personal note to a wine customer. ' +
-        'The note goes inside a shipping notification email. Write 3-4 sentences max. ' +
-        'Be specific about this wine\'s aromas and character. ' +
+        'The note goes inside a shipping notification email. ' +
+        'The customer ordered multiple wines — write one cohesive note covering all of them, 4-6 sentences max. ' +
+        'Be specific about each wine\'s aromas and character. ' +
         'Reference the customer\'s taste preferences naturally. ' +
-        'Mention serving temperature and one food pairing. ' +
+        'Mention serving temperatures and food pairings. ' +
         'Tone: personal, expert, never generic. ' +
         'Language: match the customer locale (de-DE → German, default → English).',
       messages: [{ role: 'user', content: userPrompt }],
     });
     return message.content[0].text.trim();
   } catch {
-    return `We hope you enjoy this ${wineName}. It pairs beautifully at the right temperature and promises a memorable experience.`;
+    const names = wines.map(w => w.name).join(', ');
+    return `We hope you enjoy your selection: ${names}. Each bottle promises a memorable experience.`;
   }
 }
 
@@ -101,20 +102,18 @@ async function processOrder(order) {
   console.log('[sommelier] processing order', order.id, 'email:', customerEmail);
   if (!customerEmail) { console.log('[sommelier] no email, skip'); return; }
 
-  const lineItem = order.line_items?.[0];
-  if (!lineItem) { console.log('[sommelier] no line items, skip'); return; }
+  const lineItems = order.line_items;
+  if (!lineItems?.length) { console.log('[sommelier] no line items, skip'); return; }
 
   const orderId = String(order.id);
-  const wineName = lineItem.title;
-  console.log('[sommelier] wine:', wineName, 'product_id:', lineItem.product_id);
+  console.log('[sommelier] wines:', lineItems.map(i => i.title).join(', '));
 
-  const [profile, productData] = await Promise.all([
+  const [profile, ...productDataList] = await Promise.all([
     getKlaviyoProfileByEmail(customerEmail),
-    fetchProductTags(lineItem.product_id),
+    ...lineItems.map(item => fetchProductTags(item.product_id)),
   ]);
 
   console.log('[sommelier] klaviyo profile:', profile ? profile.id : 'NOT FOUND');
-  console.log('[sommelier] product tags:', productData);
 
   if (!profile) { console.log('[sommelier] profile not found, skip'); return; }
 
@@ -124,20 +123,20 @@ async function processOrder(order) {
   const preferences = profile.attributes?.properties?.wine_preferences ?? '';
   const locale = order.customer_locale ?? 'en';
 
-  console.log('[sommelier] generating note...');
-  const note = await generateSommelierNote({
-    wineName,
-    region: productData.region,
-    grape: productData.grape,
-    aromas: productData.aroma,
-    preferences,
-    locale,
-  });
+  const wines = lineItems.map((item, i) => ({
+    name: item.title,
+    region: productDataList[i]?.region,
+    grape: productDataList[i]?.grape,
+    aromas: productDataList[i]?.aroma,
+  }));
+
+  console.log('[sommelier] generating note for', wines.length, 'wine(s)...');
+  const note = await generateSommelierNote({ wines, preferences, locale });
 
   console.log('[sommelier] note generated, updating klaviyo...');
   await updateKlaviyoProfile(profile.id, {
     sommelier_note: note,
-    sommelier_note_wine: wineName,
+    sommelier_note_wine: lineItems.map(i => i.title).join(', '),
     sommelier_note_order: orderId,
     sommelier_note_updated_at: new Date().toISOString(),
   });
