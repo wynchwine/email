@@ -98,27 +98,33 @@ async function generateSommelierNote({ wineName, region, grape, aromas, preferen
 
 async function processOrder(order) {
   const customerEmail = order.email;
-  if (!customerEmail) return;
+  console.log('[sommelier] processing order', order.id, 'email:', customerEmail);
+  if (!customerEmail) { console.log('[sommelier] no email, skip'); return; }
 
   const lineItem = order.line_items?.[0];
-  if (!lineItem) return;
+  if (!lineItem) { console.log('[sommelier] no line items, skip'); return; }
 
   const orderId = String(order.id);
   const wineName = lineItem.title;
+  console.log('[sommelier] wine:', wineName, 'product_id:', lineItem.product_id);
 
   const [profile, productData] = await Promise.all([
     getKlaviyoProfileByEmail(customerEmail),
     fetchProductTags(lineItem.product_id),
   ]);
 
-  if (!profile) return;
+  console.log('[sommelier] klaviyo profile:', profile ? profile.id : 'NOT FOUND');
+  console.log('[sommelier] product tags:', productData);
+
+  if (!profile) { console.log('[sommelier] profile not found, skip'); return; }
 
   const existingOrderId = profile.attributes?.properties?.sommelier_note_order;
-  if (existingOrderId === orderId) return; // deduplicate
+  if (existingOrderId === orderId) { console.log('[sommelier] duplicate order, skip'); return; }
 
   const preferences = profile.attributes?.properties?.wine_preferences ?? '';
   const locale = order.customer_locale ?? 'en';
 
+  console.log('[sommelier] generating note...');
   const note = await generateSommelierNote({
     wineName,
     region: productData.region,
@@ -128,12 +134,14 @@ async function processOrder(order) {
     locale,
   });
 
+  console.log('[sommelier] note generated, updating klaviyo...');
   await updateKlaviyoProfile(profile.id, {
     sommelier_note: note,
     sommelier_note_wine: wineName,
     sommelier_note_order: orderId,
     sommelier_note_updated_at: new Date().toISOString(),
   });
+  console.log('[sommelier] done');
 }
 
 export default async function handler(req, res) {
