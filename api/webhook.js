@@ -89,15 +89,14 @@ async function generateSommelierNotes({ wines, preferences }) {
         'Reference the customer\'s taste preferences naturally if provided. ' +
         'Mention serving temperatures and food pairings. ' +
         'Tone: personal, expert, never generic. ' +
-        'Respond with valid JSON only: {"en": "...English note...", "de": "...German note..."}',
+        'You MUST respond in this exact format:\n<en>English note here</en>\n<de>German note here</de>',
       messages: [{ role: 'user', content: userPrompt }],
     });
 
     const raw = message.content[0].text.trim();
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('no JSON in response');
-    const json = JSON.parse(match[0]);
-    return { en: json.en || fallbackEn, de: json.de || fallbackDe };
+    const en = raw.match(/<en>([\s\S]*?)<\/en>/)?.[1]?.trim();
+    const de = raw.match(/<de>([\s\S]*?)<\/de>/)?.[1]?.trim();
+    return { en: en || fallbackEn, de: de || fallbackDe };
   } catch {
     return { en: fallbackEn, de: fallbackDe };
   }

@@ -81,19 +81,15 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
         'You are a warm sommelier writing a personalized abandoned cart recovery note. ' +
         'For each wine, write 1-2 sentences why it matches the customer\'s taste preferences. ' +
         'Write all wines as one flowing text. No markdown. Tone: warm, personal, never pushy. ' +
-        'You MUST respond with this exact JSON format and nothing else:\n{"en": "English text here", "de": "German text here"}',
+        'You MUST respond in this exact format:\n<en>English text here</en>\n<de>German text here</de>',
       messages: [{ role: 'user', content: userPrompt || 'Write a warm note for the wines listed.' }],
     });
 
     const raw = message.content[0].text.trim();
-    console.log('[abandoned] claude raw:', raw.slice(0, 500));
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) {
-      console.log('[abandoned] full response:', raw);
-      throw new Error('no JSON in response');
-    }
-    const json = JSON.parse(match[0]);
-    return { en: json.en || fallbackEn, de: json.de || fallbackDe };
+    console.log('[abandoned] claude raw:', raw.slice(0, 300));
+    const en = raw.match(/<en>([\s\S]*?)<\/en>/)?.[1]?.trim();
+    const de = raw.match(/<de>([\s\S]*?)<\/de>/)?.[1]?.trim();
+    return { en: en || fallbackEn, de: de || fallbackDe };
   } catch (err) {
     console.error('[abandoned] claude error:', err.message, err.stack?.slice(0, 300));
     return { en: fallbackEn, de: fallbackDe };
