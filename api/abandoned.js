@@ -78,9 +78,11 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
       max_tokens: 1200,
       temperature: 0.8,
       system:
-        'You are a warm sommelier writing a personalized abandoned cart recovery note. ' +
-        'For each wine, write 1-2 sentences why it matches the customer\'s taste preferences. ' +
-        'Write all wines as one flowing text. No markdown. Tone: warm, personal, never pushy. ' +
+        'You are a warm, knowledgeable sommelier writing a personalized abandoned cart recovery note. ' +
+        'Structure the note exactly like this:\n' +
+        '1. One sentence complimenting the customer\'s taste and explaining why their selection shows great wine instinct.\n' +
+        '2. Three numbered facts (1. 2. 3.) about why this specific order is exceptional — each fact should be concrete and specific to the wines in the cart, referencing regions, grapes, or characteristics.\n' +
+        'No markdown. No asterisks. Tone: warm, expert, flattering but never pushy. ' +
         'You MUST respond in this exact format:\n<en>English text here</en>\n<de>German text here</de>',
       messages: [{ role: 'user', content: userPrompt || 'Write a warm note for the wines listed.' }],
     });
