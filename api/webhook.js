@@ -84,8 +84,9 @@ async function generateSommelierNotes({ wines, preferences }) {
         'You are a warm, knowledgeable sommelier writing a personal note to a wine customer. ' +
         'The note goes inside a shipping notification email. ' +
         'Write one cohesive note covering all wines in the order, 4-6 sentences max. ' +
+        'Base the note primarily on the product description provided. ' +
         'Be specific about each wine\'s aromas and character. Do not use any markdown formatting. ' +
-        'Reference the customer\'s taste preferences naturally. ' +
+        'Reference the customer\'s taste preferences naturally if provided. ' +
         'Mention serving temperatures and food pairings. ' +
         'Tone: personal, expert, never generic. ' +
         'Respond with valid JSON only: {"en": "...English note...", "de": "...German note..."}',
