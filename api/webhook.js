@@ -17,7 +17,12 @@ async function fetchProductData(productId) {
   const res = await fetch(`${SHOPIFY_BASE}/products/${productId}.json?fields=title,tags,body_html`, {
     headers: { 'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN },
   });
-  if (!res.ok) return {};
+  console.log(`[sommelier] shopify product ${productId} status:`, res.status);
+  if (!res.ok) {
+    const body = await res.text();
+    console.log(`[sommelier] shopify error:`, body.slice(0, 200));
+    return {};
+  }
   const { product } = await res.json();
   const tags = (product.tags || '').split(',').map(t => t.trim());
   const data = { title: product.title, description: (product.body_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() };
