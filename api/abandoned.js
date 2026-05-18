@@ -90,7 +90,9 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
 
     const raw = message.content[0].text.trim();
     console.log('[abandoned] claude raw:', raw.slice(0, 200));
-    const json = JSON.parse(raw.replace(/^```json\n?|\n?```$/g, ''));
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no JSON in response');
+    const json = JSON.parse(match[0]);
     return { en: json.en || fallbackEn, de: json.de || fallbackDe };
   } catch (err) {
     console.error('[abandoned] claude error:', err.message);
