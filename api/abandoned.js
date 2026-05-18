@@ -99,8 +99,10 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
 }
 
 async function processCheckout(checkout) {
-  const customerEmail = checkout.email;
+  const customerEmail = checkout.email || checkout.customer?.email;
   console.log('[abandoned] processing checkout', checkout.id, 'email:', customerEmail);
+  console.log('[abandoned] payload keys:', Object.keys(checkout).join(', '));
+  console.log('[abandoned] customer:', JSON.stringify(checkout.customer ?? null));
   if (!customerEmail) { console.log('[abandoned] no email, skip'); return; }
 
   const lineItems = checkout.line_items;
