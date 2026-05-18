@@ -30,24 +30,37 @@ export default async function handler(req, res) {
     if (!resp.ok) break;
     const json = await resp.json();
     const profiles = json.data ?? [];
-    const withNotes = profiles.filter(p => p.attributes?.properties?.sommelier_note_en || p.attributes?.properties?.sommelier_note_de);
+    const withNotes = profiles.filter(p => {
+      const props = p.attributes?.properties ?? {};
+      return props.sommelier_note_en || props.sommelier_note_de ||
+             props.abandoned_checkout_note_en || props.abandoned_checkout_note_de;
+    });
     allProfiles.push(...withNotes);
 
     cursor = json.links?.next ? new URL(json.links.next).searchParams.get('page[cursor]') : null;
-
-    // stop after 500 profiles to avoid timeout
     if (allProfiles.length >= 500) break;
   } while (cursor && allProfiles.length < 100);
 
-  const notes = allProfiles.map(p => ({
-    email: p.attributes.email,
-    name: [p.attributes.first_name, p.attributes.last_name].filter(Boolean).join(' '),
-    note_en: p.attributes.properties.sommelier_note_en,
-    note_de: p.attributes.properties.sommelier_note_de,
-    wine: p.attributes.properties.sommelier_note_wine,
-    order: p.attributes.properties.sommelier_note_order,
-    updated_at: p.attributes.properties.sommelier_note_updated_at,
-  }));
+  const notes = allProfiles.map(p => {
+    const props = p.attributes.properties ?? {};
+    return {
+      email: p.attributes.email,
+      name: [p.attributes.first_name, p.attributes.last_name].filter(Boolean).join(' '),
+      sommelier: props.sommelier_note_en || props.sommelier_note_de ? {
+        note_en: props.sommelier_note_en,
+        note_de: props.sommelier_note_de,
+        wine: props.sommelier_note_wine,
+        order: props.sommelier_note_order,
+        updated_at: props.sommelier_note_updated_at,
+      } : null,
+      checkout: props.abandoned_checkout_note_en || props.abandoned_checkout_note_de ? {
+        note_en: props.abandoned_checkout_note_en,
+        note_de: props.abandoned_checkout_note_de,
+        wines: props.abandoned_checkout_wines,
+        updated_at: props.abandoned_checkout_updated_at,
+      } : null,
+    };
+  });
 
   res.status(200).json(notes);
 }

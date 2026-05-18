@@ -29,10 +29,9 @@
     .login-box button:hover { background: #7a3b10; }
     .error { color: #c0392b; font-size: 13px; margin-top: 8px; font-family: sans-serif; }
 
-    #app { display: none; max-width: 900px; margin: 0 auto; padding: 48px 24px; }
+    #app { display: none; max-width: 960px; margin: 0 auto; padding: 48px 24px; }
     header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; }
     header h1 { font-size: 26px; }
-    header span { font-size: 13px; color: #888; font-family: sans-serif; }
     .logout { background: none; border: 1px solid #ddd; padding: 6px 14px; border-radius: 6px;
       cursor: pointer; font-size: 13px; font-family: sans-serif; color: #555; }
     .logout:hover { background: #f0f0f0; }
@@ -41,18 +40,32 @@
       background: white; border-radius: 8px; padding: 28px 32px;
       margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
-    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
     .card-meta { font-family: sans-serif; }
     .card-name { font-weight: 600; font-size: 16px; }
     .card-email { color: #888; font-size: 13px; margin-top: 2px; }
     .card-date { font-size: 12px; color: #aaa; font-family: sans-serif; text-align: right; }
-    .card-wine { font-size: 13px; color: #8b4513; font-family: sans-serif; margin-bottom: 12px; }
-    .card-note { line-height: 1.7; font-size: 15px; color: #333; }
-    .card-lang { font-size: 11px; font-weight: 700; color: #8b4513; font-family: sans-serif; margin-bottom: 4px; letter-spacing: 1px; }
+
+    .section { margin-bottom: 20px; }
+    .section:last-child { margin-bottom: 0; }
+    .section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      font-family: sans-serif; margin-bottom: 10px; padding: 4px 10px; border-radius: 4px;
+      display: inline-block;
+    }
+    .section-title.sommelier { background: #f3ede6; color: #8b4513; }
+    .section-title.checkout { background: #eef3f9; color: #2c5f8a; }
+    .section-wines { font-size: 13px; color: #8b4513; font-family: sans-serif; margin-bottom: 10px; }
+    .section-wines.checkout { color: #2c5f8a; }
+    .lang-block { margin-bottom: 12px; }
+    .lang-label { font-size: 11px; font-weight: 700; color: #aaa; font-family: sans-serif; margin-bottom: 3px; letter-spacing: 1px; }
+    .note-text { line-height: 1.7; font-size: 15px; color: #333; }
     .card-order { font-size: 11px; color: #ccc; font-family: sans-serif; margin-top: 12px; }
+    .divider { border: none; border-top: 1px solid #f0ece8; margin: 20px 0; }
 
     .empty { text-align: center; color: #aaa; font-family: sans-serif; padding: 60px 0; }
-    .loading { text-align: center; color: #aaa; font-family: sans-serif; padding: 60px 0; }
+    .stats { font-size: 13px; color: #888; font-family: sans-serif; display: flex; gap: 20px; }
+    .stat { }
   </style>
 </head>
 <body>
@@ -71,7 +84,7 @@
   <header>
     <h1>Sommelier Notes</h1>
     <div style="display:flex;align-items:center;gap:16px">
-      <span id="count"></span>
+      <div class="stats" id="stats"></div>
       <button class="logout" onclick="logout()">Logout</button>
     </div>
   </header>
@@ -79,13 +92,10 @@
 </div>
 
 <script>
-  let password = '';
-
   async function login() {
-    password = document.getElementById('password').value;
+    const password = document.getElementById('password').value;
     if (!password) return;
     document.getElementById('error').textContent = '';
-    document.getElementById('notes').innerHTML = '';
 
     const res = await fetch('/api/notes', {
       headers: { Authorization: 'Bearer ' + password }
@@ -104,28 +114,57 @@
 
   function renderNotes(notes) {
     const container = document.getElementById('notes');
-    document.getElementById('count').textContent = notes.length + ' notes';
+    const sommelierCount = notes.filter(n => n.sommelier).length;
+    const checkoutCount = notes.filter(n => n.checkout).length;
+    document.getElementById('stats').innerHTML =
+      `<span class="stat">${notes.length} profiles</span>` +
+      `<span class="stat">🍷 ${sommelierCount} order notes</span>` +
+      `<span class="stat">🛒 ${checkoutCount} checkout notes</span>`;
 
     if (!notes.length) {
-      container.innerHTML = '<div class="empty">No sommelier notes yet</div>';
+      container.innerHTML = '<div class="empty">No notes yet</div>';
       return;
     }
 
-    container.innerHTML = notes.map(n => `
-      <div class="card">
-        <div class="card-header">
-          <div class="card-meta">
-            <div class="card-name">${esc(n.name || '—')}</div>
-            <div class="card-email">${esc(n.email)}</div>
+    container.innerHTML = notes.map(n => {
+      const date = n.sommelier?.updated_at || n.checkout?.updated_at;
+      let sections = '';
+
+      if (n.sommelier) {
+        sections += `
+          <div class="section">
+            <div><span class="section-title sommelier">🍷 Order Note</span></div>
+            <div class="section-wines">🍷 ${esc(n.sommelier.wine || '—')}</div>
+            ${n.sommelier.note_en ? `<div class="lang-block"><div class="lang-label">EN</div><div class="note-text">${esc(n.sommelier.note_en)}</div></div>` : ''}
+            ${n.sommelier.note_de ? `<div class="lang-block"><div class="lang-label">DE</div><div class="note-text">${esc(n.sommelier.note_de)}</div></div>` : ''}
+            <div class="card-order">Order #${esc(n.sommelier.order || '—')}</div>
+          </div>`;
+      }
+
+      if (n.sommelier && n.checkout) sections += '<hr class="divider">';
+
+      if (n.checkout) {
+        sections += `
+          <div class="section">
+            <div><span class="section-title checkout">🛒 Abandoned Checkout</span></div>
+            <div class="section-wines checkout">🛒 ${esc(n.checkout.wines || '—')}</div>
+            ${n.checkout.note_en ? `<div class="lang-block"><div class="lang-label">EN</div><div class="note-text">${esc(n.checkout.note_en)}</div></div>` : ''}
+            ${n.checkout.note_de ? `<div class="lang-block"><div class="lang-label">DE</div><div class="note-text">${esc(n.checkout.note_de)}</div></div>` : ''}
+          </div>`;
+      }
+
+      return `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-meta">
+              <div class="card-name">${esc(n.name || '—')}</div>
+              <div class="card-email">${esc(n.email)}</div>
+            </div>
+            <div class="card-date">${date ? new Date(date).toLocaleDateString('de-DE') : ''}</div>
           </div>
-          <div class="card-date">${n.updated_at ? new Date(n.updated_at).toLocaleDateString('de-DE') : ''}</div>
-        </div>
-        <div class="card-wine">🍷 ${esc(n.wine || '—')}</div>
-        ${n.note_en ? `<div class="card-lang">EN</div><div class="card-note">${esc(n.note_en)}</div>` : ''}
-        ${n.note_de ? `<div class="card-lang" style="margin-top:12px">DE</div><div class="card-note">${esc(n.note_de)}</div>` : ''}
-        <div class="card-order">Order #${esc(n.order || '—')}</div>
-      </div>
-    `).join('');
+          ${sections}
+        </div>`;
+    }).join('');
   }
 
   function esc(str) {
@@ -139,7 +178,6 @@
     document.getElementById('password').value = '';
   }
 
-  // auto-login if password saved
   const saved = sessionStorage.getItem('notes_pwd');
   if (saved) {
     document.getElementById('password').value = saved;
