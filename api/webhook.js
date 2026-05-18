@@ -63,7 +63,7 @@ async function updateKlaviyoProfile(profileId, properties) {
   return res.ok;
 }
 
-async function generateSommelierNote({ wines, preferences, locale }) {
+async function generateSommelierNotes({ wines, preferences }) {
   const winesText = wines.map((w, i) =>
     [`Wine ${i + 1}: ${w.name}`, w.region && `Region: ${w.region}`, w.grape && `Grape: ${w.grape}`, w.aromas && `Aromas: ${w.aromas}`].filter(Boolean).join(', ')
   ).join('\n');
@@ -71,29 +71,33 @@ async function generateSommelierNote({ wines, preferences, locale }) {
   const userPrompt = [
     winesText,
     preferences && `Customer preferences: ${preferences}`,
-    locale && `Language: ${locale}`,
   ].filter(Boolean).join('\n');
+
+  const fallbackEn = `We hope you enjoy your selection: ${wines.map(w => w.name).join(', ')}. Each bottle promises a memorable experience.`;
+  const fallbackDe = `Wir hoffen, dass Sie Ihre Auswahl genießen: ${wines.map(w => w.name).join(', ')}. Jede Flasche verspricht ein unvergessliches Erlebnis.`;
 
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 600,
+      max_tokens: 1000,
       temperature: 0.8,
       system:
         'You are a warm, knowledgeable sommelier writing a personal note to a wine customer. ' +
         'The note goes inside a shipping notification email. ' +
-        'The customer ordered multiple wines — write one cohesive note covering all of them, 4-6 sentences max. ' +
+        'Write one cohesive note covering all wines in the order, 4-6 sentences max. ' +
         'Be specific about each wine\'s aromas and character. ' +
         'Reference the customer\'s taste preferences naturally. ' +
         'Mention serving temperatures and food pairings. ' +
         'Tone: personal, expert, never generic. ' +
-        'Language: match the customer locale (de-DE → German, default → English).',
+        'Respond with valid JSON only: {"en": "...English note...", "de": "...German note..."}',
       messages: [{ role: 'user', content: userPrompt }],
     });
-    return message.content[0].text.trim();
+
+    const raw = message.content[0].text.trim();
+    const json = JSON.parse(raw.replace(/^```json\n?|\n?```$/g, ''));
+    return { en: json.en || fallbackEn, de: json.de || fallbackDe };
   } catch {
-    const names = wines.map(w => w.name).join(', ');
-    return `We hope you enjoy your selection: ${names}. Each bottle promises a memorable experience.`;
+    return { en: fallbackEn, de: fallbackDe };
   }
 }
 
@@ -131,11 +135,12 @@ async function processOrder(order) {
   }));
 
   console.log('[sommelier] generating note for', wines.length, 'wine(s)...');
-  const note = await generateSommelierNote({ wines, preferences, locale });
+  const notes = await generateSommelierNotes({ wines, preferences });
 
-  console.log('[sommelier] note generated, updating klaviyo...');
+  console.log('[sommelier] notes generated, updating klaviyo...');
   await updateKlaviyoProfile(profile.id, {
-    sommelier_note: note,
+    sommelier_note_en: notes.en,
+    sommelier_note_de: notes.de,
     sommelier_note_wine: lineItems.map(i => i.title).join(', '),
     sommelier_note_order: orderId,
     sommelier_note_updated_at: new Date().toISOString(),

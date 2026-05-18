@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     if (!resp.ok) break;
     const json = await resp.json();
     const profiles = json.data ?? [];
-    const withNotes = profiles.filter(p => p.attributes?.properties?.sommelier_note);
+    const withNotes = profiles.filter(p => p.attributes?.properties?.sommelier_note_en || p.attributes?.properties?.sommelier_note_de);
     allProfiles.push(...withNotes);
 
     cursor = json.links?.next ? new URL(json.links.next).searchParams.get('page[cursor]') : null;
@@ -42,7 +42,8 @@ export default async function handler(req, res) {
   const notes = allProfiles.map(p => ({
     email: p.attributes.email,
     name: [p.attributes.first_name, p.attributes.last_name].filter(Boolean).join(' '),
-    note: p.attributes.properties.sommelier_note,
+    note_en: p.attributes.properties.sommelier_note_en,
+    note_de: p.attributes.properties.sommelier_note_de,
     wine: p.attributes.properties.sommelier_note_wine,
     order: p.attributes.properties.sommelier_note_order,
     updated_at: p.attributes.properties.sommelier_note_updated_at,

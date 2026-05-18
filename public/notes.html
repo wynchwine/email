@@ -48,6 +48,7 @@
     .card-date { font-size: 12px; color: #aaa; font-family: sans-serif; text-align: right; }
     .card-wine { font-size: 13px; color: #8b4513; font-family: sans-serif; margin-bottom: 12px; }
     .card-note { line-height: 1.7; font-size: 15px; color: #333; }
+    .card-lang { font-size: 11px; font-weight: 700; color: #8b4513; font-family: sans-serif; margin-bottom: 4px; letter-spacing: 1px; }
     .card-order { font-size: 11px; color: #ccc; font-family: sans-serif; margin-top: 12px; }
 
     .empty { text-align: center; color: #aaa; font-family: sans-serif; padding: 60px 0; }
@@ -120,7 +121,8 @@
           <div class="card-date">${n.updated_at ? new Date(n.updated_at).toLocaleDateString('de-DE') : ''}</div>
         </div>
         <div class="card-wine">🍷 ${esc(n.wine || '—')}</div>
-        <div class="card-note">${esc(n.note)}</div>
+        ${n.note_en ? `<div class="card-lang">EN</div><div class="card-note">${esc(n.note_en)}</div>` : ''}
+        ${n.note_de ? `<div class="card-lang" style="margin-top:12px">DE</div><div class="card-note">${esc(n.note_de)}</div>` : ''}
         <div class="card-order">Order #${esc(n.order || '—')}</div>
       </div>
     `).join('');
