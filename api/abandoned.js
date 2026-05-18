@@ -78,15 +78,11 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
       max_tokens: 1200,
       temperature: 0.8,
       system:
-        'You are a warm, knowledgeable sommelier writing a personalized abandoned cart recovery email. ' +
-        'For each wine the customer left in their cart, explain in 1-2 sentences why it perfectly matches their taste preferences. ' +
-        'Write all wines as one flowing text, not a list. ' +
-        'Base each explanation primarily on the product description. ' +
-        'Be specific and personal — reference their actual preferences. ' +
-        'Do not use any markdown formatting. ' +
-        'Tone: warm, personal, expert, never pushy. ' +
-        'Respond with valid JSON only: {"en": "...English text...", "de": "...German text..."}',
-      messages: [{ role: 'user', content: userPrompt }],
+        'You are a warm sommelier writing a personalized abandoned cart recovery note. ' +
+        'For each wine, write 1-2 sentences why it matches the customer\'s taste preferences. ' +
+        'Write all wines as one flowing text. No markdown. Tone: warm, personal, never pushy. ' +
+        'You MUST respond with this exact JSON format and nothing else:\n{"en": "English text here", "de": "German text here"}',
+      messages: [{ role: 'user', content: userPrompt || 'Write a warm note for the wines listed.' }],
     });
 
     const raw = message.content[0].text.trim();
