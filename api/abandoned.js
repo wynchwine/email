@@ -116,6 +116,7 @@ async function processCheckout(checkout) {
   ]);
 
   console.log('[abandoned] klaviyo profile:', profile ? profile.id : 'NOT FOUND');
+  productDataList.forEach((pd, i) => console.log(`[abandoned] product[${i}]:`, JSON.stringify(pd)));
   if (!profile) { console.log('[abandoned] profile not found, skip'); return; }
 
   const checkoutId = String(checkout.id);
