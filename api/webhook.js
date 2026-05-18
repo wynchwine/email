@@ -86,6 +86,7 @@ async function generateSommelierNotes({ wines, preferences }) {
         'The note goes inside a shipping notification email. ' +
         'Write one cohesive note covering all wines in the order, 4-6 sentences max. ' +
         'Be specific about each wine\'s aromas and character. ' +
+        'Always bold wine names using **wine name** markdown. ' +
         'Reference the customer\'s taste preferences naturally. ' +
         'Mention serving temperatures and food pairings. ' +
         'Tone: personal, expert, never generic. ' +
