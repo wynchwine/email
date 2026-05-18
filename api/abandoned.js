@@ -71,6 +71,7 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
   const fallbackEn = `You left some wonderful wines in your cart: ${wines.map(w => w.name).join(', ')}. Based on your taste preferences, we think you'll love them.`;
   const fallbackDe = `Sie haben einige wunderbare Weine in Ihrem Warenkorb: ${wines.map(w => w.name).join(', ')}. Basierend auf Ihren Geschmackspräferenzen denken wir, dass Sie sie lieben werden.`;
 
+  console.log('[abandoned] calling claude...');
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
@@ -98,7 +99,7 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
     const json = JSON.parse(match[0]);
     return { en: json.en || fallbackEn, de: json.de || fallbackDe };
   } catch (err) {
-    console.error('[abandoned] claude error:', err.message);
+    console.error('[abandoned] claude error:', err.message, err.stack?.slice(0, 300));
     return { en: fallbackEn, de: fallbackDe };
   }
 }
