@@ -13,19 +13,18 @@ function verifyShopifyHmac(rawBody, hmacHeader) {
   return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(hmacHeader));
 }
 
-async function fetchProductTags(productId) {
-  const res = await fetch(`${SHOPIFY_BASE}/products/${productId}.json?fields=tags`, {
+async function fetchProductData(productId) {
+  const res = await fetch(`${SHOPIFY_BASE}/products/${productId}.json?fields=title,tags,body_html`, {
     headers: { 'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN },
   });
   if (!res.ok) return {};
   const { product } = await res.json();
   const tags = (product.tags || '').split(',').map(t => t.trim());
-  const data = {};
+  const data = { title: product.title, description: (product.body_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() };
   for (const tag of tags) {
     const parts = tag.split('::');
     if (parts[0] === 'secondary' && parts.length >= 3) {
-      const key = parts[1]; // region, grape, aroma
-      data[key] = parts.slice(2).join('::');
+      data[parts[1]] = parts.slice(2).join('::');
     }
   }
   return data;
@@ -65,8 +64,8 @@ async function updateKlaviyoProfile(profileId, properties) {
 
 async function generateSommelierNotes({ wines, preferences }) {
   const winesText = wines.map((w, i) =>
-    [`Wine ${i + 1}: ${w.name}`, w.region && `Region: ${w.region}`, w.grape && `Grape: ${w.grape}`, w.aromas && `Aromas: ${w.aromas}`].filter(Boolean).join(', ')
-  ).join('\n');
+    [`Wine ${i + 1}: ${w.name}`, w.region && `Region: ${w.region}`, w.grape && `Grape: ${w.grape}`, w.aromas && `Aromas: ${w.aromas}`, w.description && `Description: ${w.description}`].filter(Boolean).join('\n')
+  ).join('\n\n');
 
   const userPrompt = [
     winesText,
@@ -114,7 +113,7 @@ async function processOrder(order) {
 
   const [profile, ...productDataList] = await Promise.all([
     getKlaviyoProfileByEmail(customerEmail),
-    ...lineItems.map(item => fetchProductTags(item.product_id)),
+    ...lineItems.map(item => fetchProductData(item.product_id)),
   ]);
 
   console.log('[sommelier] klaviyo profile:', profile ? profile.id : 'NOT FOUND');
@@ -127,12 +126,18 @@ async function processOrder(order) {
   const preferences = profile.attributes?.properties?.wine_preferences ?? '';
   const locale = order.customer_locale ?? 'en';
 
-  const wines = lineItems.map((item, i) => ({
-    name: item.title,
-    region: productDataList[i]?.region,
-    grape: productDataList[i]?.grape,
-    aromas: productDataList[i]?.aroma,
-  }));
+  const wines = lineItems.map((item, i) => {
+    const pd = productDataList[i] ?? {};
+    const producer = pd.producer;
+    const wineName = producer ? `${producer} ${pd.title || item.title}` : (pd.title || item.title);
+    return {
+      name: wineName,
+      region: pd.region,
+      grape: pd.grape,
+      aromas: pd.aroma,
+      description: pd.description,
+    };
+  });
 
   console.log('[sommelier] generating note for', wines.length, 'wine(s)...');
   const notes = await generateSommelierNotes({ wines, preferences });
@@ -141,7 +146,7 @@ async function processOrder(order) {
   await updateKlaviyoProfile(profile.id, {
     sommelier_note_en: notes.en,
     sommelier_note_de: notes.de,
-    sommelier_note_wine: lineItems.map(i => i.title).join(', '),
+    sommelier_note_wine: wines.map(w => w.name).join(', '),
     sommelier_note_order: orderId,
     sommelier_note_updated_at: new Date().toISOString(),
   });
