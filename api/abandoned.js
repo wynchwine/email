@@ -1,38 +1,16 @@
 import crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
+import { fetchProductData } from '../lib/shopify.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const KLAVIYO_BASE = 'https://a.klaviyo.com/api';
 const KLAVIYO_REVISION = '2024-10-15';
-const SHOPIFY_BASE = `https://${process.env.SHOPIFY_SHOP}/admin/api/2024-01`;
 
 function verifyShopifyHmac(rawBody, hmacHeader) {
   const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
   const digest = crypto.createHmac('sha256', secret).update(rawBody).digest('base64');
   return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(hmacHeader));
-}
-
-async function fetchProductData(productId) {
-  const res = await fetch(`${SHOPIFY_BASE}/products/${productId}.json?fields=title,tags,body_html`, {
-    headers: { 'X-Shopify-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN },
-  });
-  console.log(`[abandoned] shopify product ${productId} status:`, res.status);
-  if (!res.ok) {
-    const body = await res.text();
-    console.log(`[abandoned] shopify error:`, body.slice(0, 200));
-    return {};
-  }
-  const { product } = await res.json();
-  const tags = (product.tags || '').split(',').map(t => t.trim());
-  const data = { title: product.title, description: (product.body_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() };
-  for (const tag of tags) {
-    const parts = tag.split('::');
-    if (parts[0] === 'secondary' && parts.length >= 3) {
-      data[parts[1]] = parts.slice(2).join('::');
-    }
-  }
-  return data;
 }
 
 async function getKlaviyoProfileByEmail(email) {
