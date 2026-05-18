@@ -109,6 +109,7 @@ async function processCheckout(checkout) {
   if (!lineItems?.length) { console.log('[abandoned] no line items, skip'); return; }
 
   console.log('[abandoned] wines:', lineItems.map(i => i.title).join(', '));
+  console.log('[abandoned] product_ids:', lineItems.map(i => i.product_id).join(', '));
 
   const [profile, ...productDataList] = await Promise.all([
     getKlaviyoProfileByEmail(customerEmail),
@@ -119,7 +120,7 @@ async function processCheckout(checkout) {
   productDataList.forEach((pd, i) => console.log(`[abandoned] product[${i}]:`, JSON.stringify(pd)));
   if (!profile) { console.log('[abandoned] profile not found, skip'); return; }
 
-  const checkoutId = String(checkout.id);
+  const checkoutId = String(checkout.token || checkout.id);
   const existingCheckoutId = profile.attributes?.properties?.abandoned_checkout_id;
   if (existingCheckoutId === checkoutId) { console.log('[abandoned] duplicate checkout, skip'); return; }
 
