@@ -109,12 +109,13 @@ async function processOrder(order) {
   if (existingOrderId === orderId) { console.log('[sommelier] duplicate order, skip'); return; }
 
   const p = profile.attributes?.properties ?? {};
+  const fmt = v => (v == null || v === '') ? null : (typeof v === 'string' ? v : JSON.stringify(v));
   const preferences = [
-    p.userPreferences && `Preferences: ${p.userPreferences}`,
-    p.quiz_tannin && `Tannin: ${p.quiz_tannin}`,
-    p.quiz_sweetness && `Sweetness: ${p.quiz_sweetness}`,
-    p.quiz_acidity && `Acidity: ${p.quiz_acidity}`,
-    p.quiz_aromatic_profile && `Aromatic profile: ${p.quiz_aromatic_profile}`,
+    fmt(p.userPreferences) && `Preferences: ${fmt(p.userPreferences)}`,
+    fmt(p.quiz_tannin) && `Tannin: ${fmt(p.quiz_tannin)}`,
+    fmt(p.quiz_sweetness) && `Sweetness: ${fmt(p.quiz_sweetness)}`,
+    fmt(p.quiz_acidity) && `Acidity: ${fmt(p.quiz_acidity)}`,
+    fmt(p.quiz_aromatic_profile) && `Aromatic profile: ${fmt(p.quiz_aromatic_profile)}`,
   ].filter(Boolean).join('. ');
   const locale = order.customer_locale ?? 'en';
 

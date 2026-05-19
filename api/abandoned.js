@@ -158,14 +158,16 @@ async function _processCheckout(checkout) {
   if (existingKey === dedupKey) { console.log('[abandoned] duplicate checkout+wines, skip'); return; }
 
   const props2 = profile.attributes?.properties ?? {};
+  const fmt = v => (v == null || v === '') ? null : (typeof v === 'string' ? v : JSON.stringify(v));
   const prefParts = [
-    props2.userPreferences && `Preferences: ${props2.userPreferences}`,
-    props2.quiz_tannin && `Tannin: ${props2.quiz_tannin}`,
-    props2.quiz_sweetness && `Sweetness: ${props2.quiz_sweetness}`,
-    props2.quiz_acidity && `Acidity: ${props2.quiz_acidity}`,
-    props2.quiz_aromatic_profile && `Aromatic profile: ${props2.quiz_aromatic_profile}`,
+    fmt(props2.userPreferences) && `Preferences: ${fmt(props2.userPreferences)}`,
+    fmt(props2.quiz_tannin) && `Tannin: ${fmt(props2.quiz_tannin)}`,
+    fmt(props2.quiz_sweetness) && `Sweetness: ${fmt(props2.quiz_sweetness)}`,
+    fmt(props2.quiz_acidity) && `Acidity: ${fmt(props2.quiz_acidity)}`,
+    fmt(props2.quiz_aromatic_profile) && `Aromatic profile: ${fmt(props2.quiz_aromatic_profile)}`,
   ].filter(Boolean);
   const preferences = prefParts.join('. ');
+  console.log('[abandoned] preferences:', preferences || '(none)');
 
   const wines = lineItems.map((item, i) => {
     const pd = productDataList[i] ?? {};
