@@ -90,7 +90,7 @@ async function generateAndUploadHeroImage({ productDataList, checkoutId }) {
   const baseImageUrl = process.env.HERO_BASE_IMAGE_URL;
   const fallbackUrl = baseImageUrl || null;
 
-  const productImageUrls = productDataList.map(pd => pd.imageUrl).filter(Boolean);
+  const productImageUrls = [...new Set(productDataList.map(pd => pd.imageUrl).filter(Boolean))].slice(0, 5);
   if (!productImageUrls.length) {
     console.log('[hero] no product images, using fallback');
     return fallbackUrl;
