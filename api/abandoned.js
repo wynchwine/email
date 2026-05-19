@@ -61,9 +61,13 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
   console.log('[abandoned] calling claude...');
   try {
     const hasPreferences = Boolean(preferences);
-    const matchBlockInstructions = hasPreferences
-      ? '\n\n3. A third block ONLY because the customer\'s taste preferences are provided. Start it with a short heading line — "Why these wines suit you?" in English, "Warum diese Weine zu Ihnen passen?" in German — followed by a blank line, then exactly three short points explaining why each wine fits the customer\'s preferences. Separate the three points with a blank line between them. Do not use bullets, dashes, or numbers — just plain sentences separated by blank lines.'
-      : '\n\nDo NOT add any "Why these wines suit you?" block, because no customer taste preferences were provided.';
+    const structureInstructions = hasPreferences
+      ? 'Structure the note with exactly two blocks separated by a blank line:\n' +
+        '1. One sentence complimenting the customer\'s taste and explaining why their selection shows great wine instinct.\n' +
+        '2. Start with a heading line — "Why these wines suit you?" in English, "Warum diese Weine zu Ihnen passen?" in German — followed by a blank line, then exactly three short points explaining why each wine fits the customer\'s taste preferences. Separate the three points with a blank line between them. Do not use bullets, dashes, or numbers — just plain sentences separated by blank lines.'
+      : 'Structure the note with exactly two blocks separated by a blank line:\n' +
+        '1. One sentence complimenting the customer\'s taste and explaining why their selection shows great wine instinct.\n' +
+        '2. A short prose summary of the wines — specific aromas, regions, characters. Maximum 500 characters total for this block.';
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
@@ -71,11 +75,7 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
       temperature: 0.8,
       system:
         'You are a warm, knowledgeable sommelier writing a personalized abandoned cart recovery note. ' +
-        'Structure the note exactly like this:\n' +
-        '1. One sentence complimenting the customer\'s taste and explaining why their selection shows great wine instinct.\n' +
-        '2. Three facts about why this specific order is exceptional — write them as flowing prose, not a numbered list. Each fact should be concrete and specific to the wines, referencing regions, grapes, or characteristics.' +
-        matchBlockInstructions + '\n' +
-        'Separate every numbered section above with a blank line (double newline). ' +
+        structureInstructions + '\n' +
         'No markdown. No asterisks. No numbered lists. No dashes or bullets. Tone: warm, expert, flattering but never pushy. ' +
         'You MUST respond in this exact format:\n<en>English text here</en>\n<de>German text here</de>',
       messages: [{ role: 'user', content: userPrompt || 'Write a warm note for the wines listed.' }],
