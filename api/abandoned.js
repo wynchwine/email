@@ -69,6 +69,7 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
         'Structure the note exactly like this:\n' +
         '1. One sentence complimenting the customer\'s taste and explaining why their selection shows great wine instinct.\n' +
         '2. Three facts about why this specific order is exceptional — write them as flowing prose, not a numbered list. Each fact should be concrete and specific to the wines, referencing regions, grapes, or characteristics.\n' +
+        'Separate the compliment sentence and the prose facts with a blank line (double newline). ' +
         'Total length: under 1000 characters. No markdown. No asterisks. No numbered lists. Tone: warm, expert, flattering but never pushy. ' +
         'You MUST respond in this exact format:\n<en>English text here</en>\n<de>German text here</de>',
       messages: [{ role: 'user', content: userPrompt || 'Write a warm note for the wines listed.' }],
