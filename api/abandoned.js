@@ -157,7 +157,16 @@ async function _processCheckout(checkout) {
   const existingKey = profile.attributes?.properties?.abandoned_checkout_dedup;
   if (existingKey === dedupKey) { console.log('[abandoned] duplicate checkout+wines, skip'); return; }
 
-  const preferences = profile.attributes?.properties?.wine_preferences ?? '';
+  const props2 = profile.attributes?.properties ?? {};
+  const prefParts = [
+    props2.userPreferences && `Preferences: ${props2.userPreferences}`,
+    props2.quiz_tannin && `Tannin: ${props2.quiz_tannin}`,
+    props2.quiz_sweetness && `Sweetness: ${props2.quiz_sweetness}`,
+    props2.quiz_acidity && `Acidity: ${props2.quiz_acidity}`,
+    props2.quiz_aromatic_profile && `Aromatic profile: ${props2.quiz_aromatic_profile}`,
+    props2.wine_preferences && `Wine preferences: ${props2.wine_preferences}`,
+  ].filter(Boolean);
+  const preferences = prefParts.join('. ');
 
   const wines = lineItems.map((item, i) => {
     const pd = productDataList[i] ?? {};
