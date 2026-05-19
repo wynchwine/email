@@ -85,23 +85,19 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
   }
 }
 
-async function generateAndUploadHeroImage({ productDataList, checkoutId }) {
+async function generateAndUploadHeroImage({ wines, checkoutId }) {
   const baseImageUrl = process.env.HERO_BASE_IMAGE_URL;
   const fallbackUrl = baseImageUrl || null;
 
-  const productImageUrls = productDataList.map(pd => pd.imageUrl).filter(Boolean);
-  if (!productImageUrls.length) {
-    console.log('[hero] no product images, using fallback');
-    return fallbackUrl;
-  }
   if (!baseImageUrl) {
     console.log('[hero] HERO_BASE_IMAGE_URL not set, skipping generation');
     return null;
   }
 
   try {
-    console.log('[hero] generating image for', productImageUrls.length, 'product(s)...');
-    const generated = await generateHeroImage({ productImageUrls, baseImageUrl });
+    const wineNames = wines.map(w => w.name);
+    console.log('[hero] generating image for:', wineNames.join(', '));
+    const generated = await generateHeroImage({ wineNames, baseImageUrl });
     const name = `abandoned-hero-${checkoutId}-${Date.now()}`;
     const url = await uploadImageToKlaviyo({ ...generated, name });
     return url;
@@ -162,7 +158,7 @@ async function _processCheckout(checkout) {
   console.log('[abandoned] generating note for', wines.length, 'wine(s)...');
   const notes = await generateAbandonedCheckoutNote({ wines, preferences });
 
-  const heroImageUrl = await generateAndUploadHeroImage({ productDataList, checkoutId });
+  const heroImageUrl = await generateAndUploadHeroImage({ wines, checkoutId });
 
   const props = {
     abandoned_checkout_note_en: notes.en,
