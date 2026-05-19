@@ -6,6 +6,8 @@ import { uploadImageToKlaviyo } from '../lib/klaviyo-image.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+const activeCheckouts = new Set();
+
 const KLAVIYO_BASE = 'https://a.klaviyo.com/api';
 const KLAVIYO_REVISION = '2024-10-15';
 
@@ -110,6 +112,17 @@ async function generateAndUploadHeroImage({ productDataList, checkoutId }) {
 }
 
 async function processCheckout(checkout) {
+  const lockKey = String(checkout.token || checkout.id);
+  if (activeCheckouts.has(lockKey)) { console.log('[abandoned] already in-flight, skip'); return; }
+  activeCheckouts.add(lockKey);
+  try {
+    await _processCheckout(checkout);
+  } finally {
+    activeCheckouts.delete(lockKey);
+  }
+}
+
+async function _processCheckout(checkout) {
   const customerEmail = checkout.email || checkout.customer?.email;
   console.log('[abandoned] processing checkout', checkout.id, 'email:', customerEmail);
   console.log('[abandoned] payload keys:', Object.keys(checkout).join(', '));
