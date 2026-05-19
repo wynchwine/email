@@ -108,7 +108,14 @@ async function processOrder(order) {
   const existingOrderId = profile.attributes?.properties?.sommelier_note_order;
   if (existingOrderId === orderId) { console.log('[sommelier] duplicate order, skip'); return; }
 
-  const preferences = profile.attributes?.properties?.wine_preferences ?? '';
+  const p = profile.attributes?.properties ?? {};
+  const preferences = [
+    p.userPreferences && `Preferences: ${p.userPreferences}`,
+    p.quiz_tannin && `Tannin: ${p.quiz_tannin}`,
+    p.quiz_sweetness && `Sweetness: ${p.quiz_sweetness}`,
+    p.quiz_acidity && `Acidity: ${p.quiz_acidity}`,
+    p.quiz_aromatic_profile && `Aromatic profile: ${p.quiz_aromatic_profile}`,
+  ].filter(Boolean).join('. ');
   const locale = order.customer_locale ?? 'en';
 
   const wines = lineItems.map((item, i) => {

@@ -164,7 +164,6 @@ async function _processCheckout(checkout) {
     props2.quiz_sweetness && `Sweetness: ${props2.quiz_sweetness}`,
     props2.quiz_acidity && `Acidity: ${props2.quiz_acidity}`,
     props2.quiz_aromatic_profile && `Aromatic profile: ${props2.quiz_aromatic_profile}`,
-    props2.wine_preferences && `Wine preferences: ${props2.wine_preferences}`,
   ].filter(Boolean);
   const preferences = prefParts.join('. ');
 
