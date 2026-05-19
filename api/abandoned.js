@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchProductData } from '../lib/shopify.js';
+import { generateHeroImage } from '../lib/gemini.js';
+import { uploadImageToKlaviyo } from '../lib/klaviyo-image.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -81,6 +83,32 @@ async function generateAbandonedCheckoutNote({ wines, preferences }) {
   }
 }
 
+async function generateAndUploadHeroImage({ productDataList, checkoutId }) {
+  const baseImageUrl = process.env.HERO_BASE_IMAGE_URL;
+  const fallbackUrl = baseImageUrl || null;
+
+  const productImageUrls = productDataList.map(pd => pd.imageUrl).filter(Boolean);
+  if (!productImageUrls.length) {
+    console.log('[hero] no product images, using fallback');
+    return fallbackUrl;
+  }
+  if (!baseImageUrl) {
+    console.log('[hero] HERO_BASE_IMAGE_URL not set, skipping generation');
+    return null;
+  }
+
+  try {
+    console.log('[hero] generating image for', productImageUrls.length, 'product(s)...');
+    const generated = await generateHeroImage({ productImageUrls, baseImageUrl });
+    const name = `abandoned-hero-${checkoutId}-${Date.now()}`;
+    const url = await uploadImageToKlaviyo({ ...generated, name });
+    return url;
+  } catch (err) {
+    console.error('[hero] generation failed, using fallback:', err.message);
+    return fallbackUrl;
+  }
+}
+
 async function processCheckout(checkout) {
   const customerEmail = checkout.email || checkout.customer?.email;
   console.log('[abandoned] processing checkout', checkout.id, 'email:', customerEmail);
@@ -121,15 +149,20 @@ async function processCheckout(checkout) {
   console.log('[abandoned] generating note for', wines.length, 'wine(s)...');
   const notes = await generateAbandonedCheckoutNote({ wines, preferences });
 
-  console.log('[abandoned] updating klaviyo...');
-  await updateKlaviyoProfile(profile.id, {
+  const heroImageUrl = await generateAndUploadHeroImage({ productDataList, checkoutId });
+
+  const props = {
     abandoned_checkout_note_en: notes.en,
     abandoned_checkout_note_de: notes.de,
     abandoned_checkout_wines: wines.map(w => w.name).join(', '),
     abandoned_checkout_id: checkoutId,
     abandoned_checkout_dedup: dedupKey,
     abandoned_checkout_updated_at: new Date().toISOString(),
-  });
+  };
+  if (heroImageUrl) props.abandoned_checkout_hero_image = heroImageUrl;
+
+  console.log('[abandoned] updating klaviyo...');
+  await updateKlaviyoProfile(profile.id, props);
   console.log('[abandoned] done');
 }
 
