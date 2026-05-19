@@ -104,8 +104,10 @@ async function processCheckout(checkout) {
   if (!profile) { console.log('[abandoned] profile not found, skip'); return; }
 
   const checkoutId = String(checkout.token || checkout.id);
-  const existingCheckoutId = profile.attributes?.properties?.abandoned_checkout_id;
-  if (existingCheckoutId === checkoutId) { console.log('[abandoned] duplicate checkout, skip'); return; }
+  const winesSig = lineItems.map(i => `${i.product_id}x${i.quantity || 1}`).join(',');
+  const dedupKey = `${checkoutId}::${winesSig}`;
+  const existingKey = profile.attributes?.properties?.abandoned_checkout_dedup;
+  if (existingKey === dedupKey) { console.log('[abandoned] duplicate checkout+wines, skip'); return; }
 
   const preferences = profile.attributes?.properties?.wine_preferences ?? '';
 
@@ -125,6 +127,7 @@ async function processCheckout(checkout) {
     abandoned_checkout_note_de: notes.de,
     abandoned_checkout_wines: wines.map(w => w.name).join(', '),
     abandoned_checkout_id: checkoutId,
+    abandoned_checkout_dedup: dedupKey,
     abandoned_checkout_updated_at: new Date().toISOString(),
   });
   console.log('[abandoned] done');
