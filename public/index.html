@@ -55,8 +55,10 @@
       --radius-xl: 24px;
       --radius-full: 9999px;
 
-      /* Named brand faces first, robust system fallbacks after. */
-      --font-display: "Giorgio Sans Medium", "Archivo Narrow", "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+      /* Named brand faces first, robust system fallbacks after.
+         Display fallback favours wide, heavy grotesques so the chubby
+         headline look survives even before the brand font loads. */
+      --font-display: "Giorgio Sans Medium", "Arial Black", "Helvetica Neue", Helvetica, Arial, ui-sans-serif, sans-serif;
       --font-body: "Aktiv Grotesk Regular", "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
     }
 
@@ -130,15 +132,30 @@
       letter-spacing: 2px;
       margin-bottom: var(--space-md);
     }
+    /* Fatten the display glyphs to match the chubby headline weight on
+       wynch.wine. Works with the single-weight Giorgio Sans by painting a
+       stroke in the glyph's own colour on top of the fill (paint-order
+       keeps the fill crisp). Swap for a genuine Bold/Black Giorgio cut when
+       its font file is available and the stroke can be dialled back. */
+    .wordmark,
+    h1.display,
+    .card h3,
+    .card .num,
+    .age-modal .mark,
+    .age-modal h2 {
+      -webkit-text-stroke: 0.022em currentColor;
+      paint-order: stroke fill;
+    }
     h1.display {
       font-family: var(--font-display);
       font-weight: 700;
       color: var(--primary);
       font-size: clamp(44px, 9vw, 92px);
-      line-height: 1.02;
+      line-height: 1.04;
       letter-spacing: -0.5px;
       text-transform: uppercase;
       max-width: 14ch;
+      -webkit-text-stroke: 0.03em currentColor;
     }
     h1.display .dark { color: var(--secondary); }
     .lede {
