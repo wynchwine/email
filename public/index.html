@@ -10,7 +10,20 @@
   <meta property="og:description" content="Wine discovery, done differently. Join the list for early access.">
   <meta property="og:type" content="website">
 
+  <link rel="preconnect" href="https://wynch.wine" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="https://wynch.wine/cdn/shop/t/22/assets/giorgio-sans-medium.static.woff2?v=132781297963084722121782491269">
+
   <style>
+    /* Brand headline face, served from the wynch.wine (Shopify) CDN. */
+    @font-face {
+      font-family: "Giorgio Sans Medium";
+      src: url("https://wynch.wine/cdn/shop/t/22/assets/giorgio-sans-medium.static.woff2?v=132781297963084722121782491269") format("woff2");
+      font-weight: 400 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
     /* ---- WYNCH design system tokens ---- */
     :root {
       --accent: #ff6315;
