@@ -100,7 +100,11 @@
       color: var(--primary);
       text-transform: uppercase;
       text-decoration: none;
+      display: inline-flex;
+      align-items: center;
     }
+    .logo-img { height: 26px; width: auto; display: block; }
+    .age-modal .mark .logo-img { height: 22px; margin: 0 auto; }
     .nav-links {
       display: flex;
       gap: var(--space-lg);
@@ -379,7 +383,8 @@
   <!-- Age verification (brand-required gate) -->
   <div class="age-backdrop" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageTitle" hidden>
     <div class="age-modal">
-      <div class="mark">WYNCH</div>
+      <div class="mark"><img class="logo-img" alt="WYNCH"
+        src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380"></div>
       <div id="ageContent">
         <h2 id="ageTitle">Are you of legal<br>drinking age?</h2>
         <p>You must be of legal drinking age in your country to enter. Please drink responsibly.</p>
@@ -393,7 +398,10 @@
 
   <div class="wrap">
     <header class="site">
-      <a href="#" class="wordmark">WYNCH</a>
+      <a href="#" class="wordmark" aria-label="WYNCH">
+        <img class="logo-img" alt="WYNCH"
+          src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">
+      </a>
       <nav class="nav-links">
         <a href="#how">How it works</a>
         <a href="#join">Join</a>
