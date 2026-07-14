@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WYNCH — Find the wine that finds you</title>
-  <meta name="description" content="WYNCH is wine discovery, done differently. Take the quiz, get matched, and have bottles chosen for your taste delivered to your door.">
+  <title>WYNCH Club — Join for wine guides, reviews & a free bottle of Cava</title>
+  <meta name="description" content="Join the WYNCH club: useful guides and honest wine reviews delivered to you, plus a bottle of Cava as a welcome gift.">
 
-  <meta property="og:title" content="WYNCH — Find the wine that finds you">
-  <meta property="og:description" content="Wine discovery, done differently. Join the list for early access.">
+  <meta property="og:title" content="Join the WYNCH club">
+  <meta property="og:description" content="Wine guides, honest reviews, and a free bottle of Cava when you join.">
   <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://wynch.wine" crossorigin>
@@ -406,16 +406,15 @@
     <section class="hero wrap" id="join">
       <div class="hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">Wine discovery, done differently</p>
-          <h1 class="display">Find the wine <span class="dark">that finds you.</span></h1>
+          <p class="eyebrow">The WYNCH wine club</p>
+          <h1 class="display">Join the club, <span class="dark">Cava's on us.</span></h1>
           <p class="lede">
-            Answer a few questions about your taste and we do the rest — real bottles,
-            matched to you, delivered to your door. Join the list for early access and
-            your first personalised selection.
+            Become a member and get useful guides and honest wine reviews delivered
+            straight to you — plus a bottle of Cava as a welcome gift.
           </p>
 
           <div class="signup">
-            <label class="signup-label" for="email">Be first in line</label>
+            <label class="signup-label" for="email">Join the club</label>
             <form class="email-form" id="signupForm" novalidate>
               <input
                 type="email"
@@ -426,10 +425,10 @@
                 required
                 aria-label="Email address"
               >
-              <button type="submit" class="btn-primary" id="submitBtn">Join the list</button>
+              <button type="submit" class="btn-primary" id="submitBtn">Join the club</button>
             </form>
             <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
-            <p class="fine">No spam. Unsubscribe anytime. We'll only email you about your matches and early access.</p>
+            <p class="fine">No spam. Unsubscribe anytime. Welcome gift for new members — while stocks last.</p>
           </div>
         </div>
 
@@ -459,18 +458,18 @@
       <div class="cards">
         <article class="card">
           <div class="num">01</div>
-          <h3>Take the quiz</h3>
-          <p>Tannin, sweetness, acidity, aroma. A minute of questions builds your taste profile.</p>
+          <h3>Useful materials</h3>
+          <p>Guides, tasting notes and wine know-how, delivered to your inbox — learn as you sip.</p>
         </article>
         <article class="card">
           <div class="num">02</div>
-          <h3>Get matched</h3>
-          <p>We pair you with bottles that actually fit your palate — no jargon, no guesswork.</p>
+          <h3>Honest reviews</h3>
+          <p>Real wine reviews — what's worth it and what's not. No marketing fluff, just our take.</p>
         </article>
         <article class="card">
           <div class="num">03</div>
-          <h3>Delivered</h3>
-          <p>Your selection arrives with a personal sommelier note for every bottle inside.</p>
+          <h3>A bottle of Cava</h3>
+          <p>Your welcome gift: a bottle of Cava, free when you join the club. Cheers to that.</p>
         </article>
       </div>
     </section>
@@ -544,7 +543,7 @@
 
           if (res.ok) {
             form.reset();
-            setNote("You're on the list. Check your inbox soon. 🍷", 'ok');
+            setNote("Welcome to the club! Check your inbox about your Cava. 🥂", 'ok');
           } else {
             setNote(data.error || 'Something went wrong. Please try again.', 'err');
           }
