@@ -307,37 +307,38 @@
       border: none;
       border-top: 1px solid var(--secondary);
       opacity: 0.25;
-      margin: var(--space-xl) 0;
+      margin: var(--space-lg) 0;
     }
     .cards {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-lg);
+      gap: clamp(28px, 4vw, 56px);
     }
     @media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: var(--space-lg);
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
     }
     .card .num {
       font-family: var(--font-display);
       font-weight: 700;
-      font-size: 30px;
+      font-size: 46px;
+      line-height: 1;
       color: var(--primary);
-      margin-bottom: var(--space-sm);
+      margin-bottom: var(--space-md);
     }
     .card h3 {
       font-family: var(--font-display);
       font-weight: 400;
-      font-size: 26px;
-      line-height: 1.15;
+      font-size: 32px;
+      line-height: 1.1;
       color: var(--secondary);
       margin-bottom: var(--space-sm);
       text-transform: uppercase;
     }
-    .card p { font-size: 16px; color: var(--on-surface); }
+    .card p { font-size: 19px; line-height: 1.5; color: var(--on-surface); }
 
     /* ---------------- Footer ---------------- */
     footer.site {
