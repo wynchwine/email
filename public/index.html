@@ -55,8 +55,10 @@
       --radius-xl: 24px;
       --radius-full: 9999px;
 
-      /* Named brand faces first, robust system fallbacks after. */
-      --font-display: "Giorgio Sans Medium", "Helvetica Neue", Helvetica, Arial, ui-sans-serif, sans-serif;
+      /* Named brand faces first. Fallbacks favour round, geometric sans
+         (Futura / Century Gothic) so headlines keep the Giorgio-like round
+         "O" even before the brand font loads. */
+      --font-display: "Giorgio Sans Medium", "Futura", "Century Gothic", "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
       --font-body: "Aktiv Grotesk Regular", "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
     }
 
