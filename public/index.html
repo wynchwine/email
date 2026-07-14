@@ -187,6 +187,45 @@
       object-fit: cover;
       border-radius: var(--radius-lg);
     }
+    /* Video cover with play button */
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--secondary);
+    }
+    .video-wrap video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 88px;
+      height: 88px;
+      border-radius: var(--radius-full);
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .play-btn:hover { background: #e5570f; transform: translate(-50%, -50%) scale(1.06); }
+    .play-btn svg { width: 34px; height: 34px; margin-left: 4px; }
+    .video-wrap.playing .play-btn { display: none; }
+    @media (max-width: 900px) {
+      .play-btn { width: 72px; height: 72px; }
+      .play-btn svg { width: 28px; height: 28px; }
+    }
     .photo-ph {
       display: flex;
       flex-direction: column;
@@ -488,10 +527,24 @@
           </div>
         </div>
 
+        <!--
+          HERO VIDEO
+          Poster = the Cava photo. Upload the video to public/hero-video.mp4
+          (any name works, just update the <source> src below).
+        -->
         <figure class="hero-media">
           <span class="gift-badge">Free<span>gift</span><small>on us</small></span>
-          <img src="/Bottle_and_wine_glass_202607141610.jpeg"
-               alt="A bottle of Vinya Escudé Cava beside a filled glass">
+          <div class="video-wrap" id="videoWrap">
+            <video id="heroVideo"
+                   poster="/Bottle_and_wine_glass_202607141610.jpeg"
+                   preload="none" playsinline
+                   aria-label="WYNCH club intro video">
+              <source src="/hero-video.mp4" type="video/mp4">
+            </video>
+            <button class="play-btn" id="playBtn" type="button" aria-label="Play video">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+            </button>
+          </div>
         </figure>
       </div>
     </section>
@@ -528,6 +581,26 @@
   <script>
     // ---- Footer year ----
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ---- Hero video ----
+    (function () {
+      var wrap = document.getElementById('videoWrap');
+      var video = document.getElementById('heroVideo');
+      var playBtn = document.getElementById('playBtn');
+      if (!wrap || !video || !playBtn) return;
+
+      playBtn.addEventListener('click', function () {
+        video.setAttribute('controls', '');
+        wrap.classList.add('playing');
+        var p = video.play();
+        if (p && p.catch) p.catch(function () { /* no source yet */ });
+      });
+
+      video.addEventListener('ended', function () {
+        wrap.classList.remove('playing');
+        video.removeAttribute('controls');
+      });
+    })();
 
     // ---- Age gate ----
     (function () {
