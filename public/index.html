@@ -106,7 +106,6 @@
       align-items: center;
     }
     .logo-img { height: 38px; width: auto; display: block; }
-    .age-modal .mark .logo-img { height: 30px; margin: 0 auto; }
     .nav-links {
       display: flex;
       gap: var(--space-lg);
@@ -397,89 +396,9 @@
       color: #6f6c64;
     }
     footer.site a { color: var(--primary); text-decoration: none; }
-
-    /* ---------------- Age gate modal ---------------- */
-    .age-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-lg);
-      z-index: 1000;
-    }
-    .age-backdrop[hidden] { display: none; }
-    .age-modal {
-      background: var(--secondary);
-      color: #fff;
-      border-radius: var(--radius-xl);
-      max-width: 460px;
-      width: 100%;
-      padding: clamp(28px, 6vw, 48px);
-      text-align: center;
-    }
-    .age-modal .mark {
-      font-family: var(--font-display);
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: 1px;
-      font-size: 20px;
-      text-transform: uppercase;
-      margin-bottom: var(--space-lg);
-    }
-    .age-modal h2 {
-      font-family: var(--font-display);
-      font-weight: 400;
-      font-size: clamp(26px, 6vw, 33px);
-      line-height: 1.2;
-      text-transform: uppercase;
-      margin-bottom: var(--space-md);
-    }
-    .age-modal p { font-size: 16px; color: #cfccc5; margin-bottom: var(--space-xl); }
-    .age-actions { display: flex; flex-direction: column; gap: var(--space-sm); }
-    .age-confirm {
-      font-family: var(--font-body);
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    .age-confirm:hover { background: #e5570f; }
-    .age-decline {
-      font-family: var(--font-body);
-      background: transparent;
-      color: var(--primary);
-      border: 1px solid var(--primary);
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    .age-decline:hover { background: rgba(255, 99, 21, 0.12); }
-    .age-declined-msg { font-size: 15px; color: #cfccc5; }
   </style>
 </head>
 <body>
-
-  <!-- Age verification (brand-required gate) -->
-  <div class="age-backdrop" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageTitle" hidden>
-    <div class="age-modal">
-      <div class="mark"><img class="logo-img" alt="WYNCH"
-        src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380"></div>
-      <div id="ageContent">
-        <h2 id="ageTitle">Are you of legal<br>drinking age?</h2>
-        <p>You must be of legal drinking age in your country to enter. Please drink responsibly.</p>
-        <div class="age-actions">
-          <button class="age-confirm" id="ageYes">Yes, I am</button>
-          <button class="age-decline" id="ageNo">No</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="wrap">
     <header class="site">
@@ -608,26 +527,6 @@
       video.addEventListener('ended', function () {
         wrap.classList.remove('playing');
         video.removeAttribute('controls');
-      });
-    })();
-
-    // ---- Age gate ----
-    (function () {
-      var gate = document.getElementById('ageGate');
-      var KEY = 'wynch_age_ok';
-      if (sessionStorage.getItem(KEY) === '1') {
-        gate.hidden = true;
-      } else {
-        gate.hidden = false;
-      }
-      document.getElementById('ageYes').addEventListener('click', function () {
-        sessionStorage.setItem(KEY, '1');
-        gate.hidden = true;
-      });
-      document.getElementById('ageNo').addEventListener('click', function () {
-        document.getElementById('ageContent').innerHTML =
-          '<h2>Come back soon</h2>' +
-          '<p class="age-declined-msg">You must be of legal drinking age to enter WYNCH.</p>';
       });
     })();
 
