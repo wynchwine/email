@@ -21,7 +21,7 @@ async function readJsonBody(req) {
 // Subscribe a profile to a Klaviyo list with email marketing consent.
 // Uses the bulk subscribe job so double opt-in / consent settings on the
 // list are respected. Falls back to a plain profile upsert if no list is set.
-async function subscribeToList({ email, listId }) {
+async function subscribeToList({ email, firstName, listId }) {
   const res = await fetch(`${KLAVIYO_BASE}/profile-subscription-bulk-create-jobs/`, {
     method: 'POST',
     headers: {
@@ -40,6 +40,7 @@ async function subscribeToList({ email, listId }) {
                 type: 'profile',
                 attributes: {
                   email,
+                  ...(firstName ? { first_name: firstName } : {}),
                   subscriptions: { email: { marketing: { consent: 'SUBSCRIBED' } } },
                 },
               },
@@ -53,7 +54,7 @@ async function subscribeToList({ email, listId }) {
   return res.ok;
 }
 
-async function upsertProfile({ email }) {
+async function upsertProfile({ email, firstName }) {
   const res = await fetch(`${KLAVIYO_BASE}/profile-import/`, {
     method: 'POST',
     headers: {
@@ -67,6 +68,7 @@ async function upsertProfile({ email }) {
         type: 'profile',
         attributes: {
           email,
+          ...(firstName ? { first_name: firstName } : {}),
           properties: { source: 'landing_signup', signup_at: new Date().toISOString() },
         },
       },
@@ -87,6 +89,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid request body' });
   }
 
+  const firstName = String(body.name ?? '').trim().slice(0, 100);
+  if (!firstName) {
+    return res.status(400).json({ error: 'Please enter your name.' });
+  }
+
   const email = String(body.email ?? '').trim().toLowerCase();
   if (!email || !EMAIL_RE.test(email)) {
     return res.status(400).json({ error: 'Please enter a valid email address.' });
@@ -95,8 +102,8 @@ export default async function handler(req, res) {
   try {
     const listId = process.env.KLAVIYO_NEWSLETTER_LIST_ID;
     const ok = listId
-      ? await subscribeToList({ email, listId })
-      : await upsertProfile({ email });
+      ? await subscribeToList({ email, firstName, listId })
+      : await upsertProfile({ email, firstName });
 
     if (!ok) {
       console.error('[subscribe] klaviyo rejected signup for', email);

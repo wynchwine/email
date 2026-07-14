@@ -253,7 +253,8 @@
       align-items: stretch;
       flex-wrap: wrap;
     }
-    .email-form input[type="email"] {
+    .email-form input[type="email"],
+    .email-form input[type="text"] {
       flex: 1 1 280px;
       min-width: 0;
       font-family: var(--font-body);
@@ -265,8 +266,9 @@
       color: var(--black);
       outline: none;
     }
-    .email-form input[type="email"]::placeholder { color: #8a877f; }
-    .email-form input[type="email"]:focus { border-color: var(--primary); }
+    .email-form input::placeholder { color: #8a877f; }
+    .email-form input:focus { border-color: var(--primary); }
+    .email-form .field-full { flex: 1 1 100%; }
 
     .btn-primary {
       font-family: var(--font-body);
@@ -461,6 +463,16 @@
             <label class="signup-label" for="email">Join the club</label>
             <form class="email-form" id="signupForm" novalidate>
               <input
+                type="text"
+                id="name"
+                name="name"
+                class="field-full"
+                placeholder="Your name"
+                autocomplete="given-name"
+                required
+                aria-label="Your name"
+              >
+              <input
                 type="email"
                 id="email"
                 name="email"
@@ -555,6 +567,7 @@
     (function () {
       var form = document.getElementById('signupForm');
       var input = document.getElementById('email');
+      var nameInput = document.getElementById('name');
       var btn = document.getElementById('submitBtn');
       var note = document.getElementById('formNote');
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -566,7 +579,13 @@
 
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
+        var name = nameInput.value.trim();
         var email = input.value.trim();
+        if (!name) {
+          setNote('Please enter your name.', 'err');
+          nameInput.focus();
+          return;
+        }
         if (!EMAIL_RE.test(email)) {
           setNote('Please enter a valid email address.', 'err');
           input.focus();
@@ -582,7 +601,7 @@
           var res = await fetch('/api/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email })
+            body: JSON.stringify({ name: name, email: email })
           });
           var data = await res.json().catch(function () { return {}; });
 
