@@ -339,8 +339,12 @@
     .fine {
       margin-top: var(--space-sm);
       font-size: 13px;
+      line-height: 1.5;
       color: #6f6c64;
+      max-width: 520px;
     }
+    .fine a { color: var(--secondary); text-decoration: underline; }
+    .fine a:hover { color: var(--primary); }
 
     /* ---------------- Value cards ---------------- */
     section.value { padding-bottom: var(--space-xl); }
@@ -523,7 +527,12 @@
               <button type="submit" class="btn-primary" id="submitBtn">Join the club</button>
             </form>
             <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
-            <p class="fine">No spam. Unsubscribe anytime. Welcome gift for new members — while stocks last.</p>
+            <p class="fine">
+              By submitting your email you agree to receive marketing emails from WYNCH and accept our
+              <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">Terms</a>
+              and <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Privacy&nbsp;Policy</a>.
+              Unsubscribe anytime. Welcome gift for new members — while stocks last.
+            </p>
           </div>
         </div>
 
