@@ -95,7 +95,7 @@
     .wordmark {
       font-family: var(--font-display);
       font-weight: 700;
-      font-size: 26px;
+      font-size: 34px;
       letter-spacing: 1px;
       color: var(--primary);
       text-transform: uppercase;
@@ -103,8 +103,8 @@
       display: inline-flex;
       align-items: center;
     }
-    .logo-img { height: 26px; width: auto; display: block; }
-    .age-modal .mark .logo-img { height: 22px; margin: 0 auto; }
+    .logo-img { height: 38px; width: auto; display: block; }
+    .age-modal .mark .logo-img { height: 30px; margin: 0 auto; }
     .nav-links {
       display: flex;
       gap: var(--space-lg);
@@ -140,6 +140,42 @@
     .hero-media {
       margin: 0;
       width: 100%;
+      position: relative;
+    }
+    /* "Free gift" sticker badge overlaid on the hero image */
+    .gift-badge {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      z-index: 2;
+      width: 104px;
+      height: 104px;
+      border-radius: var(--radius-full);
+      background: var(--primary);
+      color: #fff;
+      border: 4px solid var(--surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: 0.5px;
+      transform: rotate(-12deg);
+    }
+    .gift-badge small {
+      font-family: var(--font-body);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+      opacity: 0.9;
+    }
+    @media (max-width: 900px) {
+      .gift-badge { width: 88px; height: 88px; font-size: 17px; top: -12px; right: -6px; }
     }
     .hero-media img {
       display: block;
@@ -446,7 +482,8 @@
             <figure class="hero-media"><img src="/hero.jpg" alt="A bottle of wine"></figure>
           The .hero-media box keeps its aspect ratio, so any photo will crop to fit.
         -->
-        <figure class="hero-media" aria-hidden="true">
+        <figure class="hero-media">
+          <span class="gift-badge">Free<span>gift</span><small>on us</small></span>
           <div class="photo-ph">
             <svg viewBox="0 0 120 200" role="img" aria-label="Wine bottle placeholder">
               <!-- bottle -->
