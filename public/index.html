@@ -78,10 +78,9 @@
       font-family: var(--font-head);
       font-weight: 700;
       color: var(--accent);
-      text-transform: uppercase;
-      font-size: clamp(34px, 7vw, 54px);
-      line-height: 1.04;
-      letter-spacing: 0.5px;
+      font-size: clamp(40px, 9vw, 72px);
+      line-height: 0.98;
+      letter-spacing: -0.5px;
     }
     .hero-sub {
       margin: 18px auto 0;
@@ -102,13 +101,10 @@
     .hero-photo {
       position: relative;
       width: 100%;
-      aspect-ratio: 16 / 9;
-      margin: 0;
-      overflow: hidden;
-      background: #2d2d2d;
-      border: 1px solid var(--line);
+      max-width: 620px;
+      margin: 0 auto;
     }
-    .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .hero-photo img { display: block; width: 100%; height: auto; }
     .gift-badge {
       position: absolute; top: -1px; right: -1px; z-index: 2;
       width: 96px; height: 96px; border-radius: 9999px;
@@ -200,20 +196,19 @@
 
     <!-- Hero -->
     <div class="hero pad">
-      <div class="eyebrow">The WYNCH wine club</div>
-      <h1 class="hero-head">Join the club,<br>get &euro;50.</h1>
+      <h1 class="hero-head">Better wine.<br>Back independent makers.</h1>
       <p class="hero-sub">
-        Become a member for food recipes, winemaker stories first-hand, and exclusive
-        bottles from small wineries — plus &euro;50 to spend on your first order.
+        Join the WYNCH club — support independent winemakers, pay fair prices,
+        and get &euro;50 to spend on your first order.
       </p>
     </div>
 
-    <!-- Hero photo (16:9) -->
+    <!-- Hero photo -->
     <div class="media-cell">
       <figure class="hero-photo">
         <span class="gift-badge">&euro;50<small>to spend</small></span>
-        <img src="/Bottle_and_wine_glass_202607141610.jpeg"
-             alt="A bottle of Vinya Escudé Cava beside a filled glass">
+        <img src="https://d2uonb1a56l9mc.cloudfront.net/images/content-images/new-whitemail-homepage/man-holding-bottle-grey2.webp"
+             alt="A hand lifting a bottle of wine above a row of independent-maker bottles">
       </figure>
     </div>
 
