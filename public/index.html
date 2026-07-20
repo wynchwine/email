@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WYNCH Club — Join for wine guides, reviews & a free bottle of Cava</title>
-  <meta name="description" content="Join the WYNCH club: useful guides and honest wine reviews delivered to you, plus a bottle of Cava as a welcome gift.">
+  <title>WYNCH Club — Join for a free bottle of Cava</title>
+  <meta name="description" content="Join the WYNCH club: recipes, winemaker stories and exclusive bottles from small wineries — plus a bottle of Cava as a welcome gift.">
 
   <meta property="og:title" content="Join the WYNCH club">
-  <meta property="og:description" content="Wine guides, honest reviews, and a free bottle of Cava when you join.">
+  <meta property="og:description" content="Recipes, winemaker stories, and a free bottle of Cava when you join.">
   <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://wynch.wine" crossorigin>
@@ -17,511 +17,283 @@
     href="https://wynch.wine/cdn/shop/t/22/assets/aktiv-grotesk-regular.static.woff2?v=138786277528983394311782491269">
 
   <style>
-    /* Brand faces, served from the wynch.wine (Shopify) CDN. */
     @font-face {
       font-family: "Giorgio Sans Medium";
       src: url("https://wynch.wine/cdn/shop/t/22/assets/giorgio-sans-medium.static.woff2?v=132781297963084722121782491269") format("woff2");
-      font-weight: 400 700;
-      font-style: normal;
-      font-display: swap;
+      font-weight: 400 700; font-style: normal; font-display: swap;
     }
     @font-face {
       font-family: "Aktiv Grotesk Regular";
       src: url("https://wynch.wine/cdn/shop/t/22/assets/aktiv-grotesk-regular.static.woff2?v=138786277528983394311782491269") format("woff2");
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
+      font-weight: 400; font-style: normal; font-display: swap;
     }
 
-    /* ---- WYNCH design system tokens ---- */
     :root {
       --accent: #ff6315;
-      --primary: #ff6315;
-      --secondary: #2d2d2d;
-      --black: #000000;
-      --surface: #eae7e0;
-      --border: #e5e7eb;
-      --on-surface: #000000;
-
-      --space-xs: 2px;
-      --space-sm: 10px;
-      --space-md: 18px;
-      --space-lg: 30px;
-      --space-xl: 48px;
-
-      --radius-sm: 4px;
-      --radius-md: 8px;
-      --radius-lg: 12px;
-      --radius-xl: 24px;
-      --radius-full: 9999px;
-
-      /* Named brand faces first. Fallbacks favour round, geometric sans
-         (Futura / Century Gothic) so headlines keep the Giorgio-like round
-         "O" even before the brand font loads. */
-      --font-display: "Giorgio Sans Medium", "Futura", "Century Gothic", "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
-      --font-body: "Aktiv Grotesk Regular", "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+      --bg: #eeece7;
+      --line: #ff6315;
+      --text: #5d5e60;
+      --muted: #999999;
+      --font-head: "Giorgio Sans Medium", "Futura", "Century Gothic", "Helvetica Neue", Arial, sans-serif;
+      --font-body: "Aktiv Grotesk Regular", "Helvetica Neue", Arial, sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { -webkit-text-size-adjust: 100%; }
-
     body {
       font-family: var(--font-body);
-      background: var(--surface);
-      color: var(--on-surface);
-      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      overflow-x: hidden;
     }
 
-    a { color: inherit; }
+    /* Framed editorial column */
+    .frame {
+      max-width: 720px;
+      margin: 40px auto;
+      background: var(--bg);
+      border: 1px solid var(--line);
+    }
+    @media (max-width: 760px) { .frame { margin: 0; border-left: none; border-right: none; } }
 
-    .wrap {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding-left: var(--space-lg);
-      padding-right: var(--space-lg);
-    }
+    .divider { border: none; border-top: 1px solid var(--line); }
 
-    /* ---------------- Header ---------------- */
-    header.site {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: var(--space-lg);
-      padding-bottom: var(--space-lg);
-    }
-    .wordmark {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 34px;
-      letter-spacing: 1px;
-      color: var(--primary);
-      text-transform: uppercase;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-    }
-    .logo-img { height: 38px; width: auto; display: block; }
-    .nav-links {
-      display: flex;
-      gap: var(--space-lg);
-      align-items: center;
-      font-size: 16px;
-    }
-    .nav-links a {
-      color: var(--black);
-      text-decoration: none;
-    }
-    .nav-links a:hover { color: var(--primary); }
-    .nav-links a.brand-link { color: var(--primary); }
-    @media (max-width: 640px) {
-      .nav-links a:not(.brand-link) { display: none; }
-    }
+    .pad { padding-left: 40px; padding-right: 40px; }
+    @media (max-width: 520px) { .pad { padding-left: 20px; padding-right: 20px; } }
 
-    /* ---------------- Hero ---------------- */
-    .hero {
-      padding-top: clamp(12px, 2vw, 28px);
-      padding-bottom: var(--space-xl);
-    }
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-      gap: clamp(30px, 5vw, 64px);
-      align-items: center;
-    }
-    @media (max-width: 900px) {
-      .hero-grid { grid-template-columns: 1fr; }
-    }
-
-    /* Hero image / placeholder */
-    .hero-media {
-      margin: 0;
-      width: 100%;
-      position: relative;
-    }
-    /* "Free gift" sticker badge overlaid on the hero image */
-    .gift-badge {
-      position: absolute;
-      top: -16px;
-      right: -16px;
-      z-index: 2;
-      width: 104px;
-      height: 104px;
-      border-radius: var(--radius-full);
-      background: var(--primary);
-      color: #fff;
-      border: 4px solid var(--surface);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    /* Utility bar + logo */
+    .utility {
       text-align: center;
-      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--muted);
+      padding: 12px 18px;
+    }
+    .logo-row { text-align: center; padding: 18px 20px; }
+    .logo-row img { display: inline-block; width: 160px; max-width: 60%; height: auto; }
+
+    /* Hero */
+    .hero { text-align: center; padding-top: 34px; padding-bottom: 30px; }
+    h1.hero-head {
+      font-family: var(--font-head);
       font-weight: 700;
+      color: var(--accent);
       text-transform: uppercase;
-      font-size: 20px;
-      line-height: 1;
+      font-size: clamp(34px, 7vw, 54px);
+      line-height: 1.04;
       letter-spacing: 0.5px;
-      transform: rotate(-12deg);
     }
-    .gift-badge small {
-      font-family: var(--font-body);
-      font-size: 10px;
-      letter-spacing: 1.5px;
-      margin-top: 4px;
-      opacity: 0.9;
+    .hero-sub {
+      margin: 18px auto 0;
+      max-width: 46ch;
+      font-size: 17px;
+      color: var(--text);
     }
-    @media (max-width: 900px) {
-      .gift-badge { width: 88px; height: 88px; font-size: 17px; top: -12px; right: -6px; }
+    .eyebrow {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
     }
-    .hero-media img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      aspect-ratio: 4 / 5;
-      object-fit: cover;
-      border-radius: var(--radius-lg);
-    }
-    /* Video cover with play button */
+
+    /* Video / cover */
+    .media-cell { padding: 0 18px 28px; }
     .video-wrap {
       position: relative;
       width: 100%;
       aspect-ratio: 4 / 5;
-      border-radius: var(--radius-lg);
+      max-width: 460px;
+      margin: 0 auto;
       overflow: hidden;
-      background: var(--secondary);
+      background: #2d2d2d;
+      border: 1px solid var(--line);
     }
-    .video-wrap video {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .video-wrap video { display: block; width: 100%; height: 100%; object-fit: cover; }
     .play-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 88px;
-      height: 88px;
-      border-radius: var(--radius-full);
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 84px; height: 84px; border-radius: 9999px;
+      background: var(--accent); color: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: background 0.15s ease, transform 0.1s ease;
     }
     .play-btn:hover { background: #e5570f; transform: translate(-50%, -50%) scale(1.06); }
-    .play-btn svg { width: 34px; height: 34px; margin-left: 4px; }
+    .play-btn svg { width: 32px; height: 32px; margin-left: 4px; }
     .video-wrap.playing .play-btn { display: none; }
-    @media (max-width: 900px) {
-      .play-btn { width: 72px; height: 72px; }
-      .play-btn svg { width: 28px; height: 28px; }
+    .gift-badge {
+      position: absolute; top: -1px; right: -1px; z-index: 2;
+      width: 96px; height: 96px; border-radius: 9999px;
+      background: var(--accent); color: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; font-family: var(--font-head); font-weight: 700;
+      text-transform: uppercase; font-size: 19px; line-height: 1; letter-spacing: 0.5px;
+      transform: rotate(-10deg);
     }
-    .photo-ph {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-md);
-      aspect-ratio: 4 / 5;
-      width: 100%;
-      background: var(--secondary);
-      color: var(--primary);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--secondary);
-    }
-    .photo-ph svg { width: 34%; max-width: 130px; height: auto; }
-    .photo-ph-label {
-      font-family: var(--font-body);
-      font-size: 15px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #cfccc5;
-    }
-    @media (max-width: 900px) {
-      .hero-media { order: -1; max-width: 360px; }
-    }
-    .eyebrow {
-      font-family: var(--font-body);
-      font-size: 16px;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: var(--space-md);
-    }
-    h1.display {
-      font-family: var(--font-display);
-      font-weight: 700;
-      color: var(--primary);
-      font-size: clamp(44px, 9vw, 92px);
-      line-height: 1.02;
-      letter-spacing: -0.5px;
-      text-transform: uppercase;
-      max-width: 14ch;
-    }
-    h1.display .dark { color: var(--secondary); }
-    .lede {
-      margin-top: var(--space-lg);
-      font-size: clamp(18px, 2.4vw, 23px);
-      line-height: 1.42;
-      color: var(--on-surface);
-      max-width: 46ch;
-    }
+    .gift-badge small { font-family: var(--font-body); font-size: 9px; letter-spacing: 1.5px; margin-top: 4px; opacity: 0.9; }
 
-    /* ---------------- Signup form ---------------- */
-    .signup {
-      margin-top: var(--space-xl);
-      max-width: 620px;
+    /* Signup form */
+    .signup { padding: 4px 40px 30px; }
+    @media (max-width: 520px) { .signup { padding: 4px 20px 26px; } }
+    form.email-form { display: flex; gap: 10px; flex-wrap: wrap; }
+    .email-form input {
+      flex: 1 1 240px; min-width: 0;
+      font-family: var(--font-body); font-size: 16px;
+      padding: 15px 22px; background: #fff;
+      border: 1px solid var(--accent); border-radius: 9999px;
+      color: #2c2c2c; outline: none;
     }
-    .signup-label {
-      font-size: 16px;
-      color: var(--secondary);
-      margin-bottom: var(--space-sm);
-      display: block;
-    }
-    form.email-form {
-      display: flex;
-      gap: var(--space-sm);
-      align-items: stretch;
-      flex-wrap: wrap;
-    }
-    .email-form input[type="email"],
-    .email-form input[type="text"] {
-      flex: 1 1 280px;
-      min-width: 0;
-      font-family: var(--font-body);
-      font-size: 17px;
-      padding: 13px 24px;
-      background: #fff;
-      border: 1px solid var(--secondary);
-      border-radius: 40px;
-      color: var(--black);
-      outline: none;
-    }
-    .email-form input::placeholder { color: #8a877f; }
-    .email-form input:focus { border-color: var(--primary); }
-    .email-form .field-full { flex: 1 1 100%; }
-
-    .btn-primary {
-      font-family: var(--font-body);
-      background: var(--secondary);
-      color: var(--surface);
-      border: 1px solid transparent;
-      border-radius: 40px;
-      padding: 14px 40px;
-      font-size: 18px;
-      cursor: pointer;
-      white-space: nowrap;
-      flex: 1 1 100%;
-      width: 100%;
+    .email-form input::placeholder { color: #a7a49e; }
+    .btn {
+      flex: 1 1 100%; width: 100%;
+      font-family: var(--font-body); font-size: 16px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      background: var(--accent); color: var(--bg);
+      border: none; border-radius: 9999px;
+      padding: 16px 40px; cursor: pointer;
       transition: background 0.15s ease, transform 0.05s ease;
     }
-    .btn-primary:hover { background: #1c1c1c; }
-    .btn-primary:active { transform: translateY(1px); }
-    .btn-primary:disabled { opacity: 0.55; cursor: default; }
+    .btn:hover { background: #e5570f; }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.55; cursor: default; }
+    .form-note { margin-top: 14px; font-size: 15px; min-height: 22px; }
+    .form-note.ok { color: var(--accent); }
+    .form-note.err { color: var(--accent); font-weight: 700; }
+    .fine { margin-top: 14px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .fine a { color: var(--accent); text-decoration: underline; }
 
-    .form-note {
-      margin-top: var(--space-md);
-      font-size: 16px;
-      min-height: 24px;
+    /* Section label */
+    .section-label {
+      text-align: center; padding: 32px 40px 4px;
+      font-size: 13px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 2px;
     }
-    .form-note.ok { color: var(--secondary); }
-    .form-note.err { color: var(--primary); }
-    .fine {
-      margin-top: var(--space-sm);
-      font-size: 13px;
-      line-height: 1.5;
-      color: #6f6c64;
-      max-width: 520px;
-    }
-    .fine a { color: var(--secondary); text-decoration: underline; }
-    .fine a:hover { color: var(--primary); }
 
-    /* ---------------- Value cards ---------------- */
-    section.value { padding-bottom: var(--space-xl); }
-    .rule {
-      border: none;
-      border-top: 1px solid var(--secondary);
-      margin: var(--space-lg) 0;
+    /* Editorial split rows */
+    .split { display: grid; grid-template-columns: 40% 60%; align-items: center; }
+    .split-head {
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      font-size: 30px; line-height: 1.02;
+      padding: 30px 15px 30px 40px;
     }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: clamp(28px, 4vw, 56px);
+    .split-body { padding: 30px 40px 30px 5px; font-size: 15px; color: var(--text); }
+    @media (max-width: 560px) {
+      .split { grid-template-columns: 1fr; text-align: center; }
+      .split-head { padding: 26px 20px 6px; }
+      .split-body { padding: 0 20px 26px; }
     }
-    @media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
-    .card {
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      padding: 0;
-    }
-    .card .num {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 46px;
-      line-height: 1;
-      color: var(--primary);
-      margin-bottom: var(--space-md);
-    }
-    .card h3 {
-      font-family: var(--font-display);
-      font-weight: 400;
-      font-size: 32px;
-      line-height: 1.1;
-      color: var(--secondary);
-      margin-bottom: var(--space-sm);
-      text-transform: uppercase;
-    }
-    .card p { font-size: 19px; line-height: 1.5; color: var(--on-surface); }
 
-    /* ---------------- Footer ---------------- */
-    footer.site {
-      border-top: 1px solid var(--secondary);
-      padding: var(--space-lg) 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--space-md);
-      font-size: 14px;
-      color: #6f6c64;
+    /* Footer */
+    .foot {
+      text-align: center; padding: 20px 18px;
+      font-size: 14px; color: #777; line-height: 1.6;
     }
-    footer.site a { color: var(--primary); text-decoration: none; }
+    .foot a.mail { color: var(--accent); text-decoration: underline; }
+    .foot .tag { color: #777; }
   </style>
 </head>
 <body>
 
-  <div class="wrap">
-    <header class="site">
-      <a href="#" class="wordmark" aria-label="WYNCH">
-        <img class="logo-img" alt="WYNCH"
-          src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">
+  <div class="frame">
+
+    <!-- Utility bar -->
+    <div class="utility">Your first bottle of Cava — on us · free delivery over &euro;99</div>
+    <hr class="divider">
+
+    <!-- Logo -->
+    <div class="logo-row">
+      <a href="https://wynch.wine" target="_blank" rel="noopener" aria-label="WYNCH">
+        <img alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">
       </a>
-    </header>
-  </div>
+    </div>
+    <hr class="divider">
 
-  <main>
-    <section class="hero wrap" id="join">
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <h1 class="display">Join the club, <span class="dark">Cava's on us.</span></h1>
-          <p class="lede">
-            Become a member for food recipes, winemaker stories first-hand, and
-            exclusive bottles from small wineries — plus a bottle of Cava as a
-            welcome gift.
-          </p>
+    <!-- Hero -->
+    <div class="hero pad">
+      <div class="eyebrow">The WYNCH wine club</div>
+      <h1 class="hero-head">Join the club,<br>Cava's on us.</h1>
+      <p class="hero-sub">
+        Become a member for food recipes, winemaker stories first-hand, and exclusive
+        bottles from small wineries — plus a bottle of Cava as a welcome gift.
+      </p>
+    </div>
 
-          <div class="signup">
-            <form class="email-form" id="signupForm" novalidate>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                class="field-full"
-                placeholder="Your name"
-                autocomplete="given-name"
-                required
-                aria-label="Your name"
-              >
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="your@email.com"
-                autocomplete="email"
-                required
-                aria-label="Email address"
-              >
-              <button type="submit" class="btn-primary" id="submitBtn">Join the club</button>
-            </form>
-            <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
-            <p class="fine">
-              By submitting your email you agree to receive marketing emails from WYNCH and accept our
-              <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">Terms</a>
-              and <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Privacy&nbsp;Policy</a>.
-              Unsubscribe anytime. Welcome gift for new members — while stocks last.
-            </p>
-          </div>
-        </div>
+    <!-- Video cover -->
+    <div class="media-cell">
+      <figure class="video-wrap" id="videoWrap" style="margin:0 auto;">
+        <span class="gift-badge">Free<span>gift</span><small>on us</small></span>
+        <video id="heroVideo"
+               poster="/Bottle_and_wine_glass_202607141610.jpeg"
+               preload="none" playsinline aria-label="WYNCH club intro video">
+          <source src="/hero-video.mp4" type="video/mp4">
+        </video>
+        <button class="play-btn" id="playBtn" type="button" aria-label="Play video">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        </button>
+      </figure>
+    </div>
 
-        <!--
-          HERO VIDEO
-          Poster = the Cava photo. Upload the video to public/hero-video.mp4
-          (any name works, just update the <source> src below).
-        -->
-        <figure class="hero-media">
-          <span class="gift-badge">Free<span>gift</span><small>on us</small></span>
-          <div class="video-wrap" id="videoWrap">
-            <video id="heroVideo"
-                   poster="/Bottle_and_wine_glass_202607141610.jpeg"
-                   preload="none" playsinline
-                   aria-label="WYNCH club intro video">
-              <source src="/hero-video.mp4" type="video/mp4">
-            </video>
-            <button class="play-btn" id="playBtn" type="button" aria-label="Play video">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
-            </button>
-          </div>
-        </figure>
-      </div>
-    </section>
+    <!-- Signup -->
+    <div class="signup">
+      <form class="email-form" id="signupForm" novalidate>
+        <input type="text" id="name" name="name" placeholder="Your name" autocomplete="given-name" required aria-label="Your name">
+        <input type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required aria-label="Email address">
+        <button type="submit" class="btn" id="submitBtn">Join the club</button>
+      </form>
+      <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
+      <p class="fine">
+        By submitting your email you agree to receive marketing emails from WYNCH and accept our
+        <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">Terms</a>
+        and <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Privacy&nbsp;Policy</a>.
+        Unsubscribe anytime. Welcome gift for new members — while stocks last.
+      </p>
+    </div>
 
-    <section class="value wrap" id="how">
-      <hr class="rule">
-      <div class="cards">
-        <article class="card">
-          <div class="num">01</div>
-          <h3>Recipes to cook</h3>
-          <p>Dishes built around each bottle — simple recipes and pairings to cook alongside your wine.</p>
-        </article>
-        <article class="card">
-          <div class="num">02</div>
-          <h3>Winemaker stories</h3>
-          <p>Straight from the makers — who grows your wine and how, told first-hand in their own words.</p>
-        </article>
-        <article class="card">
-          <div class="num">03</div>
-          <h3>Exclusive selections</h3>
-          <p>Curated bottles from small wineries — limited finds you won't spot on the supermarket shelf.</p>
-        </article>
-      </div>
-    </section>
-  </main>
+    <!-- What you get -->
+    <hr class="divider">
+    <div class="section-label">What you get</div>
 
-  <div class="wrap">
-    <footer class="site">
-      <span>&copy; <span id="year"></span> WYNCH. Please drink responsibly.</span>
-      <a href="https://wynch.wine">wynch.wine</a>
-    </footer>
+    <hr class="divider" style="margin-top:24px;">
+    <div class="split">
+      <div class="split-head">Recipes<br>to cook</div>
+      <div class="split-body">Dishes built around each bottle — simple recipes and pairings to cook alongside your wine.</div>
+    </div>
+
+    <hr class="divider">
+    <div class="split">
+      <div class="split-head">Winemaker<br>stories</div>
+      <div class="split-body">Straight from the makers — who grows your wine and how, told first-hand in their own words.</div>
+    </div>
+
+    <hr class="divider">
+    <div class="split">
+      <div class="split-head">Exclusive<br>selections</div>
+      <div class="split-body">Curated bottles from small wineries — limited finds you won't spot on the supermarket shelf.</div>
+    </div>
+
+    <!-- Footer -->
+    <hr class="divider">
+    <div class="foot">
+      Questions? Reach us at <a class="mail" href="mailto:hi@wynch.wine">hi@wynch.wine</a><br>
+      <span class="tag">WYNCH &#129505; WE CHOOSE WINE FOR YOU</span>
+    </div>
+
   </div>
 
   <script>
-    // ---- Footer year ----
-    document.getElementById('year').textContent = new Date().getFullYear();
-
     // ---- Hero video ----
     (function () {
       var wrap = document.getElementById('videoWrap');
       var video = document.getElementById('heroVideo');
       var playBtn = document.getElementById('playBtn');
       if (!wrap || !video || !playBtn) return;
-
       playBtn.addEventListener('click', function () {
         video.setAttribute('controls', '');
         wrap.classList.add('playing');
         var p = video.play();
-        if (p && p.catch) p.catch(function () { /* no source yet */ });
+        if (p && p.catch) p.catch(function () {});
       });
-
       video.addEventListener('ended', function () {
         wrap.classList.remove('playing');
         video.removeAttribute('controls');
@@ -546,16 +318,8 @@
         e.preventDefault();
         var name = nameInput.value.trim();
         var email = input.value.trim();
-        if (!name) {
-          setNote('Please enter your name.', 'err');
-          nameInput.focus();
-          return;
-        }
-        if (!EMAIL_RE.test(email)) {
-          setNote('Please enter a valid email address.', 'err');
-          input.focus();
-          return;
-        }
+        if (!name) { setNote('Please enter your name.', 'err'); nameInput.focus(); return; }
+        if (!EMAIL_RE.test(email)) { setNote('Please enter a valid email address.', 'err'); input.focus(); return; }
 
         btn.disabled = true;
         var original = btn.textContent;
@@ -569,7 +333,6 @@
             body: JSON.stringify({ name: name, email: email })
           });
           var data = await res.json().catch(function () { return {}; });
-
           if (res.ok) {
             form.reset();
             setNote("Welcome to the club! Check your inbox about your Cava. 🥂", 'ok');
