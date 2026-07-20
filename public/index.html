@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WYNCH Club — Join for a free bottle of Cava</title>
-  <meta name="description" content="Join the WYNCH club: recipes, winemaker stories and exclusive bottles from small wineries — plus a bottle of Cava as a welcome gift.">
+  <title>WYNCH Club — Get €50 to spend when you join</title>
+  <meta name="description" content="Join the WYNCH club: recipes, winemaker stories and exclusive bottles from small wineries — plus €50 to spend on your first order.">
 
-  <meta property="og:title" content="Join the WYNCH club">
-  <meta property="og:description" content="Recipes, winemaker stories, and a free bottle of Cava when you join.">
+  <meta property="og:title" content="Join the WYNCH club — get €50">
+  <meta property="og:description" content="Recipes, winemaker stories, and €50 to spend when you join.">
   <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://wynch.wine" crossorigin>
@@ -115,10 +115,10 @@
       background: var(--accent); color: #fff;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; font-family: var(--font-head); font-weight: 700;
-      text-transform: uppercase; font-size: 19px; line-height: 1; letter-spacing: 0.5px;
+      text-transform: uppercase; font-size: 28px; line-height: 1; letter-spacing: 0.5px;
       transform: rotate(-10deg);
     }
-    .gift-badge small { font-family: var(--font-body); font-size: 9px; letter-spacing: 1.5px; margin-top: 4px; opacity: 0.9; }
+    .gift-badge small { font-family: var(--font-body); font-size: 10px; letter-spacing: 1.5px; margin-top: 5px; opacity: 0.9; }
 
     /* Signup form */
     .signup { padding: 4px 40px 30px; max-width: 640px; margin: 0 auto; }
@@ -187,7 +187,7 @@
   <div class="frame">
 
     <!-- Utility bar -->
-    <div class="utility">Your first bottle of Cava — on us · free delivery over &euro;99</div>
+    <div class="utility">&euro;50 to spend when you join · free delivery over &euro;99</div>
     <hr class="divider">
 
     <!-- Logo -->
@@ -201,17 +201,17 @@
     <!-- Hero -->
     <div class="hero pad">
       <div class="eyebrow">The WYNCH wine club</div>
-      <h1 class="hero-head">Join the club,<br>Cava's on us.</h1>
+      <h1 class="hero-head">Join the club,<br>get &euro;50.</h1>
       <p class="hero-sub">
         Become a member for food recipes, winemaker stories first-hand, and exclusive
-        bottles from small wineries — plus a bottle of Cava as a welcome gift.
+        bottles from small wineries — plus &euro;50 to spend on your first order.
       </p>
     </div>
 
     <!-- Hero photo (16:9) -->
     <div class="media-cell">
       <figure class="hero-photo">
-        <span class="gift-badge">Free<span>gift</span><small>on us</small></span>
+        <span class="gift-badge">&euro;50<small>to spend</small></span>
         <img src="/Bottle_and_wine_glass_202607141610.jpeg"
              alt="A bottle of Vinya Escudé Cava beside a filled glass">
       </figure>
@@ -231,7 +231,7 @@
         By submitting your email you agree to receive marketing emails from WYNCH and accept our
         <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">Terms</a>
         and <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Privacy&nbsp;Policy</a>.
-        Unsubscribe anytime. Welcome gift for new members — while stocks last.
+        Unsubscribe anytime. €50 welcome credit for new members — terms apply.
       </p>
     </div>
 
@@ -310,7 +310,7 @@
           var data = await res.json().catch(function () { return {}; });
           if (res.ok) {
             form.reset();
-            setNote("Welcome to the club! Your account is ready — check your inbox about your Cava. 🥂", 'ok');
+            setNote("Welcome to the club! Your account is ready — your €50 is waiting in your inbox. 🎉", 'ok');
           } else {
             setNote(data.error || 'Something went wrong. Please try again.', 'err');
           }
