@@ -200,6 +200,41 @@
       .split-body { padding: 0 20px 32px; font-size: 19px; }
     }
 
+    /* What is WYNCH */
+    .about {
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: 44px; padding: 50px 40px;
+    }
+    .about-title {
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      font-size: clamp(30px, 5vw, 44px); line-height: 1.02; margin-bottom: 18px;
+    }
+    .about-text p { font-size: 18px; line-height: 1.6; color: var(--text); }
+    .about-media { display: flex; justify-content: center; }
+    .about-photo { width: 100%; max-width: 380px; height: auto; display: block; border-radius: 48px; }
+    @media (max-width: 640px) {
+      .about { grid-template-columns: 1fr; text-align: center; gap: 26px; padding: 38px 20px; }
+      .about-media { order: -1; }
+      .about-photo { max-width: 300px; }
+    }
+
+    /* FAQ */
+    .faq { padding: 8px 40px 46px; }
+    @media (max-width: 520px) { .faq { padding: 8px 20px 40px; } }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-item summary {
+      list-style: none; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 20px 0;
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase; font-size: 21px; line-height: 1.15;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: "+"; font-size: 28px; line-height: 1; color: var(--accent); flex: 0 0 auto; }
+    .faq-item[open] summary::after { content: "\2013"; }
+    .faq-a { padding: 0 0 22px; font-size: 16px; line-height: 1.6; color: var(--text); max-width: 60ch; }
+
     /* Footer */
     .foot {
       text-align: center; padding: 20px 18px;
@@ -275,6 +310,24 @@
             Unsubscribe anytime. €50 welcome credit for new members — terms apply.
           </p>
         </div>
+      </div>
+    </div>
+
+    <!-- What is WYNCH -->
+    <hr class="divider">
+    <div class="about">
+      <div class="about-text">
+        <h2 class="about-title">What is WYNCH?</h2>
+        <p>
+          WYNCH is a wine club built around independent makers. We seek out small wineries
+          doing remarkable work, pay them fairly, and bring their bottles straight to you —
+          no middlemen, no supermarket mark-ups. Join and you start with &euro;50, earn
+          cashback on every order, and drink wines you simply can't find anywhere else.
+        </p>
+      </div>
+      <div class="about-media">
+        <img class="about-photo" src="/Bottle_and_wine_glass_202607141610.jpeg"
+             alt="A bottle of independent-maker wine with a filled glass">
       </div>
     </div>
 
@@ -355,6 +408,33 @@
         <div class="split-head">Refer &amp; earn</div>
       </div>
       <div class="split-body">Invite friends to the club and earn extra credit when they place their first order.</div>
+    </div>
+
+    <!-- FAQ -->
+    <hr class="divider">
+    <h2 class="perks-title">FAQ</h2>
+    <p class="perks-sub">The short answers.</p>
+    <div class="faq">
+      <details class="faq-item">
+        <summary>How much does the club cost?</summary>
+        <div class="faq-a">Joining is free. You only pay for the wine you order — members simply get better prices, cashback and perks.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How does the &euro;50 credit work?</summary>
+        <div class="faq-a">When you join you get &euro;50 in your account. You can put it towards up to 30% of each order until it's used up.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can I really return a bottle I don't like?</summary>
+        <div class="faq-a">Yes. If a bottle isn't for you, just tell us and we credit the money straight back to your account — no forms, no fuss.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What exactly is cashback?</summary>
+        <div class="faq-a">You earn a percentage back on every order, stored in your account to spend on your next wines.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can I cancel anytime?</summary>
+        <div class="faq-a">Absolutely. There's no lock-in — pause or leave whenever you like, and your account credit stays yours.</div>
+      </details>
     </div>
 
     <!-- Footer -->
