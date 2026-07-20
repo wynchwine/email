@@ -218,6 +218,39 @@
       .about-media { order: -1; }
     }
 
+    /* Reviews slider */
+    .reviews { padding: 8px 40px 48px; }
+    @media (max-width: 520px) { .reviews { padding: 8px 16px 40px; } }
+    .tslider { max-width: 720px; margin: 0 auto; overflow: hidden; }
+    .ttrack { display: flex; transition: transform 0.4s ease; }
+    .tcard { flex: 0 0 100%; box-sizing: border-box; padding: 6px 12px 0; text-align: center; }
+    .tmark { font-family: Georgia, serif; font-size: 58px; line-height: 0.8; color: var(--accent); margin-bottom: 10px; }
+    .tquote { font-size: 22px; line-height: 1.5; color: #3f3f41; min-height: 120px; }
+    @media (max-width: 520px) { .tquote { font-size: 19px; min-height: 160px; } }
+    .tperson { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 22px; }
+    .tavatar {
+      width: 54px; height: 54px; border-radius: 9999px; flex: 0 0 auto;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-weight: 700; font-size: 19px;
+    }
+    .tname { font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .tnav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 26px; }
+    .tbtn {
+      width: 44px; height: 44px; border-radius: 9999px; flex: 0 0 auto;
+      border: 1px solid var(--accent); background: transparent; color: var(--accent);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .tbtn:hover { background: var(--accent); color: #fff; }
+    .tbtn svg { width: 20px; height: 20px; }
+    .tdots { display: flex; gap: 9px; }
+    .tdot {
+      width: 9px; height: 9px; border-radius: 9999px; padding: 0;
+      background: transparent; border: 1.5px solid var(--accent); cursor: pointer;
+    }
+    .tdot.active { background: var(--accent); }
+
     /* FAQ */
     .faq { padding: 8px 40px 46px; }
     @media (max-width: 520px) { .faq { padding: 8px 20px 40px; } }
@@ -409,6 +442,51 @@
       </div>
     </div>
 
+    <!-- Reviews -->
+    <hr class="divider">
+    <h2 class="perks-title">What members say</h2>
+    <p class="perks-sub">Aus dem Club — in ihren eigenen Worten.</p>
+    <div class="reviews">
+      <div class="tslider">
+        <div class="ttrack" id="tTrack">
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Endlich Weine, die ich nirgendwo sonst finde. Jede Lieferung ist eine kleine Entdeckung.</blockquote>
+            <figcaption class="tperson"><span class="tavatar">LM</span><span class="tname">Lena M. · Berlin</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Die Winzergeschichten machen jeden Schluck persönlicher. Es fühlt sich an, als kenne ich die Menschen hinter der Flasche.</blockquote>
+            <figcaption class="tperson"><span class="tavatar">JK</span><span class="tname">Jonas K. · Hamburg</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Eine Flasche war nicht mein Fall — das Geld war ohne Diskussion sofort auf meinem Konto. Wirklich top.</blockquote>
+            <figcaption class="tperson"><span class="tavatar">SR</span><span class="tname">Sophie R. · München</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Guthaben und Cashback rechnen sich wirklich. Ich trinke besser und zahle trotzdem fair.</blockquote>
+            <figcaption class="tperson"><span class="tavatar">MW</span><span class="tname">Markus W. · Köln</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Der beste Weinclub, den ich kenne. Kleine Weingüter, große Qualität — und ein Team, das mitdenkt.</blockquote>
+            <figcaption class="tperson"><span class="tavatar">AT</span><span class="tname">Anna T. · Wien</span></figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="tnav">
+        <button class="tbtn" id="tPrev" type="button" aria-label="Previous review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="tdots" id="tDots"></div>
+        <button class="tbtn" id="tNext" type="button" aria-label="Next review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
     <!-- FAQ -->
     <hr class="divider">
     <h2 class="perks-title">FAQ</h2>
@@ -449,6 +527,38 @@
   <a href="#join" class="sticky-cta" id="stickyCta">Join the club — get &euro;50</a>
 
   <script>
+    // ---- Reviews slider ----
+    (function () {
+      var track = document.getElementById('tTrack');
+      var prev = document.getElementById('tPrev');
+      var next = document.getElementById('tNext');
+      var dotsWrap = document.getElementById('tDots');
+      if (!track || !prev || !next || !dotsWrap) return;
+
+      var count = track.children.length;
+      var i = 0;
+
+      var dots = [];
+      for (var d = 0; d < count; d++) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tdot' + (d === 0 ? ' active' : '');
+        b.setAttribute('aria-label', 'Go to review ' + (d + 1));
+        (function (idx) { b.addEventListener('click', function () { go(idx); }); })(d);
+        dotsWrap.appendChild(b);
+        dots.push(b);
+      }
+
+      function go(n) {
+        i = (n + count) % count;
+        track.style.transform = 'translateX(' + (-i * 100) + '%)';
+        for (var k = 0; k < dots.length; k++) dots[k].classList.toggle('active', k === i);
+      }
+
+      prev.addEventListener('click', function () { go(i - 1); });
+      next.addEventListener('click', function () { go(i + 1); });
+    })();
+
     // ---- Sticky mobile CTA ----
     (function () {
       var cta = document.getElementById('stickyCta');
