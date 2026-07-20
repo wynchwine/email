@@ -39,7 +39,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
     body {
       font-family: var(--font-body);
       background: var(--bg);
@@ -62,13 +62,7 @@
     .pad { padding-left: 40px; padding-right: 40px; }
     @media (max-width: 520px) { .pad { padding-left: 20px; padding-right: 20px; } }
 
-    /* Utility bar + logo */
-    .utility {
-      text-align: center;
-      font-size: 14px;
-      color: var(--muted);
-      padding: 12px 18px;
-    }
+    /* Logo */
     .logo-row { text-align: center; padding: 18px 20px; }
     .logo-row img { display: inline-block; width: 160px; max-width: 60%; height: auto; }
 
@@ -213,15 +207,30 @@
     }
     .foot a.mail { color: var(--accent); text-decoration: underline; }
     .foot .tag { color: #777; }
+
+    /* Sticky mobile CTA */
+    .sticky-cta { display: none; }
+    @media (max-width: 760px) {
+      .sticky-cta {
+        display: block;
+        position: fixed; left: 14px; right: 14px; bottom: 14px;
+        z-index: 60;
+        text-align: center; text-decoration: none;
+        background: var(--accent); color: #fff;
+        font-family: var(--font-body); font-size: 17px;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        padding: 17px 20px; border-radius: 9999px;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.22);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+      .sticky-cta.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
+      body { padding-bottom: 84px; }
+    }
   </style>
 </head>
 <body>
 
   <div class="frame">
-
-    <!-- Utility bar -->
-    <div class="utility">&euro;50 to spend when you join · free delivery over &euro;99</div>
-    <hr class="divider">
 
     <!-- Logo -->
     <div class="logo-row">
@@ -249,7 +258,7 @@
         </figure>
       </div>
 
-      <div class="hero-form">
+      <div class="hero-form" id="join">
         <div class="signup">
           <form class="email-form" id="signupForm" novalidate>
             <input type="text" id="name" name="name" placeholder="Your name" autocomplete="given-name" required aria-label="Your name">
@@ -357,7 +366,31 @@
 
   </div>
 
+  <!-- Sticky mobile CTA -->
+  <a href="#join" class="sticky-cta" id="stickyCta">Join the club — get &euro;50</a>
+
   <script>
+    // ---- Sticky mobile CTA ----
+    (function () {
+      var cta = document.getElementById('stickyCta');
+      var joinName = document.getElementById('name');
+      var joinBlock = document.getElementById('join');
+      if (!cta || !joinBlock) return;
+
+      // Focus the first field after the smooth scroll finishes.
+      cta.addEventListener('click', function () {
+        setTimeout(function () { if (joinName) joinName.focus({ preventScroll: true }); }, 500);
+      });
+
+      // Hide the CTA while the form is on screen.
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          cta.classList.toggle('hidden', entries[0].isIntersecting);
+        }, { threshold: 0.35 });
+        io.observe(joinBlock);
+      }
+    })();
+
     // ---- Signup form ----
     (function () {
       var form = document.getElementById('signupForm');
