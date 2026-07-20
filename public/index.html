@@ -72,21 +72,43 @@
     .logo-row { text-align: center; padding: 18px 20px; }
     .logo-row img { display: inline-block; width: 160px; max-width: 60%; height: auto; }
 
+    /* Hero: two columns on desktop (text left, photo flush right) */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+    .hero-left {
+      align-self: center;
+      padding: 40px 24px 44px 40px;
+    }
+    .hero-right { display: flex; align-items: flex-end; justify-content: flex-end; }
+    .hero-right .hero-photo { max-width: 100%; width: 100%; margin: 0; }
+    @media (max-width: 760px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-left { padding: 30px 20px 30px; text-align: center; }
+      .hero-right { order: 2; }
+    }
+
     /* Hero */
     .hero { text-align: center; padding-top: 34px; padding-bottom: 30px; }
     h1.hero-head {
       font-family: var(--font-head);
       font-weight: 700;
       color: var(--accent);
-      font-size: clamp(40px, 9vw, 72px);
+      font-size: clamp(34px, 5.5vw, 54px);
       line-height: 0.98;
       letter-spacing: -0.5px;
     }
     .hero-sub {
-      margin: 18px auto 0;
+      margin: 18px 0 0;
       max-width: 46ch;
       font-size: 17px;
       color: var(--text);
+    }
+    .hero-left .signup { padding: 0; max-width: none; margin: 26px 0 0; }
+    @media (max-width: 760px) {
+      .hero-sub { margin-left: auto; margin-right: auto; }
     }
     .eyebrow {
       font-size: 13px;
@@ -194,40 +216,40 @@
     </div>
     <hr class="divider">
 
-    <!-- Hero -->
-    <div class="hero pad">
-      <h1 class="hero-head">Better wine.<br>Back independent makers.</h1>
-      <p class="hero-sub">
-        Join the WYNCH club — support independent winemakers, pay fair prices,
-        and get &euro;50 to spend on your first order.
-      </p>
-    </div>
+    <!-- Hero: text/form left, photo right -->
+    <div class="hero-grid">
+      <div class="hero-left">
+        <h1 class="hero-head">Better wine.<br>Back independent makers.</h1>
+        <p class="hero-sub">
+          Join the WYNCH club — support independent winemakers, pay fair prices,
+          and get &euro;50 to spend on your first order.
+        </p>
 
-    <!-- Hero photo -->
-    <div class="media-cell">
-      <figure class="hero-photo">
-        <span class="gift-badge">&euro;50<small>to spend</small></span>
-        <img src="https://d2uonb1a56l9mc.cloudfront.net/images/content-images/new-whitemail-homepage/man-holding-bottle-grey2.webp"
-             alt="A hand lifting a bottle of wine above a row of independent-maker bottles">
-      </figure>
-    </div>
+        <div class="signup">
+          <form class="email-form" id="signupForm" novalidate>
+            <input type="text" id="name" name="name" placeholder="Your name" autocomplete="given-name" required aria-label="Your name">
+            <input type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required aria-label="Email address">
+            <input type="password" id="password" name="password" class="field-full" placeholder="Password" autocomplete="new-password" minlength="8" required aria-label="Password">
+            <input type="password" id="password2" name="password2" class="field-full" placeholder="Repeat password" autocomplete="new-password" minlength="8" required aria-label="Repeat password">
+            <button type="submit" class="btn" id="submitBtn">Join the club</button>
+          </form>
+          <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
+          <p class="fine">
+            By submitting your email you agree to receive marketing emails from WYNCH and accept our
+            <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">Terms</a>
+            and <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Privacy&nbsp;Policy</a>.
+            Unsubscribe anytime. €50 welcome credit for new members — terms apply.
+          </p>
+        </div>
+      </div>
 
-    <!-- Signup -->
-    <div class="signup">
-      <form class="email-form" id="signupForm" novalidate>
-        <input type="text" id="name" name="name" placeholder="Your name" autocomplete="given-name" required aria-label="Your name">
-        <input type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required aria-label="Email address">
-        <input type="password" id="password" name="password" class="field-full" placeholder="Password" autocomplete="new-password" minlength="8" required aria-label="Password">
-        <input type="password" id="password2" name="password2" class="field-full" placeholder="Repeat password" autocomplete="new-password" minlength="8" required aria-label="Repeat password">
-        <button type="submit" class="btn" id="submitBtn">Join the club</button>
-      </form>
-      <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
-      <p class="fine">
-        By submitting your email you agree to receive marketing emails from WYNCH and accept our
-        <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">Terms</a>
-        and <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Privacy&nbsp;Policy</a>.
-        Unsubscribe anytime. €50 welcome credit for new members — terms apply.
-      </p>
+      <div class="hero-right">
+        <figure class="hero-photo">
+          <span class="gift-badge">&euro;50<small>to spend</small></span>
+          <img src="https://d2uonb1a56l9mc.cloudfront.net/images/content-images/new-whitemail-homepage/man-holding-bottle-grey2.webp"
+               alt="A hand lifting a bottle of wine above a row of independent-maker bottles">
+        </figure>
+      </div>
     </div>
 
     <!-- What you get -->
