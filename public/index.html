@@ -50,12 +50,12 @@
 
     /* Framed editorial column */
     .frame {
-      max-width: 720px;
+      max-width: 1000px;
       margin: 40px auto;
       background: var(--bg);
       border: 1px solid var(--line);
     }
-    @media (max-width: 760px) { .frame { margin: 0; border-left: none; border-right: none; } }
+    @media (max-width: 1040px) { .frame { margin: 0; border-left: none; border-right: none; } }
 
     .divider { border: none; border-top: 1px solid var(--line); }
 
@@ -133,7 +133,7 @@
     .gift-badge small { font-family: var(--font-body); font-size: 9px; letter-spacing: 1.5px; margin-top: 4px; opacity: 0.9; }
 
     /* Signup form */
-    .signup { padding: 4px 40px 30px; }
+    .signup { padding: 4px 40px 30px; max-width: 640px; margin: 0 auto; }
     @media (max-width: 520px) { .signup { padding: 4px 20px 26px; } }
     form.email-form { display: flex; gap: 10px; flex-wrap: wrap; }
     .email-form input {
@@ -143,6 +143,7 @@
       border: 1px solid var(--accent); border-radius: 9999px;
       color: #2c2c2c; outline: none;
     }
+    .email-form input.field-full { flex: 1 1 100%; }
     .email-form input::placeholder { color: #a7a49e; }
     .btn {
       flex: 1 1 100%; width: 100%;
@@ -239,6 +240,8 @@
       <form class="email-form" id="signupForm" novalidate>
         <input type="text" id="name" name="name" placeholder="Your name" autocomplete="given-name" required aria-label="Your name">
         <input type="email" id="email" name="email" placeholder="your@email.com" autocomplete="email" required aria-label="Email address">
+        <input type="password" id="password" name="password" class="field-full" placeholder="Password" autocomplete="new-password" minlength="8" required aria-label="Password">
+        <input type="password" id="password2" name="password2" class="field-full" placeholder="Repeat password" autocomplete="new-password" minlength="8" required aria-label="Repeat password">
         <button type="submit" class="btn" id="submitBtn">Join the club</button>
       </form>
       <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
@@ -305,6 +308,8 @@
       var form = document.getElementById('signupForm');
       var input = document.getElementById('email');
       var nameInput = document.getElementById('name');
+      var pwInput = document.getElementById('password');
+      var pw2Input = document.getElementById('password2');
       var btn = document.getElementById('submitBtn');
       var note = document.getElementById('formNote');
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -318,8 +323,12 @@
         e.preventDefault();
         var name = nameInput.value.trim();
         var email = input.value.trim();
+        var pw = pwInput.value;
+        var pw2 = pw2Input.value;
         if (!name) { setNote('Please enter your name.', 'err'); nameInput.focus(); return; }
         if (!EMAIL_RE.test(email)) { setNote('Please enter a valid email address.', 'err'); input.focus(); return; }
+        if (pw.length < 8) { setNote('Password must be at least 8 characters.', 'err'); pwInput.focus(); return; }
+        if (pw !== pw2) { setNote('Passwords do not match.', 'err'); pw2Input.focus(); return; }
 
         btn.disabled = true;
         var original = btn.textContent;
@@ -327,6 +336,8 @@
         setNote('', '');
 
         try {
+          // Note: password is validated here but NOT sent to Klaviyo — creating
+          // real accounts needs a dedicated auth backend. Only name+email are sent.
           var res = await fetch('/api/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
