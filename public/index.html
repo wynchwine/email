@@ -336,17 +336,17 @@
         setNote('', '');
 
         try {
-          // Note: password is validated here but NOT sent to Klaviyo — creating
-          // real accounts needs a dedicated auth backend. Only name+email are sent.
-          var res = await fetch('/api/subscribe', {
+          // Creates a Shopify customer account (password hashed by Shopify)
+          // and subscribes the member to Klaviyo marketing.
+          var res = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, email: email })
+            body: JSON.stringify({ name: name, email: email, password: pw, password2: pw2 })
           });
           var data = await res.json().catch(function () { return {}; });
           if (res.ok) {
             form.reset();
-            setNote("Welcome to the club! Check your inbox about your Cava. 🥂", 'ok');
+            setNote("Welcome to the club! Your account is ready — check your inbox about your Cava. 🥂", 'ok');
           } else {
             setNote(data.error || 'Something went wrong. Please try again.', 'err');
           }
