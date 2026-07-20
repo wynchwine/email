@@ -72,22 +72,24 @@
     .logo-row { text-align: center; padding: 18px 20px; }
     .logo-row img { display: inline-block; width: 160px; max-width: 60%; height: auto; }
 
-    /* Hero: two columns on desktop (text left, photo flush right) */
+    /* Hero: two columns on desktop (text+form left, photo flush right) */
     .hero-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      align-items: stretch;
+      grid-template-areas: "copy media" "form media";
+      align-items: center;
     }
-    .hero-left {
-      align-self: center;
-      padding: 40px 24px 44px 40px;
+    .hero-copy { grid-area: copy; padding: 40px 24px 0 40px; }
+    .hero-form { grid-area: form; padding: 8px 24px 44px 40px; }
+    .hero-media {
+      grid-area: media; align-self: stretch;
+      display: flex; align-items: flex-end; justify-content: flex-end;
     }
-    .hero-right { display: flex; align-items: flex-end; justify-content: flex-end; }
-    .hero-right .hero-photo { max-width: 100%; width: 100%; margin: 0; }
+    .hero-media .hero-photo { max-width: 100%; width: 100%; margin: 0; }
     @media (max-width: 760px) {
-      .hero-grid { grid-template-columns: 1fr; }
-      .hero-left { padding: 30px 20px 30px; text-align: center; }
-      .hero-right { order: 2; }
+      .hero-grid { grid-template-columns: 1fr; grid-template-areas: "copy" "media" "form"; }
+      .hero-copy { padding: 30px 20px 8px; text-align: center; }
+      .hero-form { padding: 20px 20px 30px; }
     }
 
     /* Hero */
@@ -106,7 +108,7 @@
       font-size: 17px;
       color: var(--text);
     }
-    .hero-left .signup { padding: 0; max-width: none; margin: 26px 0 0; }
+    .hero-form .signup { padding: 0; max-width: none; margin: 0; }
     @media (max-width: 760px) {
       .hero-sub { margin-left: auto; margin-right: auto; }
     }
@@ -174,7 +176,7 @@
       text-align: center;
       font-family: var(--font-head); font-weight: 700;
       color: var(--accent); text-transform: uppercase;
-      font-size: clamp(30px, 5vw, 46px); line-height: 1.02;
+      font-size: clamp(36px, 7vw, 46px); line-height: 1.02;
       padding: 46px 40px 6px;
     }
     .perks-sub {
@@ -198,8 +200,10 @@
     .split-body { padding: 40px 40px 40px 5px; font-size: 18px; line-height: 1.55; color: var(--text); }
     @media (max-width: 560px) {
       .split { grid-template-columns: 1fr; text-align: center; }
-      .split-left { flex-direction: column; gap: 12px; padding: 32px 20px 8px; }
-      .split-body { padding: 0 20px 32px; }
+      .split-left { flex-direction: column; gap: 14px; padding: 32px 20px 10px; }
+      .split-head { font-size: 40px; }
+      .split-icon svg { width: 66px; height: 66px; }
+      .split-body { padding: 0 20px 32px; font-size: 19px; }
     }
 
     /* Footer */
@@ -229,13 +233,23 @@
 
     <!-- Hero: text/form left, photo right -->
     <div class="hero-grid">
-      <div class="hero-left">
+      <div class="hero-copy">
         <h1 class="hero-head">Better wine.<br>Back independent makers.</h1>
         <p class="hero-sub">
           Join the WYNCH club — support independent winemakers, pay fair prices,
           and get &euro;50 to spend on your first order.
         </p>
+      </div>
 
+      <div class="hero-media">
+        <figure class="hero-photo">
+          <span class="gift-badge">&euro;50<small>to spend</small></span>
+          <img src="https://d2uonb1a56l9mc.cloudfront.net/images/content-images/new-whitemail-homepage/man-holding-bottle-grey2.webp"
+               alt="A hand lifting a bottle of wine above a row of independent-maker bottles">
+        </figure>
+      </div>
+
+      <div class="hero-form">
         <div class="signup">
           <form class="email-form" id="signupForm" novalidate>
             <input type="text" id="name" name="name" placeholder="Your name" autocomplete="given-name" required aria-label="Your name">
@@ -252,14 +266,6 @@
             Unsubscribe anytime. €50 welcome credit for new members — terms apply.
           </p>
         </div>
-      </div>
-
-      <div class="hero-right">
-        <figure class="hero-photo">
-          <span class="gift-badge">&euro;50<small>to spend</small></span>
-          <img src="https://d2uonb1a56l9mc.cloudfront.net/images/content-images/new-whitemail-homepage/man-holding-bottle-grey2.webp"
-               alt="A hand lifting a bottle of wine above a row of independent-maker bottles">
-        </figure>
       </div>
     </div>
 
