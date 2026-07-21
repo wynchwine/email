@@ -302,14 +302,18 @@
       margin: 0 auto 32px; max-width: 32ch;
     }
     .step2-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
-    .step2-yes {
-      width: 100%; max-width: 340px;
-      background: var(--accent); color: #fff; border: none; border-radius: 9999px;
-      padding: 18px; font-family: var(--font-body); font-size: 17px;
+    .step2-yes, .step2-alt {
+      width: 100%; max-width: 340px; box-sizing: border-box;
+      display: inline-block; text-align: center; text-decoration: none;
+      border-radius: 9999px; padding: 18px;
+      font-family: var(--font-body); font-size: 17px;
       text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
       transition: background 0.15s ease;
     }
+    .step2-yes { background: var(--accent); color: #fff; border: none; }
     .step2-yes:hover { background: #e5570f; }
+    .step2-alt { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .step2-alt:hover { background: rgba(255, 99, 21, 0.10); }
     .step2-no {
       background: transparent; border: none; color: var(--muted);
       font-family: var(--font-body); font-size: 14px; text-decoration: underline;
@@ -623,11 +627,12 @@
       function finish(msg) {
         inner.innerHTML =
           '<img class="step2-logo" alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">' +
-          '<img class="step2-photo" src="/Bottle_and_wine_glass_202607141610.jpeg" alt="A bottle of Cava with a filled glass">' +
           '<h2>Welcome to WYNCH</h2>' +
           '<p>' + esc(msg) + '</p>' +
-          '<div class="step2-actions"><button class="step2-yes" type="button" id="step2Done">Done</button></div>';
-        document.getElementById('step2Done').addEventListener('click', function () { modal.hidden = true; });
+          '<div class="step2-actions">' +
+            '<a class="step2-yes" href="https://wynch.wine/pages/quiz">Take the quiz — find your 100% match</a>' +
+            '<a class="step2-alt" href="https://wynch.wine/collections/all-wines">Go to the shop</a>' +
+          '</div>';
       }
 
       if (yes) yes.addEventListener('click', function () {
