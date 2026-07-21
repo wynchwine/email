@@ -276,6 +276,40 @@
     .foot a.mail { color: var(--accent); text-decoration: underline; }
     .foot .tag { color: #777; }
 
+    /* Step 2 modal (post-signup opt-in) */
+    .step2-backdrop {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .step2-backdrop[hidden] { display: none; }
+    .step2-card {
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: 24px; max-width: 460px; width: 100%;
+      padding: clamp(28px, 6vw, 44px); text-align: center;
+    }
+    .step2-card h2 {
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      font-size: clamp(26px, 5vw, 34px); line-height: 1.05; margin-bottom: 14px;
+    }
+    .step2-card p { color: var(--text); font-size: 16px; line-height: 1.55; margin-bottom: 26px; }
+    .step2-actions { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    .step2-yes {
+      width: 100%;
+      background: var(--accent); color: #fff; border: none; border-radius: 9999px;
+      padding: 16px; font-family: var(--font-body); font-size: 16px;
+      text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .step2-yes:hover { background: #e5570f; }
+    .step2-no {
+      background: transparent; border: none; color: var(--muted);
+      font-family: var(--font-body); font-size: 14px; text-decoration: underline;
+      cursor: pointer; padding: 6px;
+    }
+    .step2-no:hover { color: var(--accent); }
+
     /* Sticky mobile CTA */
     .sticky-cta { display: none; }
     @media (max-width: 760px) {
@@ -518,6 +552,18 @@
 
   </div>
 
+  <!-- Post-signup opt-in modal -->
+  <div class="step2-backdrop" id="step2" role="dialog" aria-modal="true" aria-labelledby="step2Title" hidden>
+    <div class="step2-card" id="step2Card">
+      <h2 id="step2Title">One more thing…</h2>
+      <p>Want useful news, sommelier picks and a free bottle of Cava, straight to your inbox?</p>
+      <div class="step2-actions">
+        <button class="step2-yes" id="step2Yes" type="button">Yes, I'm in</button>
+        <button class="step2-no" id="step2No" type="button">No, I don't want free Cava</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Sticky mobile CTA -->
   <a href="#join" class="sticky-cta" id="stickyCta">Join the club — get &euro;50</a>
 
@@ -552,6 +598,31 @@
 
       prev.addEventListener('click', function () { go(i - 1); });
       next.addEventListener('click', function () { go(i + 1); });
+    })();
+
+    // ---- Post-signup opt-in modal ----
+    (function () {
+      var modal = document.getElementById('step2');
+      var card = document.getElementById('step2Card');
+      var yes = document.getElementById('step2Yes');
+      var no = document.getElementById('step2No');
+      if (!modal || !card) return;
+
+      function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+      function finish(msg) {
+        card.innerHTML =
+          '<h2>Welcome to WYNCH</h2>' +
+          '<p>' + esc(msg) + '</p>' +
+          '<div class="step2-actions"><button class="step2-yes" type="button" id="step2Done">Done</button></div>';
+        document.getElementById('step2Done').addEventListener('click', function () { modal.hidden = true; });
+      }
+
+      if (yes) yes.addEventListener('click', function () {
+        finish("You're all set — your Cava and first picks are on their way to your inbox. 🥂");
+      });
+      if (no) no.addEventListener('click', function () {
+        finish("No problem — you're in the club. The free Cava is still here if you change your mind.");
+      });
     })();
 
     // ---- Sticky mobile CTA ----
@@ -618,7 +689,9 @@
           var data = await res.json().catch(function () { return {}; });
           if (res.ok) {
             form.reset();
-            setNote("Welcome to the club! Your account is ready — your €50 is waiting in your inbox. 🎉", 'ok');
+            setNote('', '');
+            var step2 = document.getElementById('step2');
+            if (step2) step2.hidden = false;
           } else {
             setNote(data.error || 'Something went wrong. Please try again.', 'err');
           }
