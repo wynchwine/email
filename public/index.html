@@ -288,7 +288,10 @@
       display: flex; align-items: center; justify-content: center;
       padding: 24px;
     }
-    @media (max-width: 760px) { .step2 { padding: 16px; } }
+    @media (max-width: 760px) {
+      .step2 { padding: 16px; }
+      .step2-yes, .step2-alt { font-size: 19px; padding: 21px; max-width: none; }
+    }
     .step2-inner { max-width: 560px; width: 100%; }
     .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 28px; display: block; }
     .step2-photo-wrap { position: relative; display: inline-block; margin: 0 auto 30px; }
@@ -305,7 +308,7 @@
     .step2 h2 {
       font-family: var(--font-head); font-weight: 700;
       color: var(--accent); text-transform: uppercase;
-      font-size: clamp(34px, 7vw, 56px); line-height: 1.02; margin-bottom: 18px;
+      font-size: clamp(48px, 9vw, 62px); line-height: 1.0; margin-bottom: 18px;
     }
     .step2 p {
       color: var(--text); font-size: 19px; line-height: 1.55;
