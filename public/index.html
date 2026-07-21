@@ -633,6 +633,11 @@
       if (no) no.addEventListener('click', function () {
         finish("No problem — you're in the club. The free Cava is still here if you change your mind.");
       });
+
+      // Open the opt-in screen directly via URL hash (e.g. …/#optin) for preview/sharing.
+      function maybeOpen() { if (location.hash === '#optin' || location.hash === '#step2') modal.hidden = false; }
+      maybeOpen();
+      window.addEventListener('hashchange', maybeOpen);
     })();
 
     // ---- Sticky mobile CTA ----
