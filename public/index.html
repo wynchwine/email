@@ -79,11 +79,13 @@
       grid-area: media; align-self: stretch;
       display: flex; align-items: flex-end; justify-content: flex-end;
     }
-    .hero-media .hero-photo { max-width: 100%; width: 100%; margin: 0; }
+    .hero-media .hero-photo { max-width: 84%; width: 84%; margin: 0; }
     @media (max-width: 760px) {
       .hero-grid { grid-template-columns: 1fr; grid-template-areas: "copy" "media" "form"; }
       .hero-copy { padding: 30px 20px 8px; text-align: center; }
       .hero-form { padding: 20px 20px 30px; }
+      .hero-media { justify-content: center; }
+      .hero-media .hero-photo { max-width: 300px; width: 100%; margin: 0 auto; }
     }
 
     /* Hero */
