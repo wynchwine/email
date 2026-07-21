@@ -276,29 +276,30 @@
     .foot a.mail { color: var(--accent); text-decoration: underline; }
     .foot .tag { color: #777; }
 
-    /* Step 2 modal (post-signup opt-in) */
-    .step2-backdrop {
+    /* Step 2 — full-screen post-signup opt-in */
+    .step2 {
       position: fixed; inset: 0; z-index: 100;
-      background: rgba(0, 0, 0, 0.55);
-      display: flex; align-items: center; justify-content: center; padding: 20px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; text-align: center;
     }
-    .step2-backdrop[hidden] { display: none; }
-    .step2-card {
-      background: var(--bg); border: 1px solid var(--line);
-      border-radius: 24px; max-width: 460px; width: 100%;
-      padding: clamp(28px, 6vw, 44px); text-align: center;
-    }
-    .step2-card h2 {
+    .step2[hidden] { display: none; }
+    .step2-inner { max-width: 560px; width: 100%; }
+    .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 40px; display: block; }
+    .step2 h2 {
       font-family: var(--font-head); font-weight: 700;
       color: var(--accent); text-transform: uppercase;
-      font-size: clamp(26px, 5vw, 34px); line-height: 1.05; margin-bottom: 14px;
+      font-size: clamp(34px, 7vw, 56px); line-height: 1.02; margin-bottom: 18px;
     }
-    .step2-card p { color: var(--text); font-size: 16px; line-height: 1.55; margin-bottom: 26px; }
-    .step2-actions { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    .step2 p {
+      color: var(--text); font-size: 19px; line-height: 1.55;
+      margin: 0 auto 32px; max-width: 32ch;
+    }
+    .step2-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
     .step2-yes {
-      width: 100%;
+      width: 100%; max-width: 340px;
       background: var(--accent); color: #fff; border: none; border-radius: 9999px;
-      padding: 16px; font-family: var(--font-body); font-size: 16px;
+      padding: 18px; font-family: var(--font-body); font-size: 17px;
       text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
       transition: background 0.15s ease;
     }
@@ -552,9 +553,10 @@
 
   </div>
 
-  <!-- Post-signup opt-in modal -->
-  <div class="step2-backdrop" id="step2" role="dialog" aria-modal="true" aria-labelledby="step2Title" hidden>
-    <div class="step2-card" id="step2Card">
+  <!-- Post-signup opt-in screen -->
+  <div class="step2" id="step2" role="dialog" aria-modal="true" aria-labelledby="step2Title" hidden>
+    <div class="step2-inner" id="step2Inner">
+      <img class="step2-logo" alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">
       <h2 id="step2Title">One more thing…</h2>
       <p>Want useful news, sommelier picks and a free bottle of Cava, straight to your inbox?</p>
       <div class="step2-actions">
@@ -603,14 +605,15 @@
     // ---- Post-signup opt-in modal ----
     (function () {
       var modal = document.getElementById('step2');
-      var card = document.getElementById('step2Card');
+      var inner = document.getElementById('step2Inner');
       var yes = document.getElementById('step2Yes');
       var no = document.getElementById('step2No');
-      if (!modal || !card) return;
+      if (!modal || !inner) return;
 
       function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
       function finish(msg) {
-        card.innerHTML =
+        inner.innerHTML =
+          '<img class="step2-logo" alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">' +
           '<h2>Welcome to WYNCH</h2>' +
           '<p>' + esc(msg) + '</p>' +
           '<div class="step2-actions"><button class="step2-yes" type="button" id="step2Done">Done</button></div>';
