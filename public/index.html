@@ -294,9 +294,10 @@
     }
     .step2-inner { max-width: 560px; width: 100%; }
     .confetti {
-      position: absolute; inset: 0; width: 100%; height: 100%;
+      position: fixed; inset: 0; width: 100vw; height: 100vh;
       pointer-events: none; z-index: 5;
     }
+    .confetti svg { width: 100% !important; height: 100% !important; }
     .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 28px; display: block; }
     .step2-photo-wrap { position: relative; display: inline-block; margin: 0 auto 30px; }
     .step2-photo { width: min(280px, 72vw); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 28px; display: block; }
@@ -656,6 +657,7 @@
         cf.setAttribute('autoplay', '');
         cf.setAttribute('background', 'transparent');
         cf.setAttribute('speed', '1');
+        cf.setAttribute('preserveAspectRatio', 'xMidYMid slice');
         modal.appendChild(cf);
       }
 
