@@ -293,6 +293,10 @@
       .step2-yes, .step2-alt { font-size: 19px; padding: 21px; max-width: none; }
     }
     .step2-inner { max-width: 560px; width: 100%; }
+    .confetti {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 5;
+    }
     .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 28px; display: block; }
     .step2-photo-wrap { position: relative; display: inline-block; margin: 0 auto 30px; }
     .step2-photo { width: min(280px, 72vw); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 28px; display: block; }
@@ -597,6 +601,9 @@
   <!-- Sticky mobile CTA -->
   <a href="#join" class="sticky-cta" id="stickyCta">Join the club — get &euro;50</a>
 
+  <!-- Lottie player for the celebration animation -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
+
   <script>
     // ---- Reviews slider ----
     (function () {
@@ -639,14 +646,28 @@
       if (!modal || !inner) return;
 
       function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+      // Confetti / party-popper celebration via Lottie.
+      var CONFETTI_URL = 'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json';
+      function celebrate() {
+        var cf = document.createElement('lottie-player');
+        cf.className = 'confetti';
+        cf.setAttribute('src', CONFETTI_URL);
+        cf.setAttribute('autoplay', '');
+        cf.setAttribute('background', 'transparent');
+        cf.setAttribute('speed', '1');
+        modal.appendChild(cf);
+      }
+
       function finish(msg) {
         inner.innerHTML =
           '<h2>Welcome to WYNCH</h2>' +
           '<p>' + esc(msg) + '</p>' +
           '<div class="step2-actions">' +
-            '<a class="step2-yes" href="https://wynch.wine/pages/quiz">Take the quiz — find your 100% match</a>' +
+            '<a class="step2-yes" href="https://wynch.wine/pages/quiz">Take the quiz</a>' +
             '<a class="step2-alt" href="https://wynch.wine/collections/all-wines">Go to the shop</a>' +
           '</div>';
+        celebrate();
       }
 
       if (yes) yes.addEventListener('click', function () {
