@@ -688,34 +688,13 @@
         if (pw.length < 8) { setNote('Password must be at least 8 characters.', 'err'); pwInput.focus(); return; }
         if (pw !== pw2) { setNote('Passwords do not match.', 'err'); pw2Input.focus(); return; }
 
-        btn.disabled = true;
-        var original = btn.textContent;
-        btn.textContent = 'Joining…';
+        // NOTE: submission is temporarily disabled — nothing is sent to any
+        // backend. We just show the opt-in screen. Re-enable the fetch to
+        // /api/register (see git history) when going live.
         setNote('', '');
-
-        try {
-          // Creates a Shopify customer account (password hashed by Shopify)
-          // and subscribes the member to Klaviyo marketing.
-          var res = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, email: email, password: pw, password2: pw2 })
-          });
-          var data = await res.json().catch(function () { return {}; });
-          if (res.ok) {
-            form.reset();
-            setNote('', '');
-            var step2 = document.getElementById('step2');
-            if (step2) step2.hidden = false;
-          } else {
-            setNote(data.error || 'Something went wrong. Please try again.', 'err');
-          }
-        } catch (err) {
-          setNote('Network error. Please try again.', 'err');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = original;
-        }
+        form.reset();
+        var step2 = document.getElementById('step2');
+        if (step2) step2.hidden = false;
       });
     })();
   </script>
