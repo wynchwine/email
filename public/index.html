@@ -290,7 +290,8 @@
     }
     @media (max-width: 760px) { .step2 { padding: 16px; } }
     .step2-inner { max-width: 560px; width: 100%; }
-    .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 40px; display: block; }
+    .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 28px; display: block; }
+    .step2-photo { width: 200px; height: 200px; object-fit: cover; border-radius: 24px; display: block; margin: 0 auto 28px; }
     .step2 h2 {
       font-family: var(--font-head); font-weight: 700;
       color: var(--accent); text-transform: uppercase;
@@ -563,6 +564,7 @@
     <div class="step2-frame">
     <div class="step2-inner" id="step2Inner">
       <img class="step2-logo" alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">
+      <img class="step2-photo" src="/Bottle_and_wine_glass_202607141610.jpeg" alt="A bottle of Cava with a filled glass">
       <h2 id="step2Title">One more thing…</h2>
       <p>Want useful news, sommelier picks and a free bottle of Cava, straight to your inbox?</p>
       <div class="step2-actions">
@@ -621,6 +623,7 @@
       function finish(msg) {
         inner.innerHTML =
           '<img class="step2-logo" alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">' +
+          '<img class="step2-photo" src="/Bottle_and_wine_glass_202607141610.jpeg" alt="A bottle of Cava with a filled glass">' +
           '<h2>Welcome to WYNCH</h2>' +
           '<p>' + esc(msg) + '</p>' +
           '<div class="step2-actions"><button class="step2-yes" type="button" id="step2Done">Done</button></div>';
