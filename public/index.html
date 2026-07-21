@@ -279,11 +279,16 @@
     /* Step 2 — full-screen post-signup opt-in */
     .step2 {
       position: fixed; inset: 0; z-index: 100;
-      background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px; text-align: center;
+      background: var(--bg); padding: 40px; text-align: center;
     }
     .step2[hidden] { display: none; }
+    .step2-frame {
+      width: 100%; height: 100%;
+      border: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    @media (max-width: 760px) { .step2 { padding: 16px; } }
     .step2-inner { max-width: 560px; width: 100%; }
     .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 40px; display: block; }
     .step2 h2 {
@@ -555,6 +560,7 @@
 
   <!-- Post-signup opt-in screen -->
   <div class="step2" id="step2" role="dialog" aria-modal="true" aria-labelledby="step2Title" hidden>
+    <div class="step2-frame">
     <div class="step2-inner" id="step2Inner">
       <img class="step2-logo" alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">
       <h2 id="step2Title">One more thing…</h2>
@@ -563,6 +569,7 @@
         <button class="step2-yes" id="step2Yes" type="button">Yes, I'm in</button>
         <button class="step2-no" id="step2No" type="button">No, I don't want free Cava</button>
       </div>
+    </div>
     </div>
   </div>
 
