@@ -351,7 +351,7 @@
     @media (max-width: 760px) {
       .sticky-cta {
         display: block;
-        position: fixed; left: 16px; right: 16px; bottom: 16px;
+        position: fixed; left: 37px; right: 37px; bottom: 20px;
         z-index: 60;
         text-align: center; text-decoration: none;
         background: var(--accent); color: #fff;
@@ -608,7 +608,7 @@
   </div>
 
   <!-- Sticky mobile CTA -->
-  <a href="#join" class="sticky-cta" id="stickyCta">Join the club — get &euro;50</a>
+  <a href="#join" class="sticky-cta hidden" id="stickyCta">Join the club — get &euro;50</a>
 
   <!-- Lottie player for the celebration animation -->
   <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
@@ -705,11 +705,14 @@
         setTimeout(function () { if (joinName) joinName.focus({ preventScroll: true }); }, 500);
       });
 
-      // Hide the CTA while the form is on screen.
+      // Show the CTA only once the form has scrolled up out of view (past it),
+      // not before the user has reached it.
       if ('IntersectionObserver' in window) {
         var io = new IntersectionObserver(function (entries) {
-          cta.classList.toggle('hidden', entries[0].isIntersecting);
-        }, { threshold: 0.35 });
+          var e = entries[0];
+          var scrolledPast = !e.isIntersecting && e.boundingClientRect.top < 0;
+          cta.classList.toggle('hidden', !scrolledPast);
+        }, { threshold: 0 });
         io.observe(joinBlock);
       }
     })();
