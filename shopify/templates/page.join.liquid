@@ -604,8 +604,8 @@
 
   <!-- Lottie player for the celebration animation -->
   <!-- Native Shopify registration form (carries the required token); filled + submitted from JS -->
-  <div style="display:none" aria-hidden="true">
-    {% form 'create_customer', id: 'wynchCC' %}
+  <div id="wynchWrap" style="display:none" aria-hidden="true">
+    {% form 'create_customer' %}
       <input type="hidden" name="customer[first_name]" id="ccFirst">
       <input type="hidden" name="customer[last_name]" id="ccLast">
       <input type="hidden" name="customer[email]" id="ccEmail">
@@ -625,7 +625,7 @@
     // so it carries the token Shopify requires) and submit it — creates the
     // account and logs the user in, then Shopify redirects (usually /account).
     function loginAndGo(returnPath) {
-      var form = document.getElementById('wynchCC');
+      var form = document.querySelector('#wynchWrap form');
       if (!signupData || !form) { window.location.href = returnPath; return; }
       document.getElementById('ccFirst').value = signupData.firstName;
       document.getElementById('ccLast').value = signupData.lastName;
