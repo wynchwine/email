@@ -621,9 +621,9 @@
     var API_BASE = 'https://REPLACE-WITH-YOUR-VERCEL-DOMAIN'; // <-- set your Vercel prod URL
     var signupData = null;
 
-    // Fill Shopify's native create_customer form (rendered by {% form %} below,
-    // so it carries the token Shopify requires) and submit it — creates the
-    // account and logs the user in, then Shopify redirects (usually /account).
+    // Fill Shopify's native create_customer form (rendered by the Liquid form
+    // tag below, so it carries the token Shopify requires) and submit it —
+    // creates the account and logs the user in, then Shopify redirects (/account).
     function loginAndGo(returnPath) {
       var form = document.querySelector('#wynchWrap form');
       if (!signupData || !form) { window.location.href = returnPath; return; }
