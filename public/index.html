@@ -713,10 +713,23 @@
         celebrate();
       }
 
+      // Create the Klaviyo profile (and subscribe to marketing when opted in).
+      function saveToKlaviyo(marketing) {
+        if (!signupData) return;
+        var full = (signupData.firstName + ' ' + signupData.lastName).trim();
+        fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: full, email: signupData.email, marketing: marketing })
+        }).catch(function () { /* best-effort */ });
+      }
+
       if (yes) yes.addEventListener('click', function () {
+        saveToKlaviyo(true);
         finish("You're all set — your Cava and first picks are on their way to your inbox. 🥂");
       });
       if (no) no.addEventListener('click', function () {
+        saveToKlaviyo(false);
         finish("No problem — you're in the club. The free Cava is still here if you change your mind.");
       });
 

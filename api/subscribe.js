@@ -39,8 +39,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please enter a valid email address.' });
   }
 
+  const marketing = body.marketing !== false; // default: subscribe to marketing
+
   try {
-    const ok = await subscribeKlaviyo({ email, firstName });
+    const ok = await subscribeKlaviyo({ email, firstName, marketing });
     if (!ok) {
       console.error('[subscribe] klaviyo rejected signup for', email);
       return res.status(502).json({ error: 'Could not save your email right now. Please try again.' });
