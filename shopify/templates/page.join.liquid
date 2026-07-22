@@ -603,32 +603,36 @@
   <a href="#join" class="sticky-cta hidden" id="stickyCta">Join the club — get &euro;50</a>
 
   <!-- Lottie player for the celebration animation -->
+  <!-- Native Shopify registration form (carries the required token); filled + submitted from JS -->
+  <div style="display:none" aria-hidden="true">
+    {% form 'create_customer', id: 'wynchCC' %}
+      <input type="hidden" name="customer[first_name]" id="ccFirst">
+      <input type="hidden" name="customer[last_name]" id="ccLast">
+      <input type="hidden" name="customer[email]" id="ccEmail">
+      <input type="hidden" name="customer[password]" id="ccPassword">
+      <input type="hidden" name="return_url" id="ccReturn">
+    {% endform %}
+  </div>
+
   <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
 
   <script>
     // Shopify store + signup data captured from the form (kept in memory only).
     var API_BASE = 'https://REPLACE-WITH-YOUR-VERCEL-DOMAIN'; // <-- set your Vercel prod URL
-    var SHOP_ORIGIN = ''; // same-origin on Shopify
     var signupData = null;
 
-    // Create the Shopify customer account and log the user in via the storefront
-    // "create_customer" form (classic accounts), then land on returnPath.
+    // Fill Shopify's native create_customer form (rendered by {% form %} below,
+    // so it carries the token Shopify requires) and submit it — creates the
+    // account and logs the user in, then Shopify redirects (usually /account).
     function loginAndGo(returnPath) {
-      if (!signupData) { window.location.href = SHOP_ORIGIN + returnPath; return; }
-      var f = document.createElement('form');
-      f.method = 'POST';
-      f.action = SHOP_ORIGIN + '/account';
-      f.style.display = 'none';
-      function add(n, v) { var i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.appendChild(i); }
-      add('form_type', 'create_customer');
-      add('utf8', '✓');
-      add('customer[first_name]', signupData.firstName);
-      add('customer[last_name]', signupData.lastName);
-      add('customer[email]', signupData.email);
-      add('customer[password]', signupData.password);
-      add('return_url', returnPath);
-      document.body.appendChild(f);
-      f.submit();
+      var form = document.getElementById('wynchCC');
+      if (!signupData || !form) { window.location.href = returnPath; return; }
+      document.getElementById('ccFirst').value = signupData.firstName;
+      document.getElementById('ccLast').value = signupData.lastName;
+      document.getElementById('ccEmail').value = signupData.email;
+      document.getElementById('ccPassword').value = signupData.password;
+      var ret = document.getElementById('ccReturn'); if (ret) ret.value = returnPath;
+      form.submit();
     }
 
     // ---- Reviews slider ----
