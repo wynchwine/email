@@ -620,6 +620,30 @@
   <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
 
   <script>
+    // Shopify store + signup data captured from the form (kept in memory only).
+    var SHOP_ORIGIN = 'https://wynch.wine';
+    var signupData = null;
+
+    // Create the Shopify customer account and log the user in via the storefront
+    // "create_customer" form (classic accounts), then land on returnPath.
+    function loginAndGo(returnPath) {
+      if (!signupData) { window.location.href = SHOP_ORIGIN + returnPath; return; }
+      var f = document.createElement('form');
+      f.method = 'POST';
+      f.action = SHOP_ORIGIN + '/account';
+      f.style.display = 'none';
+      function add(n, v) { var i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.appendChild(i); }
+      add('form_type', 'create_customer');
+      add('utf8', '✓');
+      add('customer[first_name]', signupData.firstName);
+      add('customer[last_name]', signupData.lastName);
+      add('customer[email]', signupData.email);
+      add('customer[password]', signupData.password);
+      add('return_url', returnPath);
+      document.body.appendChild(f);
+      f.submit();
+    }
+
     // ---- Reviews slider ----
     (function () {
       var track = document.getElementById('tTrack');
@@ -680,9 +704,12 @@
           '<h2>Welcome to WYNCH</h2>' +
           '<p>' + esc(msg) + '</p>' +
           '<div class="step2-actions">' +
-            '<a class="step2-yes" href="https://wynch.wine/pages/quiz">Take the quiz</a>' +
-            '<a class="step2-alt" href="https://wynch.wine/collections/all-wines">Go to the shop</a>' +
+            '<button class="step2-yes" type="button" data-go="/pages/quiz">Take the quiz</button>' +
+            '<button class="step2-alt" type="button" data-go="/collections/all-wines">Go to the shop</button>' +
           '</div>';
+        inner.querySelectorAll('[data-go]').forEach(function (el) {
+          el.addEventListener('click', function () { loginAndGo(el.getAttribute('data-go')); });
+        });
         celebrate();
       }
 
@@ -750,9 +777,16 @@
         if (pw.length < 8) { setNote('Password must be at least 8 characters.', 'err'); pwInput.focus(); return; }
         if (pw !== pw2) { setNote('Passwords do not match.', 'err'); pw2Input.focus(); return; }
 
-        // NOTE: submission is temporarily disabled — nothing is sent to any
-        // backend. We just show the opt-in screen. Re-enable the fetch to
-        // /api/register (see git history) when going live.
+        // Keep the credentials in memory so the step-3 buttons can create the
+        // Shopify account and log the user in (classic-accounts create_customer).
+        var parts = name.split(/\s+/);
+        signupData = {
+          firstName: parts.shift() || '',
+          lastName: parts.join(' '),
+          email: email,
+          password: pw
+        };
+
         setNote('', '');
         form.reset();
         var step2 = document.getElementById('step2');
