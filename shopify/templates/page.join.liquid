@@ -710,12 +710,23 @@
         celebrate();
       }
 
-      // Create the Shopify customer (Admin API) + Klaviyo profile. The promise
-      // is awaited by loginAndGo before logging in on step 3.
+      // Show a visible diagnostic line on the screen (for debugging without logs).
+      function showDiag(r) {
+        var d = document.createElement('p');
+        d.style.cssText = 'margin-top:18px;color:#b00020;font-size:14px;line-height:1.5;max-width:34ch;margin-left:auto;margin-right:auto;';
+        var msg = 'Account not created — ';
+        if (r && r.status) msg += 'HTTP ' + r.status + (r.error ? ': ' + r.error : '');
+        else msg += (r && r.error) ? r.error : 'unknown error';
+        d.textContent = msg;
+        inner.appendChild(d);
+      }
+
+      // Create the Shopify customer (Admin API) + Klaviyo profile. Resolves to
+      // { ok, status, error } and is awaited by loginAndGo before logging in.
       function createAccount(marketing) {
-        if (!signupData) return null;
+        if (!signupData) return Promise.resolve({ ok: false, error: 'no signup data (fill the form first)' });
         var full = (signupData.firstName + ' ' + signupData.lastName).trim();
-        registerPromise = fetch(API_BASE + '/api/register', {
+        return fetch(API_BASE + '/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -725,16 +736,29 @@
             password2: signupData.password,
             marketing: marketing
           })
-        }).catch(function () { /* best-effort; login will still be attempted */ });
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (d) {
+            return { ok: res.ok, status: res.status, error: d.error };
+          });
+        }).catch(function (e) {
+          return { ok: false, error: 'network error (is API_BASE set to your Vercel URL?) ' + (e && e.message ? e.message : '') };
+        });
+      }
+
+      function handleOptIn(marketing, msg) {
+        registerPromise = createAccount(marketing);
+        finish(msg);
+        registerPromise.then(function (r) {
+          // 409 = account already exists; login will still work, so don't alarm.
+          if (r && !r.ok && r.status !== 409) showDiag(r);
+        });
       }
 
       if (yes) yes.addEventListener('click', function () {
-        createAccount(true);
-        finish("You're all set — your Cava and first picks are on their way to your inbox. 🥂");
+        handleOptIn(true, "You're all set — your Cava and first picks are on their way to your inbox. 🥂");
       });
       if (no) no.addEventListener('click', function () {
-        createAccount(false);
-        finish("No problem — you're in the club. The free Cava is still here if you change your mind.");
+        handleOptIn(false, "No problem — you're in the club. The free Cava is still here if you change your mind.");
       });
 
       // Open the opt-in screen directly via URL hash (e.g. …/#optin) for preview/sharing.
