@@ -28,24 +28,27 @@ endpoint lives there; CORS is already open, so the Shopify page can call it).
 4. **Online Store → Pages → Add page** → title e.g. "Join" → in **Theme template**
    pick **join** → Save. The page is now at `https://wynch.wine/pages/join`.
 
-## How it works on Shopify
-- **Step 2 (opt-in):** posts name/email to `API_BASE/api/subscribe` (Vercel) —
-  "Yes" subscribes to the Klaviyo newsletter; "No" just creates the profile.
-- **Step 3 (buttons):** fills Shopify's **native** `{% form 'create_customer' %}`
-  (rendered by Liquid, so it carries the token Shopify requires) and submits it
-  → Shopify creates the account and logs the user in, then redirects (usually
-  `/account`). A hand-built form is rejected by Shopify — that's why we use the
-  Liquid form tag.
+## How it works on Shopify (create via Admin API, then log in)
+- **Step 2 (opt-in):** calls `API_BASE/api/register` (Vercel → Shopify **Admin
+  API**) which **creates the customer** with the chosen password and creates the
+  Klaviyo profile ("Yes" = subscribed to marketing, "No" = profile only).
+  Admin-API creation is reliable regardless of theme/registration settings.
+- **Step 3 (buttons):** waits for that creation to finish, then submits Shopify's
+  **native** `{% form 'customer_login' %}` (rendered by Liquid, carries the
+  required token) to log the user in same-origin, then redirects.
 
-## If the account still isn't created / not logged in
-- Check **Admin → Customers**: if the email appears there but you weren't logged
-  in, the store requires **email confirmation** on registration — Shopify creates
-  the account "pending" and won't auto-login until the customer confirms. Silent
-  auto-login isn't possible in that mode; either disable the confirmation
-  requirement or accept the confirm-email step.
-- If the email is **not** in Customers and it bounced to `/account`, re-check that
-  customer accounts are **Classic** with self-registration enabled.
-- Shopify's create_customer redirects to `/account` by default; the quiz/shop
+## Requirements
+- Customer accounts = **Classic**.
+- The Shopify custom app needs scope **`write_customers`** (for Admin-API create).
+- Vercel env: `SHOPIFY_SHOP`, `SHOPIFY_CLIENT_ID`, `SHOPIFY_CLIENT_SECRET`
+  (token via client_credentials), plus `KLAVIYO_API_KEY` /
+  `KLAVIYO_NEWSLETTER_LIST_ID` for the profile/subscription.
+- Set `API_BASE` in the template to your Vercel production URL.
+
+## Notes
+- If the email already exists, `/api/register` returns 409; the login step will
+  still run and log the existing customer in (same password).
+- The `customer_login` form redirects to `/account` by default; the quiz/shop
   `return_url` is best-effort (themes don't always honor it).
 
 ## Requirements

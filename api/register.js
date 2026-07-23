@@ -85,6 +85,7 @@ export default async function handler(req, res) {
   if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
   if (password !== password2) return res.status(400).json({ error: 'Passwords do not match.' });
 
+  const marketing = body.marketing !== false; // default: subscribe to marketing
   const { first, last } = splitName(name);
 
   try {
@@ -97,9 +98,9 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'Could not create your account right now. Please try again.' });
     }
 
-    // Best-effort marketing subscription; don't fail registration if this errors.
+    // Best-effort Klaviyo profile/subscription; don't fail registration if it errors.
     try {
-      await subscribeKlaviyo({ email, firstName: first });
+      await subscribeKlaviyo({ email, firstName: first, marketing });
     } catch (err) {
       console.error('[register] klaviyo subscribe error:', err);
     }

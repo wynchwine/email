@@ -605,9 +605,7 @@
   <!-- Lottie player for the celebration animation -->
   <!-- Native Shopify registration form (carries the required token); filled + submitted from JS -->
   <div id="wynchWrap" style="display:none" aria-hidden="true">
-    {% form 'create_customer' %}
-      <input type="hidden" name="customer[first_name]" id="ccFirst">
-      <input type="hidden" name="customer[last_name]" id="ccLast">
+    {% form 'customer_login' %}
       <input type="hidden" name="customer[email]" id="ccEmail">
       <input type="hidden" name="customer[password]" id="ccPassword">
       <input type="hidden" name="return_url" id="ccReturn">
@@ -617,22 +615,30 @@
   <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
 
   <script>
-    // Shopify store + signup data captured from the form (kept in memory only).
+    // Signup data captured from the form (kept in memory only) + the account
+    // creation request kicked off on the opt-in step.
     var API_BASE = 'https://REPLACE-WITH-YOUR-VERCEL-DOMAIN'; // <-- set your Vercel prod URL
     var signupData = null;
+    var registerPromise = null;
 
-    // Fill Shopify's native create_customer form (rendered by the Liquid form
-    // tag below, so it carries the token Shopify requires) and submit it —
-    // creates the account and logs the user in, then Shopify redirects (/account).
-    function loginAndGo(returnPath) {
+    // Log the user in via Shopify's native customer_login form (rendered by the
+    // Liquid form tag below, so it carries the required token), then redirect.
+    function submitLogin(returnPath) {
       var form = document.querySelector('#wynchWrap form');
       if (!signupData || !form) { window.location.href = returnPath; return; }
-      document.getElementById('ccFirst').value = signupData.firstName;
-      document.getElementById('ccLast').value = signupData.lastName;
       document.getElementById('ccEmail').value = signupData.email;
       document.getElementById('ccPassword').value = signupData.password;
       var ret = document.getElementById('ccReturn'); if (ret) ret.value = returnPath;
       form.submit();
+    }
+
+    // Wait for the account creation (Admin API) to finish, then log in.
+    function loginAndGo(returnPath) {
+      if (registerPromise && registerPromise.then) {
+        registerPromise.then(function () { submitLogin(returnPath); }, function () { submitLogin(returnPath); });
+      } else {
+        submitLogin(returnPath);
+      }
     }
 
     // ---- Reviews slider ----
@@ -704,23 +710,30 @@
         celebrate();
       }
 
-      // Create the Klaviyo profile (and subscribe to marketing when opted in).
-      function saveToKlaviyo(marketing) {
-        if (!signupData) return;
+      // Create the Shopify customer (Admin API) + Klaviyo profile. The promise
+      // is awaited by loginAndGo before logging in on step 3.
+      function createAccount(marketing) {
+        if (!signupData) return null;
         var full = (signupData.firstName + ' ' + signupData.lastName).trim();
-        fetch(API_BASE + '/api/subscribe', {
+        registerPromise = fetch(API_BASE + '/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: full, email: signupData.email, marketing: marketing })
-        }).catch(function () { /* best-effort */ });
+          body: JSON.stringify({
+            name: full,
+            email: signupData.email,
+            password: signupData.password,
+            password2: signupData.password,
+            marketing: marketing
+          })
+        }).catch(function () { /* best-effort; login will still be attempted */ });
       }
 
       if (yes) yes.addEventListener('click', function () {
-        saveToKlaviyo(true);
+        createAccount(true);
         finish("You're all set — your Cava and first picks are on their way to your inbox. 🥂");
       });
       if (no) no.addEventListener('click', function () {
-        saveToKlaviyo(false);
+        createAccount(false);
         finish("No problem — you're in the club. The free Cava is still here if you change your mind.");
       });
 
