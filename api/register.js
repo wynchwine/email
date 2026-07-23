@@ -60,7 +60,7 @@ async function createShopifyCustomer({ firstName, lastName, email, password }) {
   const duplicate = res.status === 422 && /taken/i.test(emailErr);
 
   console.error('[register] shopify customer create failed', res.status, text.slice(0, 300));
-  return { ok: false, status: res.status, duplicate, errors };
+  return { ok: false, status: res.status, duplicate, errors, raw: text.slice(0, 300) };
 }
 
 export default async function handler(req, res) {
@@ -95,7 +95,11 @@ export default async function handler(req, res) {
       if (result.duplicate) {
         return res.status(409).json({ error: 'An account with this email already exists.' });
       }
-      return res.status(502).json({ error: 'Could not create your account right now. Please try again.' });
+      // Surface Shopify's actual reason to help diagnose (temporary).
+      const detail = (result.errors && Object.keys(result.errors).length)
+        ? JSON.stringify(result.errors)
+        : (result.raw || 'no detail');
+      return res.status(502).json({ error: 'Shopify ' + (result.status || '') + ': ' + detail });
     }
 
     // Best-effort Klaviyo profile/subscription; don't fail registration if it errors.
