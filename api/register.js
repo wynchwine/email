@@ -26,7 +26,7 @@ function splitName(full) {
 
 // Create an enabled Shopify customer account with a password.
 // Shopify hashes and stores the password; we never persist it ourselves.
-async function createShopifyCustomer({ firstName, lastName, email, password }) {
+async function createShopifyCustomer({ firstName, lastName, email, password, marketing }) {
   const token = await getShopifyAccessToken();
   const shop = process.env.SHOPIFY_SHOP;
 
@@ -45,8 +45,12 @@ async function createShopifyCustomer({ firstName, lastName, email, password }) {
         password,
         password_confirmation: password,
         send_email_welcome: false,
-        // marketing consent is handled via Klaviyo; keep Shopify state explicit
-        email_marketing_consent: { state: 'subscribed', opt_in_level: 'single_opt_in' },
+        // Respect the opt-in choice from step 2: only mark subscribed when the
+        // user actually said yes; otherwise leave them not subscribed.
+        email_marketing_consent: {
+          state: marketing ? 'subscribed' : 'not_subscribed',
+          opt_in_level: 'single_opt_in',
+        },
       },
     }),
   });
@@ -89,7 +93,7 @@ export default async function handler(req, res) {
   const { first, last } = splitName(name);
 
   try {
-    const result = await createShopifyCustomer({ firstName: first, lastName: last, email, password });
+    const result = await createShopifyCustomer({ firstName: first, lastName: last, email, password, marketing });
 
     if (!result.ok) {
       if (result.duplicate) {
