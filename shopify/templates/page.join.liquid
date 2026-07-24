@@ -587,7 +587,7 @@
     <div class="step2-inner" id="step2Inner">
       <div class="step2-photo-wrap">
         <span class="step2-badge">Free<small>gift</small></span>
-        <img class="step2-photo" src="/Bottle_and_wine_glass_202607141610.jpeg" alt="A bottle of Cava with a filled glass">
+        <img class="step2-photo" id="step2Photo" alt="A bottle of Cava with a filled glass">
       </div>
       <h2 id="step2Title">One more thing…</h2>
       <p>Want useful news, sommelier picks and a free bottle of Cava, straight to your inbox?</p>
@@ -618,6 +618,12 @@
     // Signup data captured from the form (kept in memory only) + the account
     // creation request kicked off on the opt-in step.
     var API_BASE = 'https://REPLACE-WITH-YOUR-VERCEL-DOMAIN'; // <-- set your Vercel prod URL
+    // The Cava photo is hosted on Vercel (public/), not on the Shopify domain,
+    // so load it from API_BASE rather than a same-origin path.
+    (function () {
+      var p = document.getElementById('step2Photo');
+      if (p) p.src = API_BASE + '/Bottle_and_wine_glass_202607141610.jpeg';
+    })();
     var signupData = null;
     var registerPromise = null;
 
@@ -710,17 +716,6 @@
         celebrate();
       }
 
-      // Show a visible diagnostic line on the screen (for debugging without logs).
-      function showDiag(r) {
-        var d = document.createElement('p');
-        d.style.cssText = 'margin-top:18px;color:#b00020;font-size:14px;line-height:1.5;max-width:34ch;margin-left:auto;margin-right:auto;';
-        var msg = 'Account not created — ';
-        if (r && r.status) msg += 'HTTP ' + r.status + (r.error ? ': ' + r.error : '');
-        else msg += (r && r.error) ? r.error : 'unknown error';
-        d.textContent = msg;
-        inner.appendChild(d);
-      }
-
       // Create the Shopify customer (Admin API) + Klaviyo profile. Resolves to
       // { ok, status, error } and is awaited by loginAndGo before logging in.
       function createAccount(marketing) {
@@ -748,10 +743,6 @@
       function handleOptIn(marketing, msg) {
         registerPromise = createAccount(marketing);
         finish(msg);
-        registerPromise.then(function (r) {
-          // 409 = account already exists; login will still work, so don't alarm.
-          if (r && !r.ok && r.status !== 409) showDiag(r);
-        });
       }
 
       if (yes) yes.addEventListener('click', function () {

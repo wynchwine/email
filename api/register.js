@@ -95,11 +95,9 @@ export default async function handler(req, res) {
       if (result.duplicate) {
         return res.status(409).json({ error: 'An account with this email already exists.' });
       }
-      // Surface Shopify's actual reason to help diagnose (temporary).
-      const detail = (result.errors && Object.keys(result.errors).length)
-        ? JSON.stringify(result.errors)
-        : (result.raw || 'no detail');
-      return res.status(502).json({ error: 'Shopify ' + (result.status || '') + ': ' + detail });
+      // Real reason is logged server-side (see createShopifyCustomer); keep the
+      // user-facing message neutral.
+      return res.status(502).json({ error: 'Could not create your account right now. Please try again.' });
     }
 
     // Best-effort Klaviyo profile/subscription; don't fail registration if it errors.
