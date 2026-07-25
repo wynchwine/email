@@ -19,7 +19,10 @@ export default async function handler(req, res) {
 
   const key = process.env.KLAVIYO_API_KEY;
   const listId = process.env.KLAVIYO_NEWSLETTER_LIST_ID;
-  const email = (req.query && req.query.email ? String(req.query.email) : '').trim().toLowerCase();
+  // A "+" in the URL query decodes to a space, which breaks plus-addressed
+  // test emails (e.g. you+test1@gmail.com). Convert spaces back to "+".
+  const email = (req.query && req.query.email ? String(req.query.email) : '')
+    .trim().toLowerCase().replace(/\s+/g, '+');
 
   const out = {
     hasApiKey: !!key,
