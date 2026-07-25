@@ -333,6 +333,14 @@
       color: var(--text); font-size: 19px; line-height: 1.55;
       margin: 0 auto 32px; max-width: 32ch;
     }
+    .step2-deposit {
+      margin: 0 auto 30px; max-width: 34ch;
+      background: rgba(255, 99, 21, 0.08);
+      border: 1px solid rgba(255, 99, 21, 0.35);
+      border-radius: 16px; padding: 18px 22px;
+      color: var(--text); font-size: 18px; line-height: 1.5;
+    }
+    .step2-deposit strong { color: var(--accent); font-weight: 700; }
     .step2-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
     .step2-yes, .step2-alt {
       width: 100%; max-width: 340px; box-sizing: border-box;
@@ -703,6 +711,7 @@
         inner.innerHTML =
           '<h2>Welcome to WYNCH</h2>' +
           '<p>' + esc(msg) + '</p>' +
+          '<div class="step2-deposit">You now have <strong>&euro;50</strong> in your account &mdash; spend up to <strong>30%</strong> of it on every order.</div>' +
           '<div class="step2-actions">' +
             '<button class="step2-yes" type="button" data-go="/pages/quiz">Take the quiz</button>' +
             '<button class="step2-alt" type="button" data-go="/collections/all-wines">Go to the shop</button>' +
