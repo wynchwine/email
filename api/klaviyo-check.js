@@ -11,6 +11,8 @@
 // Use a FRESH email each time — Klaviyo won't re-send the confirmation to a
 // profile that is already pending/subscribed. Remove this file when done.
 
+import { subscribeKlaviyo } from '../lib/klaviyo.js';
+
 const KLAVIYO_BASE = 'https://a.klaviyo.com/api';
 const KLAVIYO_REVISION = '2024-10-15';
 
@@ -60,39 +62,24 @@ export default async function handler(req, res) {
     return res.status(200).json(out);
   }
 
-  // Live subscribe test — identical payload to the real signup flow.
+  // Live test using the EXACT function the real signup uses, so `method`
+  // proves whether it subscribes to the list or only creates a profile.
   try {
-    const r = await fetch(`${KLAVIYO_BASE}/profile-subscription-bulk-create-jobs/`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        data: {
-          type: 'profile-subscription-bulk-create-job',
-          attributes: {
-            custom_source: 'Diagnostic test',
-            profiles: {
-              data: [
-                {
-                  type: 'profile',
-                  attributes: {
-                    email,
-                    subscriptions: { email: { marketing: { consent: 'SUBSCRIBED' } } },
-                  },
-                },
-              ],
-            },
-          },
-          relationships: { list: { data: { type: 'list', id: listId } } },
-        },
-      }),
-    });
-    const raw = await r.text();
-    out.subscribeTest = { email, status: r.status, ok: r.ok, body: raw.slice(0, 600) || '(empty)' };
+    const result = await subscribeKlaviyo({ email, firstName: 'Test', marketing: true });
+    out.subscribeTest = {
+      email,
+      method: result.method, // "subscribe-to-list" = real subscription; "upsert-profile" = profile only
+      status: result.status,
+      ok: result.ok,
+      body: result.body || '(empty)',
+    };
 
-    if (r.status === 202 || r.ok) {
-      out.hint = 'Subscribe accepted by Klaviyo (202 = queued). If the list is double opt-in, a confirmation email should now be sent to this address. Check inbox + spam. If it never arrives, the issue is Klaviyo email delivery/sending-domain, not the code.';
+    if (result.method !== 'subscribe-to-list') {
+      out.hint = 'It went through "upsert-profile" (profile only, NO subscription) — that means KLAVIYO_NEWSLETTER_LIST_ID is not visible to this deployment. Set it (and redeploy) so signups actually subscribe.';
+    } else if (result.ok) {
+      out.hint = 'Real subscribe path ran and Klaviyo accepted it (queued). On a double opt-in list a confirmation email should now be sent — check inbox + spam. If it never arrives, the issue is Klaviyo email delivery/sending-domain, not the code.';
     } else {
-      out.hint = 'Klaviyo REJECTED the subscribe call — see subscribeTest.body for the reason.';
+      out.hint = 'Real subscribe path ran but Klaviyo REJECTED it — see subscribeTest.body for the reason.';
     }
   } catch (e) {
     out.subscribeTest = { email, error: String(e && e.message ? e.message : e) };
