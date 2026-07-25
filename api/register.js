@@ -95,20 +95,25 @@ export default async function handler(req, res) {
   try {
     const result = await createShopifyCustomer({ firstName: first, lastName: last, email, password, marketing });
 
-    if (!result.ok) {
-      if (result.duplicate) {
-        return res.status(409).json({ error: 'An account with this email already exists.' });
-      }
+    // Hard failure (not a duplicate) — stop here.
+    if (!result.ok && !result.duplicate) {
       // Real reason is logged server-side (see createShopifyCustomer); keep the
       // user-facing message neutral.
       return res.status(502).json({ error: 'Could not create your account right now. Please try again.' });
     }
 
-    // Best-effort Klaviyo profile/subscription; don't fail registration if it errors.
+    // Best-effort Klaviyo profile/subscription. Runs for BOTH a freshly created
+    // customer and a duplicate one, so returning/re-registering users still get
+    // the profile + double opt-in confirmation email.
     try {
       await subscribeKlaviyo({ email, firstName: first, marketing });
     } catch (err) {
       console.error('[register] klaviyo subscribe error:', err);
+    }
+
+    // Duplicate email: the account already exists; the login step logs them in.
+    if (result.duplicate) {
+      return res.status(409).json({ error: 'An account with this email already exists.' });
     }
 
     return res.status(200).json({ ok: true });
