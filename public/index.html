@@ -248,7 +248,14 @@
       background: var(--accent); color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-family: var(--font-head); font-weight: 700; font-size: 19px;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25);
     }
+    /* Distinct, wine-themed colour per reviewer */
+    .tcard:nth-child(1) .tavatar { background: radial-gradient(circle at 30% 25%, #9a3a4a, #7b2d3b); }
+    .tcard:nth-child(2) .tavatar { background: radial-gradient(circle at 30% 25%, #d76a2a, #c2571f); }
+    .tcard:nth-child(3) .tavatar { background: radial-gradient(circle at 30% 25%, #6d7d58, #55643f); }
+    .tcard:nth-child(4) .tavatar { background: radial-gradient(circle at 30% 25%, #71487f, #5f3b6b); }
+    .tcard:nth-child(5) .tavatar { background: radial-gradient(circle at 30% 25%, #c99a3e, #b8862f); }
     .tname { font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
     .tnav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 26px; }
     .tbtn {
