@@ -28,17 +28,20 @@ export default async function handler(req, res) {
 
   const out = { shopify: null, klaviyo: null };
 
+  // Debug mode: ?all=1 lists ALL customers (no tag filter) with their tags,
+  // to diagnose why someone is/ isn't showing up.
+  const showAll = !!(req.query && (req.query.all === '1' || req.query.all === 'true'));
+
   // ---- Shopify: only customers created via our landing (tag "wynch-landing") ----
   try {
     const shopToken = await getShopifyAccessToken();
     const shop = process.env.SHOPIFY_SHOP;
     const headers = { 'X-Shopify-Access-Token': shopToken, Accept: 'application/json' };
 
-    // Cursor-paginate the tag search so the count/list cover everyone, not
-    // just the first page. Capped for safety.
-    let url =
-      `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers/search.json` +
-      `?query=${encodeURIComponent('tag:wynch-landing')}&limit=250`;
+    // Either the tag search (default) or all customers (debug).
+    let url = showAll
+      ? `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers.json?limit=250&fields=id,first_name,last_name,email,created_at,tags,email_marketing_consent`
+      : `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers/search.json?query=${encodeURIComponent('tag:wynch-landing')}&limit=250`;
     const raw = [];
     let firstStatus = 0;
     let firstBody = '';
@@ -62,9 +65,10 @@ export default async function handler(req, res) {
           email: c.email,
           created_at: c.created_at,
           marketing: !!(c.email_marketing_consent && c.email_marketing_consent.state === 'subscribed'),
+          ...(showAll ? { tags: c.tags || '' } : {}),
         }))
         .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
-      out.shopify = { count: customers.length, customers: customers.slice(0, 200) };
+      out.shopify = { count: customers.length, customers: customers.slice(0, 200), mode: showAll ? 'all' : 'tagged' };
     }
   } catch (e) {
     out.shopify = { error: String(e && e.message ? e.message : e) };
