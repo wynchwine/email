@@ -27,7 +27,11 @@
       --font-body: "Aktiv Grotesk Regular", "Helvetica Neue", Arial, sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Scoped reset: box-sizing everywhere, but only zero the margins/padding
+       on our own elements so injected third-party widgets (e.g. the store's
+       age-gate modal) keep their intended spacing and don't stretch. */
+    *, *::before, *::after { box-sizing: border-box; }
+    body, h1, h2, h3, h4, p, figure, blockquote, ul, ol, hr, button, input { margin: 0; padding: 0; }
     html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
     body {
       font-family: var(--font-body);
