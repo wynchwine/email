@@ -28,29 +28,35 @@ export default async function handler(req, res) {
 
   const out = { shopify: null, klaviyo: null };
 
-  // ---- Shopify: total count + most recent customers ----
+  // ---- Shopify: only customers created via our landing (tag "wynch-landing") ----
   try {
     const shopToken = await getShopifyAccessToken();
     const shop = process.env.SHOPIFY_SHOP;
     const headers = { 'X-Shopify-Access-Token': shopToken, Accept: 'application/json' };
 
-    const countRes = await fetch(
-      `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers/count.json`,
-      { headers }
-    );
-    const countJson = await countRes.json().catch(() => ({}));
+    // Cursor-paginate the tag search so the count/list cover everyone, not
+    // just the first page. Capped for safety.
+    let url =
+      `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers/search.json` +
+      `?query=${encodeURIComponent('tag:wynch-landing')}&limit=250`;
+    const raw = [];
+    let firstStatus = 0;
+    let firstBody = '';
+    for (let page = 0; page < 8 && url; page++) {
+      const r = await fetch(url, { headers });
+      if (page === 0) firstStatus = r.status;
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { if (page === 0) firstBody = JSON.stringify(j).slice(0, 200); break; }
+      raw.push(...(j.customers || []));
+      const link = r.headers.get('link') || r.headers.get('Link') || '';
+      const m = link.match(/<([^>]+)>;\s*rel="next"/);
+      url = m ? m[1] : null;
+    }
 
-    const listRes = await fetch(
-      `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers.json` +
-      `?limit=100&fields=id,first_name,last_name,email,created_at,email_marketing_consent`,
-      { headers }
-    );
-    const listJson = await listRes.json().catch(() => ({}));
-
-    if (!listRes.ok) {
-      out.shopify = { error: `Shopify ${listRes.status}`, detail: JSON.stringify(listJson).slice(0, 200) };
+    if (firstStatus && firstStatus >= 400) {
+      out.shopify = { error: `Shopify ${firstStatus}`, detail: firstBody };
     } else {
-      const customers = (listJson.customers || [])
+      const customers = raw
         .map((c) => ({
           name: [c.first_name, c.last_name].filter(Boolean).join(' '),
           email: c.email,
@@ -58,7 +64,7 @@ export default async function handler(req, res) {
           marketing: !!(c.email_marketing_consent && c.email_marketing_consent.state === 'subscribed'),
         }))
         .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
-      out.shopify = { count: (typeof countJson.count === 'number' ? countJson.count : customers.length), customers };
+      out.shopify = { count: customers.length, customers: customers.slice(0, 200) };
     }
   } catch (e) {
     out.shopify = { error: String(e && e.message ? e.message : e) };
