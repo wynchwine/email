@@ -47,7 +47,8 @@ async function createShopifyCustomer({ firstName, lastName, email, password, mar
         // Mark customers created via the landing so the dashboard can show
         // only people who signed up through our service.
         tags: 'wynch-landing',
-        send_email_welcome: false,
+        // Send Shopify's default account welcome email on registration.
+        send_email_welcome: true,
         // Respect the opt-in choice from step 2: only mark subscribed when the
         // user actually said yes; otherwise leave them not subscribed.
         email_marketing_consent: {
