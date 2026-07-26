@@ -340,6 +340,8 @@
     }
     .step2-deposit strong { color: var(--accent); font-weight: 700; }
     .step2-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+    .step2-legal { margin: 18px auto 0; max-width: 40ch; font-size: 13px; line-height: 1.5; color: var(--muted); }
+    .step2-legal a { color: var(--accent); text-decoration: underline; }
     .step2-yes, .step2-alt {
       width: 100%; max-width: 340px; box-sizing: border-box;
       display: inline-block; text-align: center; text-decoration: none;
@@ -417,10 +419,10 @@
           </form>
           <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
           <p class="fine">
-            Mit dem Absenden stimmst du zu, Marketing-E-Mails von WYNCH zu erhalten, und akzeptierst unsere
+            Mit dem Absenden akzeptierst du unsere
             <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">AGB</a>
             und <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Datenschutz&shy;erklärung</a>.
-            Abmeldung jederzeit möglich. 50 € Willkommensguthaben für neue Mitglieder — es gelten die Bedingungen.
+            50 € Willkommensguthaben für neue Mitglieder — es gelten die Bedingungen.
           </p>
         </div>
       </div>
@@ -612,6 +614,9 @@
         <button class="step2-yes" id="step2Yes" type="button">Ja, ich bin dabei</button>
         <button class="step2-no" id="step2No" type="button">Nein, keine kostenlose Cava</button>
       </div>
+      <p class="step2-legal">
+        Mit „Ja, ich bin dabei“ stimmst du zu, Marketing-E-Mails von WYNCH zu erhalten. Abmeldung jederzeit möglich.
+      </p>
     </div>
     </div>
   </div>
