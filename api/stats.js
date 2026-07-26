@@ -17,11 +17,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store');
 
-  const token = process.env.DASHBOARD_TOKEN;
+  // Temporary default so the dashboard works before DASHBOARD_TOKEN is set in
+  // Vercel. CHANGE THIS: set a strong DASHBOARD_TOKEN env var — it overrides
+  // the default. The default only guards customer PII with a weak password.
+  const token = process.env.DASHBOARD_TOKEN || '12345678';
   const key = req.query && req.query.key ? String(req.query.key) : '';
-  if (!token) {
-    return res.status(503).json({ error: 'Dashboard not configured. Set DASHBOARD_TOKEN in Vercel and redeploy.' });
-  }
   if (key !== token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
