@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>WYNCH — Dashboard</title>
+  <style>
+    :root {
+      --accent: #ff6315;
+      --bg: #eeece7;
+      --card: #ffffff;
+      --text: #3f3f41;
+      --muted: #8a8a8a;
+      --line: #e2ded6;
+      --font: "Helvetica Neue", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; padding: 24px; }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+    h1 { font-size: 24px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+    .refresh { font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+    .refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Login gate */
+    .gate { max-width: 360px; margin: 60px auto; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 28px; text-align: center; }
+    .gate h2 { font-size: 18px; margin-bottom: 6px; }
+    .gate p { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+    .gate input { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9999px; font-size: 15px; outline: none; margin-bottom: 12px; }
+    .gate input:focus { border-color: var(--accent); }
+    .gate button { width: 100%; padding: 12px; border: none; border-radius: 9999px; background: var(--accent); color: #fff; font-size: 15px; cursor: pointer; }
+    .gate .err { color: #c0392b; font-size: 13px; min-height: 18px; margin-bottom: 8px; }
+
+    /* Stat cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 26px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+    .card .label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .card .value { font-size: 44px; font-weight: 700; color: var(--accent); line-height: 1.1; margin-top: 6px; }
+    .card .value small { font-size: 15px; color: var(--muted); font-weight: 400; }
+
+    /* Table */
+    .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .panel h3 { font-size: 15px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+    .pill { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 9999px; }
+    .pill.yes { background: rgba(255,99,21,0.12); color: var(--accent); }
+    .pill.no { background: #eee; color: #888; }
+    .muted { color: var(--muted); }
+    .msg { padding: 40px; text-align: center; color: var(--muted); }
+    .err-box { background: #fdecea; color: #c0392b; border-radius: 10px; padding: 14px 16px; font-size: 14px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Login gate -->
+    <div class="gate" id="gate" hidden>
+      <h2>WYNCH Dashboard</h2>
+      <p>Введите токен доступа</p>
+      <div class="err" id="gateErr"></div>
+      <input type="password" id="tokenInput" placeholder="Токен" autocomplete="off">
+      <button id="gateBtn" type="button">Войти</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="app" hidden>
+      <header>
+        <h1>Dashboard</h1>
+        <button class="refresh" id="refreshBtn" type="button">Обновить</button>
+      </header>
+      <div id="errBox"></div>
+      <div class="cards" id="cards"></div>
+      <div class="panel">
+        <h3>Последние регистрации</h3>
+        <div class="scroll">
+          <table id="table">
+            <thead>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var gate = document.getElementById('gate');
+    var app = document.getElementById('app');
+    var LS_KEY = 'wynch_dash_token';
+
+    function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function fmtDate(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      if (isNaN(d)) return iso;
+      return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
+             ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function showGate(errMsg) {
+      app.hidden = true; gate.hidden = false;
+      document.getElementById('gateErr').textContent = errMsg || '';
+      document.getElementById('tokenInput').focus();
+    }
+
+    function render(data) {
+      gate.hidden = true; app.hidden = false;
+      var errBox = document.getElementById('errBox');
+      errBox.innerHTML = '';
+
+      var s = data.shopify || {};
+      var k = data.klaviyo || {};
+
+      var cards = document.getElementById('cards');
+      cards.innerHTML =
+        '<div class="card"><div class="label">Всего регистраций</div><div class="value">' +
+          (typeof s.count === 'number' ? s.count : '—') + '</div></div>' +
+        '<div class="card"><div class="label">Подписчиков' + (k.listName ? ' · ' + esc(k.listName) : '') +
+          '</div><div class="value">' + (typeof k.subscribers === 'number' ? k.subscribers : '—') + '</div></div>';
+
+      if (s.error) errBox.innerHTML += '<div class="err-box">Shopify: ' + esc(s.error) + (s.detail ? ' — ' + esc(s.detail) : '') + '</div>';
+      if (k.error) errBox.innerHTML += '<div class="err-box">Klaviyo: ' + esc(k.error) + '</div>';
+
+      var tbody = document.getElementById('tbody');
+      var rows = (s.customers || []);
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="msg">Пока нет данных</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(function (c) {
+        return '<tr>' +
+          '<td>' + (esc(c.name) || '<span class="muted">—</span>') + '</td>' +
+          '<td>' + esc(c.email) + '</td>' +
+          '<td class="muted">' + esc(fmtDate(c.created_at)) + '</td>' +
+          '<td>' + (c.marketing ? '<span class="pill yes">Да</span>' : '<span class="pill no">Нет</span>') + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function load(token) {
+      fetch('/api/stats?key=' + encodeURIComponent(token))
+        .then(function (r) {
+          if (r.status === 401) { localStorage.removeItem(LS_KEY); showGate('Неверный токен'); return null; }
+          return r.json();
+        })
+        .then(function (data) {
+          if (!data) return;
+          if (data.error) { render({ shopify: { error: data.error }, klaviyo: {} }); return; }
+          localStorage.setItem(LS_KEY, token);
+          render(data);
+        })
+        .catch(function () { showGate('Ошибка сети. Попробуйте ещё раз.'); });
+    }
+
+    document.getElementById('gateBtn').addEventListener('click', function () {
+      var t = document.getElementById('tokenInput').value.trim();
+      if (t) load(t);
+    });
+    document.getElementById('tokenInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') document.getElementById('gateBtn').click();
+    });
+    document.getElementById('refreshBtn').addEventListener('click', function () {
+      var t = localStorage.getItem(LS_KEY);
+      if (t) load(t); else showGate();
+    });
+
+    // Boot: token from URL (?key=) or localStorage, else show gate.
+    (function () {
+      var url = new URLSearchParams(location.search);
+      var fromUrl = url.get('key');
+      var saved = localStorage.getItem(LS_KEY);
+      if (fromUrl) load(fromUrl);
+      else if (saved) load(saved);
+      else showGate();
+    })();
+  </script>
+</body>
+</html>
