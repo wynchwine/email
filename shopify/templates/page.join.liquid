@@ -220,6 +220,15 @@
     .about-text { max-width: 560px; }
     .about-text p { font-size: 18px; line-height: 1.6; color: var(--text); }
     .about-media { display: flex; justify-content: center; }
+    .about-cta {
+      display: inline-block; text-decoration: none;
+      background: var(--accent); color: #fff;
+      border-radius: 9999px; padding: 16px 34px;
+      font-family: var(--font-body); font-size: 16px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      transition: background 0.15s ease;
+    }
+    .about-cta:hover { background: #e5570f; }
     .about-photo { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto; border-radius: 40px 40px 0 0; }
     @media (max-width: 640px) {
       .about { gap: 22px; padding: 34px 16px 0; }
@@ -518,6 +527,7 @@
           ist, schick sie einfach zurück — wir schreiben sie dir ohne Nachfragen wieder gut.
         </p>
       </div>
+      <a class="about-cta" href="/pages/quiz">Meine Weine finden</a>
       <div class="about-media">
         <img class="about-photo" src="https://d3k81ch9hvuctc.cloudfront.net/company/XaKdGV/images/3f7418f8-0f84-41f9-bb41-671aa181639e.png"
              alt="WYNCH Wein von unabhängigen Winzern">
