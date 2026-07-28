@@ -49,12 +49,11 @@ async function createShopifyCustomer({ firstName, lastName, email, password, mar
         tags: 'wynch-landing',
         // Send Shopify's default account welcome email on registration.
         send_email_welcome: true,
-        // Respect the opt-in choice from step 2: only mark subscribed when the
-        // user actually said yes; otherwise leave them not subscribed.
-        email_marketing_consent: {
-          state: marketing ? 'subscribed' : 'not_subscribed',
-          opt_in_level: 'single_opt_in',
-        },
+        // Marketing consent is owned entirely by Klaviyo (the Club list). Do
+        // NOT mark the Shopify customer subscribed here — otherwise the
+        // Klaviyo<>Shopify integration ALSO subscribes them, producing a
+        // second list + a second double opt-in email.
+        email_marketing_consent: { state: 'not_subscribed', opt_in_level: 'single_opt_in' },
       },
     }),
   });
