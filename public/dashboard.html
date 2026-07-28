@@ -113,21 +113,21 @@
       var errBox = document.getElementById('errBox');
       errBox.innerHTML = '';
 
-      var s = data.shopify || {};
-      var k = data.klaviyo || {};
+      var reg = data.registrations || {};
+      var sub = data.subscribers || {};
 
       var cards = document.getElementById('cards');
       cards.innerHTML =
         '<div class="card"><div class="label">Всего регистраций</div><div class="value">' +
-          (typeof s.count === 'number' ? s.count : '—') + '</div></div>' +
-        '<div class="card"><div class="label">Подписчиков' + (k.listName ? ' · ' + esc(k.listName) : '') +
-          '</div><div class="value">' + (typeof k.subscribers === 'number' ? k.subscribers : '—') + '</div></div>';
+          (typeof reg.count === 'number' ? reg.count : '—') + '</div></div>' +
+        '<div class="card"><div class="label">Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : '') +
+          '</div><div class="value">' + (typeof sub.count === 'number' ? sub.count : '—') + '</div></div>';
 
-      if (s.error) errBox.innerHTML += '<div class="err-box">Shopify: ' + esc(s.error) + (s.detail ? ' — ' + esc(s.detail) : '') + '</div>';
-      if (k.error) errBox.innerHTML += '<div class="err-box">Klaviyo: ' + esc(k.error) + '</div>';
+      if (reg.error) errBox.innerHTML += '<div class="err-box">Klaviyo (профили): ' + esc(reg.error) + (reg.detail ? ' — ' + esc(reg.detail) : '') + '</div>';
+      if (sub.error) errBox.innerHTML += '<div class="err-box">Klaviyo (список): ' + esc(sub.error) + '</div>';
 
       var tbody = document.getElementById('tbody');
-      var rows = (s.customers || []);
+      var rows = (reg.profiles || []);
       if (!rows.length) {
         tbody.innerHTML = '<tr><td colspan="4" class="msg">Пока нет данных</td></tr>';
         return;
@@ -150,7 +150,7 @@
         })
         .then(function (data) {
           if (!data) return;
-          if (data.error) { render({ shopify: { error: data.error }, klaviyo: {} }); return; }
+          if (data.error) { render({ registrations: { error: data.error }, subscribers: {} }); return; }
           localStorage.setItem(LS_KEY, token);
           render(data);
         })
