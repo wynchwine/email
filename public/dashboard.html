@@ -53,6 +53,13 @@
     .muted { color: var(--muted); }
     .msg { padding: 40px; text-align: center; color: var(--muted); }
     .err-box { background: #fdecea; color: #c0392b; border-radius: 10px; padding: 14px 16px; font-size: 14px; margin-bottom: 20px; }
+    .del { background: none; border: 1px solid var(--line); color: #c0392b; cursor: pointer; font-size: 13px; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
+    .del:hover { background: #fdecea; border-color: #f5c6c0; }
+    td.act { text-align: right; }
+    .hidden-bar { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .hidden-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
+    .hidden-bar button:hover { border-color: var(--accent); }
+    .hidden-bar[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -79,10 +86,14 @@
         <div class="scroll">
           <table id="table">
             <thead>
-              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th></tr>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th></th></tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
+        </div>
+        <div class="hidden-bar" id="hiddenBar" hidden>
+          <span id="hiddenInfo"></span>
+          <button type="button" id="unhideBtn">Показать скрытые</button>
         </div>
       </div>
     </div>
@@ -92,6 +103,24 @@
     var gate = document.getElementById('gate');
     var app = document.getElementById('app');
     var LS_KEY = 'wynch_dash_token';
+    var HIDDEN_KEY = 'wynch_dash_hidden';
+    var lastData = null;
+
+    // Emails hidden from the dashboard (kept in this browser only).
+    function getHidden() {
+      try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]')); } catch (e) { return new Set(); }
+    }
+    function setHidden(set) {
+      try { localStorage.setItem(HIDDEN_KEY, JSON.stringify(Array.from(set))); } catch (e) {}
+    }
+    function hideEmail(email) {
+      var h = getHidden(); h.add(String(email).toLowerCase()); setHidden(h);
+      if (lastData) render(lastData);
+    }
+    function unhideAll() {
+      setHidden(new Set());
+      if (lastData) render(lastData);
+    }
 
     function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function fmtDate(iso) {
@@ -109,6 +138,7 @@
     }
 
     function render(data) {
+      lastData = data;
       gate.hidden = true; app.hidden = false;
       var errBox = document.getElementById('errBox');
       errBox.innerHTML = '';
@@ -116,10 +146,19 @@
       var reg = data.registrations || {};
       var sub = data.subscribers || {};
 
+      var hidden = getHidden();
+      var allRows = (reg.profiles || []);
+      var rows = allRows.filter(function (c) { return !hidden.has(String(c.email || '').toLowerCase()); });
+      var hiddenShown = allRows.length - rows.length;
+
+      // Registrations count reflects the visible rows (server total minus what
+      // we've hidden locally).
+      var visibleCount = (typeof reg.count === 'number') ? Math.max(0, reg.count - hiddenShown) : rows.length;
+
       var cards = document.getElementById('cards');
       cards.innerHTML =
         '<div class="card"><div class="label">Всего регистраций</div><div class="value">' +
-          (typeof reg.count === 'number' ? reg.count : '—') + '</div></div>' +
+          (reg.error ? '—' : visibleCount) + '</div></div>' +
         '<div class="card"><div class="label">Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : '') +
           '</div><div class="value">' + (typeof sub.count === 'number' ? sub.count : '—') + '</div></div>';
 
@@ -127,19 +166,28 @@
       if (sub.error) errBox.innerHTML += '<div class="err-box">Klaviyo (список): ' + esc(sub.error) + '</div>';
 
       var tbody = document.getElementById('tbody');
-      var rows = (reg.profiles || []);
       if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="msg">Пока нет данных</td></tr>';
-        return;
+        tbody.innerHTML = '<tr><td colspan="5" class="msg">Пока нет данных</td></tr>';
+      } else {
+        tbody.innerHTML = rows.map(function (c) {
+          return '<tr>' +
+            '<td>' + (esc(c.name) || '<span class="muted">—</span>') + '</td>' +
+            '<td>' + esc(c.email) + '</td>' +
+            '<td class="muted">' + esc(fmtDate(c.created_at)) + '</td>' +
+            '<td>' + (c.marketing ? '<span class="pill yes">Да</span>' : '<span class="pill no">Нет</span>') + '</td>' +
+            '<td class="act"><button class="del" type="button" data-email="' + esc(c.email) + '">Удалить</button></td>' +
+            '</tr>';
+        }).join('');
       }
-      tbody.innerHTML = rows.map(function (c) {
-        return '<tr>' +
-          '<td>' + (esc(c.name) || '<span class="muted">—</span>') + '</td>' +
-          '<td>' + esc(c.email) + '</td>' +
-          '<td class="muted">' + esc(fmtDate(c.created_at)) + '</td>' +
-          '<td>' + (c.marketing ? '<span class="pill yes">Да</span>' : '<span class="pill no">Нет</span>') + '</td>' +
-          '</tr>';
-      }).join('');
+
+      // Hidden-rows bar
+      var bar = document.getElementById('hiddenBar');
+      if (hidden.size > 0) {
+        document.getElementById('hiddenInfo').textContent = 'Скрыто записей: ' + hidden.size;
+        bar.hidden = false;
+      } else {
+        bar.hidden = true;
+      }
     }
 
     function load(token) {
@@ -156,6 +204,13 @@
         })
         .catch(function () { showGate('Ошибка сети. Попробуйте ещё раз.'); });
     }
+
+    // Delete (hide) a row — event delegation on the table body.
+    document.getElementById('tbody').addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('.del') : null;
+      if (btn && btn.dataset.email) hideEmail(btn.dataset.email);
+    });
+    document.getElementById('unhideBtn').addEventListener('click', unhideAll);
 
     document.getElementById('gateBtn').addEventListener('click', function () {
       var t = document.getElementById('tokenInput').value.trim();
