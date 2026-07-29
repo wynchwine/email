@@ -11,6 +11,15 @@ const SOURCE = 'landing_signup';
 const MAX_PAGES = 8; // up to 800 profiles
 // Hide test registrations from before this date (UTC). Set to '' to show all.
 const CUTOFF = '2026-07-27T00:00:00Z';
+// Hide specific test emails / whole test domains from the dashboard (display only).
+const EXCLUDE_EMAILS = new Set([
+  'erica2@gmail.com',
+  'igorigor123@mail.com',
+  'lol@mail.com',
+  'winespeter@mail.com',
+  'landingwynch2@atomicmail.io',
+].map((e) => e.toLowerCase()));
+const EXCLUDE_DOMAINS = ['wynchtest.dev']; // automated CC test accounts
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -63,6 +72,9 @@ export default async function handler(req, res) {
           const props = a.properties;
           if (!props || props.source !== SOURCE) return false;
           if (CUTOFF && a.created && a.created < CUTOFF) return false; // hide pre-cutoff test data
+          const email = String(a.email || '').toLowerCase();
+          if (EXCLUDE_EMAILS.has(email)) return false;
+          if (EXCLUDE_DOMAINS.some((d) => email.endsWith('@' + d))) return false;
           return true;
         })
         .map((p) => {
