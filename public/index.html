@@ -360,6 +360,14 @@
       color: var(--text); font-size: 18px; line-height: 1.5;
     }
     .step2-deposit strong { color: var(--accent); font-weight: 700; }
+    .step2 .step2-confirm {
+      margin: 0 auto 30px; max-width: 40ch;
+      background: rgba(255, 99, 21, 0.12);
+      border: 1px dashed rgba(255, 99, 21, 0.55);
+      border-radius: 16px; padding: 18px 22px;
+      color: var(--text); font-size: 16px; line-height: 1.55; word-break: break-word;
+    }
+    .step2 .step2-confirm strong { color: var(--accent); }
     .step2-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
     .step2 .step2-legal { margin: 20px auto 0; max-width: 40ch; font-size: 13px; line-height: 1.5; color: var(--muted); }
     .step2 .step2-legal a { color: var(--accent); text-decoration: underline; }
@@ -732,11 +740,20 @@
         modal.appendChild(cf);
       }
 
-      function finish(msg) {
+      function finish(msg, opts) {
+        opts = opts || {};
+        var confirmHtml = '';
+        if (opts.marketing) {
+          confirmHtml =
+            '<div class="step2-confirm">📩 Deine <strong>kostenlose Cava</strong> ist fast da! Bestätige nur noch deine E-Mail: ' +
+            'wir haben einen Link an <strong>' + esc(opts.email || '') + '</strong> geschickt &mdash; ' +
+            'öffne dein Postfach (auch den Spam-Ordner) und klick auf den Bestätigungslink.</div>';
+        }
         inner.innerHTML =
           '<h2>Willkommen bei WYNCH</h2>' +
           '<p>' + esc(msg) + '</p>' +
           '<div class="step2-deposit">Du hast jetzt <strong>50&nbsp;€</strong> auf deinem Konto &mdash; nutze davon bis zu <strong>30&nbsp;%</strong> bei jeder Bestellung.</div>' +
+          confirmHtml +
           '<div class="step2-actions">' +
             '<button class="step2-yes" type="button" data-go="/pages/quiz">Meine Weine finden &mdash; digitaler Sommelier</button>' +
             '<button class="step2-alt" type="button" data-go="/collections/all-wines">Zum Shop</button>' +
@@ -760,7 +777,7 @@
 
       if (yes) yes.addEventListener('click', function () {
         saveToKlaviyo(true);
-        finish("Alles erledigt — deine Cava und ersten Empfehlungen sind auf dem Weg in dein Postfach. 🥂");
+        finish("Fast geschafft — nur noch ein Schritt. 🥂", { marketing: true, email: signupData && signupData.email });
       });
       if (no) no.addEventListener('click', function () {
         saveToKlaviyo(false);
