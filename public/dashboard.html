@@ -205,10 +205,29 @@
         .catch(function () { showGate('Ошибка сети. Попробуйте ещё раз.'); });
     }
 
-    // Delete (hide) a row — event delegation on the table body.
+    // Delete a subscriber from Klaviyo — event delegation on the table body.
     document.getElementById('tbody').addEventListener('click', function (e) {
       var btn = e.target.closest ? e.target.closest('.del') : null;
-      if (btn && btn.dataset.email) hideEmail(btn.dataset.email);
+      if (!btn || !btn.dataset.email) return;
+      var email = btn.dataset.email;
+      if (!confirm('Подписчика ' + email + ' удалить из Klaviyo? Действие необратимо.')) return;
+      var token = localStorage.getItem(LS_KEY) || '';
+      btn.disabled = true; btn.textContent = 'Удаляю…';
+      fetch('/api/delete-profile?key=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, d: d }; }); })
+        .then(function (res) {
+          if (res.status === 200 && res.d && res.d.ok) {
+            hideEmail(email); // remove from view now; Klaviyo processes deletion async
+          } else {
+            alert('Не удалось удалить: ' + (res.d && res.d.error ? res.d.error : ('HTTP ' + res.status)));
+            btn.disabled = false; btn.textContent = 'Удалить';
+          }
+        })
+        .catch(function () { alert('Ошибка сети'); btn.disabled = false; btn.textContent = 'Удалить'; });
     });
     document.getElementById('unhideBtn').addEventListener('click', unhideAll);
 
