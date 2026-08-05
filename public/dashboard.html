@@ -86,7 +86,7 @@
         <div class="scroll">
           <table id="table">
             <thead>
-              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th></th></tr>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th></th></tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
@@ -167,14 +167,18 @@
 
       var tbody = document.getElementById('tbody');
       if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="msg">Пока нет данных</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="msg">Пока нет данных</td></tr>';
       } else {
         tbody.innerHTML = rows.map(function (c) {
+          var orders = (typeof c.orders === 'number') ? c.orders : null;
+          var spent = (c.spent != null) ? ('€' + Number(c.spent).toFixed(2)) : null;
           return '<tr>' +
             '<td>' + (esc(c.name) || '<span class="muted">—</span>') + '</td>' +
             '<td>' + esc(c.email) + '</td>' +
             '<td class="muted">' + esc(fmtDate(c.created_at)) + '</td>' +
             '<td>' + (c.marketing ? '<span class="pill yes">Да</span>' : '<span class="pill no">Нет</span>') + '</td>' +
+            '<td>' + (orders != null ? orders : '<span class="muted">—</span>') + '</td>' +
+            '<td class="muted">' + (spent != null ? esc(spent) : '—') + '</td>' +
             '<td class="act"><button class="del" type="button" data-email="' + esc(c.email) + '">Удалить</button></td>' +
             '</tr>';
         }).join('');

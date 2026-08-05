@@ -5,8 +5,11 @@
 // Registrations = Klaviyo profiles created via our landing (properties.source
 // == "landing_signup"). Subscribers = confirmed members of the Club list.
 
+import { getShopifyAccessToken } from '../lib/shopify.js';
+
 const KLAVIYO_BASE = 'https://a.klaviyo.com/api';
 const KLAVIYO_REVISION = '2024-10-15';
+const SHOPIFY_API_VERSION = '2024-01';
 const SOURCE = 'landing_signup';
 const MAX_PAGES = 8; // up to 800 profiles
 // Hide test registrations from before this date (UTC). Set to '' to show all.
@@ -87,6 +90,21 @@ export default async function handler(req, res) {
             marketing: consent === 'SUBSCRIBED',
           };
         });
+      // Enrich with Shopify purchase data (orders count + total spent),
+      // matched by email. Best-effort: if Shopify is unreachable, leave blank.
+      try {
+        const map = await shopifyPurchaseMap();
+        if (map) {
+          profiles.forEach((p) => {
+            const m = map[String(p.email || '').toLowerCase()];
+            if (m) { p.orders = m.orders; p.spent = m.spent; }
+          });
+          out.purchases = true;
+        }
+      } catch (e) {
+        // ignore — purchase columns just stay empty
+      }
+
       out.registrations = { count: profiles.length, profiles: profiles.slice(0, 200) };
     }
   } catch (e) {
@@ -94,4 +112,26 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).json(out);
+}
+
+// Map of lowercased email -> { orders, spent } from Shopify customers.
+async function shopifyPurchaseMap() {
+  const shop = process.env.SHOPIFY_SHOP;
+  if (!shop) return null;
+  const token = await getShopifyAccessToken();
+  const headers = { 'X-Shopify-Access-Token': token, Accept: 'application/json' };
+  let url = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers.json?limit=250&fields=email,orders_count,total_spent`;
+  const map = {};
+  for (let page = 0; page < 8 && url; page++) {
+    const r = await fetch(url, { headers });
+    if (!r.ok) { if (page === 0) throw new Error(`Shopify ${r.status}`); break; }
+    const j = await r.json().catch(() => ({}));
+    (j.customers || []).forEach((c) => {
+      if (c.email) map[c.email.toLowerCase()] = { orders: c.orders_count || 0, spent: c.total_spent || '0.00' };
+    });
+    const link = r.headers.get('link') || r.headers.get('Link') || '';
+    const m = link.match(/<([^>]+)>;\s*rel="next"/);
+    url = m ? m[1] : null;
+  }
+  return map;
 }
