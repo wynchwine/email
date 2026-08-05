@@ -155,12 +155,26 @@
       // we've hidden locally).
       var visibleCount = (typeof reg.count === 'number') ? Math.max(0, reg.count - hiddenShown) : rows.length;
 
+      // Derived metrics from the visible rows.
+      var buyers = 0, subs = 0, totalSpent = 0;
+      rows.forEach(function (c) {
+        if ((c.orders || 0) > 0) buyers++;
+        if (c.marketing) subs++;
+        if (c.spent != null) totalSpent += (Number(c.spent) || 0);
+      });
+      var denom = rows.length;
+      function pct(n) { return denom ? Math.round((n / denom) * 100) + '%' : '—'; }
+      function card(label, value) {
+        return '<div class="card"><div class="label">' + label + '</div><div class="value">' + value + '</div></div>';
+      }
+
       var cards = document.getElementById('cards');
       cards.innerHTML =
-        '<div class="card"><div class="label">Всего регистраций</div><div class="value">' +
-          (reg.error ? '—' : visibleCount) + '</div></div>' +
-        '<div class="card"><div class="label">Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : '') +
-          '</div><div class="value">' + (typeof sub.count === 'number' ? sub.count : '—') + '</div></div>';
+        card('Всего регистраций', reg.error ? '—' : visibleCount) +
+        card('Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : ''), (typeof sub.count === 'number' ? sub.count : '—')) +
+        card('Сумма продаж', '€' + totalSpent.toFixed(2)) +
+        card('Конверсия в покупку', reg.error ? '—' : pct(buyers)) +
+        card('Конверсия в подписку', reg.error ? '—' : pct(subs));
 
       if (reg.error) errBox.innerHTML += '<div class="err-box">Klaviyo (профили): ' + esc(reg.error) + (reg.detail ? ' — ' + esc(reg.detail) : '') + '</div>';
       if (sub.error) errBox.innerHTML += '<div class="err-box">Klaviyo (список): ' + esc(sub.error) + '</div>';
