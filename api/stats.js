@@ -11,6 +11,8 @@ const KLAVIYO_BASE = 'https://a.klaviyo.com/api';
 const KLAVIYO_REVISION = '2024-10-15';
 const SHOPIFY_API_VERSION = '2024-01';
 const SOURCE = 'landing_signup';
+// false = count ALL Klaviyo profiles as registrations; true = only landing signups.
+const LANDING_ONLY = false;
 const MAX_PAGES = 8; // up to 800 profiles
 // Hide test registrations from before this date (UTC). Set to '' to show all.
 const CUTOFF = '2026-07-27T00:00:00Z';
@@ -72,8 +74,10 @@ export default async function handler(req, res) {
       const profiles = raw
         .filter((p) => {
           const a = p.attributes || {};
-          const props = a.properties;
-          if (!props || props.source !== SOURCE) return false;
+          if (LANDING_ONLY) {
+            const props = a.properties;
+            if (!props || props.source !== SOURCE) return false;
+          }
           if (CUTOFF && a.created && a.created < CUTOFF) return false; // hide pre-cutoff test data
           const email = String(a.email || '').toLowerCase();
           if (EXCLUDE_EMAILS.has(email)) return false;
