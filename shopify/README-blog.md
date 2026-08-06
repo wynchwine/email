@@ -49,12 +49,29 @@ the section + JSON template instead:
 - The CTA points to `/pages/join`; change it if your club page differs.
 
 ## Wine card inside an article
-Embed a branded product card anywhere in the article body:
-1. Open the post (using the `wynch` template) → in the body editor click the
-   **`<>` (Show HTML)** button.
-2. Paste the block from **`wine-card-snippet.html`** where you want the card.
-3. Replace the CAPS placeholders: product link (`/products/handle`), image URL,
-   name, region · grape, tasting note, price.
 
-The card's styles live in `sections/wynch-article.liquid`, so it renders in
-the WYNCH look automatically. On mobile it stacks (image on top).
+### Easiest — by product handle (auto)
+Just write a token where you want a wine card:
+
+```
+[[wine:riesling-kabinett-2023]]
+```
+
+Put it on its own line in the article body. On render it becomes a full card
+pulled straight from the Shopify product — image, title, price, region · grape
+(from `secondary::region::…` / `secondary::grape::…` tags), a short tasting note
+(from the product description) and an **In den Warenkorb** button. Nothing to
+paste or fill in; change the wine by changing the handle.
+
+- The handle is the last part of the product URL: `/products/**riesling-kabinett-2023**`.
+- If the handle is wrong, the article shows "Wein … nicht gefunden" so you can fix it.
+- Region/grape only appear if the product has the `secondary::region::…` /
+  `secondary::grape::…` tags (same scheme the sommelier uses).
+
+### Manual — full control (optional)
+For a one-off card with custom text/image, open the body editor's **`<>` (Show
+HTML)** view and paste the block from **`wine-card-snippet.html`**, then fill in
+the placeholders.
+
+The card styles live in `sections/wynch-article.liquid`. On mobile the card
+stacks (image on top).

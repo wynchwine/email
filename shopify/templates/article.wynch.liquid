@@ -118,6 +118,11 @@
     transition: background 0.15s ease;
   }
   .wynch-article .wine-card__btn:hover { background: #e5570f; }
+  .wynch-article .wine-card__btn { border: none; cursor: pointer; }
+  .wynch-article .wine-card__btn--disabled { background: #cfcac1; cursor: default; }
+  .wynch-article .wine-card__title a { color: inherit; text-decoration: none; }
+  .wynch-article .wine-card form { margin: 0; }
+  .wynch-article .wa-rte p:empty { display: none; }
   @media (max-width: 560px) {
     .wynch-article .wine-card { flex-direction: column; align-items: stretch; text-align: center; }
     .wynch-article .wine-card__media { align-self: center; }
@@ -187,8 +192,50 @@
            loading="eager">
     {% endif %}
 
+    {%- comment -%}
+      Inline wine cards: write [[wine:product-handle]] anywhere in the article
+      body and it is replaced with a branded product card pulled from Shopify.
+    {%- endcomment -%}
+    {%- capture wa_body -%}{{ article.content }}{%- endcapture -%}
+    {%- assign wa_chunks = wa_body | split: '[[wine:' -%}
     <div class="wa-rte">
-      {{ article.content }}
+      {{ wa_chunks.first }}
+      {%- for wa_chunk in wa_chunks offset: 1 -%}
+        {%- assign wine_handle = wa_chunk | split: ']]' | first | strip -%}
+        {%- assign wa_after = wa_chunk | remove_first: wine_handle | remove_first: ']]' -%}
+        {%- assign wp = all_products[wine_handle] -%}
+        {%- if wp != empty -%}
+          {%- assign wregion = '' -%}{%- assign wgrape = '' -%}
+          {%- for wtag in wp.tags -%}
+            {%- assign tp = wtag | split: '::' -%}
+            {%- if tp[0] == 'secondary' and tp[1] == 'region' -%}{%- assign wregion = tp[2] -%}{%- endif -%}
+            {%- if tp[0] == 'secondary' and tp[1] == 'grape' -%}{%- assign wgrape = tp[2] -%}{%- endif -%}
+          {%- endfor -%}
+          {%- assign weyebrow = '' -%}
+          {%- if wregion != blank and wgrape != blank -%}{%- assign weyebrow = wregion | append: ' · ' | append: wgrape -%}
+          {%- elsif wregion != blank -%}{%- assign weyebrow = wregion -%}
+          {%- elsif wgrape != blank -%}{%- assign weyebrow = wgrape -%}{%- endif -%}
+          <div class="wine-card">
+            <a class="wine-card__media" href="{{ wp.url }}">{%- if wp.featured_image -%}<img src="{{ wp.featured_image | image_url: width: 300 }}" alt="{{ wp.title | escape }}">{%- endif -%}</a>
+            <div class="wine-card__body">
+              {%- if weyebrow != blank -%}<div class="wine-card__eyebrow">{{ weyebrow }}</div>{%- endif -%}
+              <h3 class="wine-card__title"><a href="{{ wp.url }}">{{ wp.title }}</a></h3>
+              {%- if wp.description != blank -%}<p class="wine-card__notes">{{ wp.description | strip_html | truncatewords: 22 }}</p>{%- endif -%}
+              <div class="wine-card__foot">
+                <span class="wine-card__price">{{ wp.price | money }}</span>
+                {%- if wp.available -%}
+                  <form action="/cart/add" method="post"><input type="hidden" name="id" value="{{ wp.selected_or_first_available_variant.id }}"><button class="wine-card__btn" type="submit">In den Warenkorb</button></form>
+                {%- else -%}
+                  <span class="wine-card__btn wine-card__btn--disabled">Ausverkauft</span>
+                {%- endif -%}
+              </div>
+            </div>
+          </div>
+        {%- else -%}
+          <p style="color:#c0392b;font-size:14px;">Wein &bdquo;{{ wine_handle }}&ldquo; nicht gefunden.</p>
+        {%- endif -%}
+        {{ wa_after }}
+      {%- endfor -%}
     </div>
 
     {% if article.tags.size > 0 %}
