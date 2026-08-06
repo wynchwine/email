@@ -35,11 +35,11 @@
     -webkit-font-smoothing: antialiased;
     /* Side inset must match the theme's header/footer frame so the vertical
        lines line up. Tweak --wa-inset if your theme uses a different margin. */
-    --wa-inset: 16px;
+    --wa-inset: 4vw; /* matches the theme's .with-h-paddings (padding 4vw) */
     padding: 20px var(--wa-inset) 44px;
   }
   .wynch-article * { box-sizing: border-box; }
-  @media (max-width: 760px) { .wynch-article { --wa-inset: 12px; padding: 12px var(--wa-inset) 30px; } }
+  @media (max-width: 760px) { .wynch-article { padding: 12px var(--wa-inset) 30px; } }
   /* Orange editorial frame around the content, like the header/footer */
   .wa-frame { border: 1px solid var(--accent); padding: 48px 30px 64px; }
   @media (max-width: 560px) { .wa-frame { padding: 34px 18px 44px; } }
