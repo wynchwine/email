@@ -35,11 +35,14 @@
     -webkit-font-smoothing: antialiased;
     /* Side inset must match the theme's header/footer frame so the vertical
        lines line up. Tweak --wa-inset if your theme uses a different margin. */
-    --wa-inset: 4vw; /* matches the theme's .with-h-paddings (padding 4vw) */
+    --wa-inset: 4vw; /* mobile: matches theme .with-h-paddings */
     padding: 0 var(--wa-inset); /* no top/bottom gap — frame meets header/footer */
   }
   .wynch-article * { box-sizing: border-box; }
-  @media (max-width: 760px) { .wynch-article { padding: 0 var(--wa-inset); } }
+  /* Desktop: match the theme's .with-h-paddings @media (min-width:768px) exactly */
+  @media (min-width: 768px) {
+    .wynch-article { --wa-inset: calc(min(100vw, 1440px) * 20 / 1440); }
+  }
   /* Orange editorial frame around the content, like the header/footer */
   .wa-frame { border: 1px solid var(--accent); padding: 48px 30px 64px; }
   @media (max-width: 560px) { .wa-frame { padding: 34px 18px 44px; } }
