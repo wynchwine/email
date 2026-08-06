@@ -8,12 +8,26 @@ It is an **alternate** template, so it does **not** replace the theme's
 default article template — you assign it to whichever articles you want.
 
 ## Install
+
+There are two file sets depending on your theme type. Most current themes are
+"Online Store 2.0" (JSON templates) — use option A. If your theme uses classic
+Liquid templates, option B is simpler.
+
+### A) OS 2.0 / JSON theme (recommended — avoids "Invalid JSON" errors)
+Your theme creates `.json` templates, which cannot hold Liquid directly. Use
+the section + JSON template instead:
 1. **Online Store → Themes → ⋯ → Edit code.**
-2. **Templates → Add a new template → article** → name it **`wynch`**.
-   - If the theme creates `article.wynch.json`, delete that and add
-     `article.wynch.liquid` instead (or paste this file's contents so the
-     template is the Liquid version).
-3. Paste the contents of `templates/article.wynch.liquid`. Save.
+2. **Sections → Add a new section** → name it **`wynch-article`** → if it
+   creates `wynch-article.liquid`, replace its contents with
+   `sections/wynch-article.liquid`. Save.
+3. **Templates → Add a new template → article** → name it **`wynch`**. It will
+   create `article.wynch.json` → replace its contents with
+   `templates/article.wynch.json` (it just references the section). Save.
+
+### B) Classic Liquid theme
+1. **Templates → Add a new template → article** → choose type **liquid** (not
+   json) → name it **`wynch`**.
+2. Paste the contents of `templates/article.wynch.liquid`. Save.
 
 ## Use it on an article
 - **Online Store → Blog posts →** open a post → in the sidebar **Theme
