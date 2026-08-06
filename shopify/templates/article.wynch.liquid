@@ -1,0 +1,201 @@
+{% comment %}
+  WYNCH — blog article template (alternate).
+  Renders a single blog article in the WYNCH design system. It is an
+  ALTERNATE template ("article.wynch"), so it does not replace the theme's
+  default article template — assign it per article in the editor.
+  All styles are scoped under .wynch-article to avoid clashing with the theme.
+{% endcomment %}
+
+<link rel="preconnect" href="https://wynch.wine" crossorigin>
+<style>
+  @font-face {
+    font-family: "Giorgio Sans Medium";
+    src: url("https://wynch.wine/cdn/shop/t/22/assets/giorgio-sans-medium.static.woff2?v=132781297963084722121782491269") format("woff2");
+    font-weight: 400 700; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Aktiv Grotesk Regular";
+    src: url("https://wynch.wine/cdn/shop/t/22/assets/aktiv-grotesk-regular.static.woff2?v=138786277528983394311782491269") format("woff2");
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+
+  .wynch-article {
+    --accent: #ff6315;
+    --bg: #eeece7;
+    --text: #5d5e60;
+    --ink: #3f3f41;
+    --muted: #999999;
+    --line: #e2ded6;
+    --font-head: "Giorgio Sans Medium", "Futura", "Century Gothic", "Helvetica Neue", Arial, sans-serif;
+    --font-body: "Aktiv Grotesk Regular", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    font-family: var(--font-body);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    padding: 48px 20px 72px;
+  }
+  .wynch-article * { box-sizing: border-box; }
+  .wa-wrap { max-width: 760px; margin: 0 auto; }
+
+  /* Back link */
+  .wa-back {
+    display: inline-block; margin-bottom: 26px;
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+  }
+  .wa-back:hover { color: var(--accent); }
+  .wa-back span { color: var(--accent); }
+
+  /* Title + meta */
+  .wa-title {
+    font-family: var(--font-head); font-weight: 700;
+    color: var(--accent); text-transform: uppercase;
+    font-size: clamp(38px, 6vw, 60px); line-height: 1.02; letter-spacing: -0.5px;
+    margin: 0 0 16px;
+  }
+  .wa-meta {
+    font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 30px;
+  }
+  .wa-meta strong { color: var(--ink); font-weight: 400; }
+
+  /* Featured image */
+  .wa-hero-img { width: 100%; height: auto; display: block; border-radius: 22px; margin: 0 0 40px; }
+
+  /* Rich text content */
+  .wa-rte { font-size: 18px; color: var(--ink); }
+  .wa-rte > * + * { margin-top: 22px; }
+  .wa-rte h2, .wa-rte h3, .wa-rte h4 {
+    font-family: var(--font-head); color: var(--accent); text-transform: uppercase;
+    line-height: 1.1; margin-top: 42px;
+  }
+  .wa-rte h2 { font-size: clamp(28px, 4vw, 38px); }
+  .wa-rte h3 { font-size: clamp(24px, 3.4vw, 30px); }
+  .wa-rte p { margin: 0; }
+  .wa-rte a { color: var(--accent); text-decoration: underline; }
+  .wa-rte img { max-width: 100%; height: auto; border-radius: 16px; display: block; }
+  .wa-rte ul, .wa-rte ol { padding-left: 1.3em; }
+  .wa-rte li + li { margin-top: 8px; }
+  .wa-rte blockquote {
+    margin: 30px 0; padding: 6px 0 6px 24px;
+    border-left: 3px solid var(--accent);
+    font-family: var(--font-head); font-size: clamp(22px, 3vw, 28px);
+    color: var(--ink); line-height: 1.35; text-transform: none;
+  }
+  .wa-rte hr { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+  .wa-rte code { background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 6px; font-size: 0.9em; }
+
+  /* Tags */
+  .wa-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 44px; }
+  .wa-tag {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--accent); text-decoration: none;
+    border: 1px solid var(--accent); border-radius: 9999px; padding: 6px 14px;
+  }
+  .wa-tag:hover { background: rgba(255,99,21,0.10); }
+
+  /* Footer CTA */
+  .wa-cta {
+    margin-top: 56px; padding: 34px 28px; text-align: center;
+    background: #fff; border: 1px solid var(--line); border-radius: 20px;
+  }
+  .wa-cta h3 {
+    font-family: var(--font-head); font-weight: 700; color: var(--accent);
+    text-transform: uppercase; font-size: clamp(26px, 4vw, 34px); line-height: 1.05; margin: 0 0 10px;
+  }
+  .wa-cta p { margin: 0 0 20px; font-size: 16px; color: var(--text); }
+  .wa-btn {
+    display: inline-block; text-decoration: none;
+    background: var(--accent); color: #fff;
+    border-radius: 9999px; padding: 15px 34px;
+    font-family: var(--font-body); font-size: 16px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    transition: background 0.15s ease;
+  }
+  .wa-btn:hover { background: #e5570f; }
+
+  /* Comments */
+  .wa-comments { margin-top: 56px; border-top: 1px solid var(--line); padding-top: 30px; }
+  .wa-comments h3 { font-family: var(--font-head); color: var(--accent); text-transform: uppercase; font-size: 26px; margin: 0 0 20px; }
+  .wa-comment { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .wa-comment .who { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+  .wa-form { margin-top: 26px; display: flex; flex-direction: column; gap: 12px; }
+  .wa-form input, .wa-form textarea {
+    font-family: var(--font-body); font-size: 16px; padding: 14px 18px;
+    border: 1px solid var(--accent); border-radius: 14px; background: #fff; color: var(--ink); outline: none;
+  }
+  .wa-form textarea { min-height: 130px; resize: vertical; }
+  .wa-form button { align-self: flex-start; border: none; cursor: pointer; }
+</style>
+
+<article class="wynch-article">
+  <div class="wa-wrap">
+
+    <a class="wa-back" href="{{ blog.url }}">&larr; <span>{{ blog.title | default: 'Blog' }}</span></a>
+
+    <h1 class="wa-title">{{ article.title }}</h1>
+
+    <div class="wa-meta">
+      <strong>{{ article.published_at | date: '%d.%m.%Y' }}</strong>
+      {% if article.author != blank %} &middot; {{ article.author }}{% endif %}
+    </div>
+
+    {% if article.image %}
+      <img class="wa-hero-img"
+           src="{{ article.image | image_url: width: 1600 }}"
+           alt="{{ article.image.alt | default: article.title | escape }}"
+           loading="eager">
+    {% endif %}
+
+    <div class="wa-rte">
+      {{ article.content }}
+    </div>
+
+    {% if article.tags.size > 0 %}
+      <div class="wa-tags">
+        {% for tag in article.tags %}
+          <a class="wa-tag" href="{{ blog.url }}/tagged/{{ tag | handleize }}">{{ tag }}</a>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Footer CTA to the club -->
+    <div class="wa-cta">
+      <h3>Trink besseren Wein</h3>
+      <p>Werde Mitglied im WYNCH Club und starte mit 50 € Guthaben.</p>
+      <a class="wa-btn" href="/pages/join">Jetzt Mitglied werden</a>
+    </div>
+
+    {% if blog.comments_enabled? %}
+      <div class="wa-comments">
+        <h3>{{ article.comments_count }} Kommentare</h3>
+
+        {% paginate article.comments by 20 %}
+          {% for comment in article.comments %}
+            <div class="wa-comment" id="{{ comment.id }}">
+              <div>{{ comment.content }}</div>
+              <div class="who">{{ comment.author }} &middot; {{ comment.created_at | date: '%d.%m.%Y' }}</div>
+            </div>
+          {% endfor %}
+        {% endpaginate %}
+
+        {% form 'new_comment', article %}
+          {% if form.errors %}
+            <p style="color:#c0392b;">{{ form.errors | default_errors }}</p>
+          {% endif %}
+          {% if form.posted_successfully? %}
+            <p style="color:var(--accent);">Danke! Dein Kommentar wurde übermittelt.</p>
+          {% endif %}
+          <div class="wa-form">
+            <input type="text" name="comment[author]" placeholder="Dein Name" required>
+            <input type="email" name="comment[email]" placeholder="deine@email.de" required>
+            <textarea name="comment[body]" placeholder="Dein Kommentar…" required></textarea>
+            <button type="submit" class="wa-btn">Kommentar senden</button>
+          </div>
+        {% endform %}
+      </div>
+    {% endif %}
+
+  </div>
+</article>
