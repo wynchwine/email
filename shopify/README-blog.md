@@ -47,3 +47,14 @@ the section + JSON template instead:
   the theme. The site header/footer come from the theme layout as usual.
 - Fonts load from the wynch.wine CDN (same as the landing).
 - The CTA points to `/pages/join`; change it if your club page differs.
+
+## Wine card inside an article
+Embed a branded product card anywhere in the article body:
+1. Open the post (using the `wynch` template) → in the body editor click the
+   **`<>` (Show HTML)** button.
+2. Paste the block from **`wine-card-snippet.html`** where you want the card.
+3. Replace the CAPS placeholders: product link (`/products/handle`), image URL,
+   name, region · grape, tasting note, price.
+
+The card's styles live in `sections/wynch-article.liquid`, so it renders in
+the WYNCH look automatically. On mobile it stacks (image on top).

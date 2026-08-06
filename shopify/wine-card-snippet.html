@@ -1,0 +1,28 @@
+<!--
+  WYNCH — wine card for blog articles.
+
+  HOW TO USE
+  1. Open a blog post that uses the "wynch" template.
+  2. In the article body editor, click the "<>" (Show HTML / code view) button.
+  3. Paste the block below where you want the card to appear.
+  4. Replace the CAPS placeholders (link, image, name, region/grape, notes, price).
+  The styling comes from the wynch-article section, so it renders automatically.
+
+  Tip: the image works best as a tall bottle shot (~3:4). Use the product's
+  Shopify image URL, or upload one under Content → Files and paste its URL.
+-->
+
+<div class="wine-card">
+  <a class="wine-card__media" href="/products/PRODUCT-HANDLE">
+    <img src="IMAGE-URL" alt="WEINNAME">
+  </a>
+  <div class="wine-card__body">
+    <div class="wine-card__eyebrow">REGION · REBSORTE</div>
+    <h3 class="wine-card__title">WEINNAME</h3>
+    <p class="wine-card__notes">Kurze Verkostungsnotiz — z. B. „Saftig, mit Noten von Kirsche und einem Hauch Vanille."</p>
+    <div class="wine-card__foot">
+      <span class="wine-card__price">€19,90</span>
+      <a class="wine-card__btn" href="/products/PRODUCT-HANDLE">In den Warenkorb</a>
+    </div>
+  </div>
+</div>

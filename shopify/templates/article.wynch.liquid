@@ -96,6 +96,34 @@
   .wa-rte hr { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
   .wa-rte code { background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 6px; font-size: 0.9em; }
 
+  /* Wine card (paste the snippet into the article HTML) */
+  .wynch-article .wine-card {
+    display: flex; gap: 22px; align-items: center;
+    background: #fff; border: 1px solid var(--accent);
+    border-radius: 20px; padding: 20px; margin: 34px 0;
+  }
+  .wynch-article .wine-card__media { flex: 0 0 130px; }
+  .wynch-article .wine-card__media img { width: 130px; height: 175px; object-fit: cover; border-radius: 12px; display: block; margin: 0; }
+  .wynch-article .wine-card__body { flex: 1 1 auto; min-width: 0; }
+  .wynch-article .wine-card__eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .wynch-article .wine-card__title { font-family: var(--font-head); color: var(--accent); text-transform: uppercase; font-size: clamp(22px, 3vw, 28px); line-height: 1.05; margin: 0 0 8px; }
+  .wynch-article .wine-card__notes { font-size: 15px; line-height: 1.5; color: var(--ink); margin: 0 0 14px; }
+  .wynch-article .wine-card__foot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .wynch-article .wine-card__price { font-family: var(--font-head); font-size: 22px; color: var(--ink); }
+  .wynch-article .wine-card__btn {
+    display: inline-block; text-decoration: none;
+    background: var(--accent); color: #fff;
+    border-radius: 9999px; padding: 12px 22px;
+    font-family: var(--font-body); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;
+    transition: background 0.15s ease;
+  }
+  .wynch-article .wine-card__btn:hover { background: #e5570f; }
+  @media (max-width: 560px) {
+    .wynch-article .wine-card { flex-direction: column; align-items: stretch; text-align: center; }
+    .wynch-article .wine-card__media { align-self: center; }
+    .wynch-article .wine-card__foot { justify-content: center; }
+  }
+
   /* Tags */
   .wa-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 44px; }
   .wa-tag {
