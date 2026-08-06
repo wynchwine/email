@@ -33,9 +33,13 @@
     color: var(--text);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
-    padding: 48px 20px 72px;
+    padding: 40px;
   }
   .wynch-article * { box-sizing: border-box; }
+  @media (max-width: 760px) { .wynch-article { padding: 16px; } }
+  /* Orange editorial frame around the content, like the header/footer */
+  .wa-frame { border: 1px solid var(--accent); padding: 48px 30px 64px; }
+  @media (max-width: 560px) { .wa-frame { padding: 34px 18px 44px; } }
   .wa-wrap { max-width: 760px; margin: 0 auto; }
 
   /* Back link */
@@ -61,7 +65,7 @@
   .wa-meta strong { color: var(--ink); font-weight: 400; }
 
   /* Featured image */
-  .wa-hero-img { width: 100%; height: auto; display: block; border-radius: 22px; margin: 0 0 40px; }
+  .wa-hero-img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; border-radius: 22px; margin: 0 0 40px; }
 
   /* Rich text content */
   .wa-rte { font-size: 18px; color: var(--ink); }
@@ -130,6 +134,7 @@
 </style>
 
 <article class="wynch-article">
+  <div class="wa-frame">
   <div class="wa-wrap">
 
     <a class="wa-back" href="{{ blog.url }}">&larr; <span>{{ blog.title | default: 'Blog' }}</span></a>
@@ -197,6 +202,7 @@
       </div>
     {% endif %}
 
+  </div>
   </div>
 </article>
 
