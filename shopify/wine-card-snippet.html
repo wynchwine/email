@@ -1,28 +1,30 @@
 <!--
   WYNCH — wine card for blog articles.
 
-  HOW TO USE
-  1. Open a blog post that uses the "wynch" template.
-  2. In the article body editor, click the "<>" (Show HTML / code view) button.
-  3. Paste the block below where you want the card to appear.
-  4. Replace the CAPS placeholders (link, image, name, region/grape, notes, price).
-  The styling comes from the wynch-article section, so it renders automatically.
+  EASIEST: don't use this HTML at all. Just write a token on its own line in
+  the article body and it renders a full card (bottle, aromas around it, name,
+  price, add-to-cart) pulled from the Shopify product:
 
-  Tip: the image works best as a tall bottle shot (~3:4). Use the product's
-  Shopify image URL, or upload one under Content → Files and paste its URL.
+      [[wine:product-handle]]
+
+  Aromas come from the product's secondary::aroma::<name> tags (images
+  aroma__<name>.png in Files); region from secondary::region::<name>.
+
+  ---------------------------------------------------------------------------
+  MANUAL (only if you need a custom card): paste this into the body's HTML (<>)
+  view and fill in the placeholders. Aroma images are optional — add up to 6
+  <li> items; they position themselves around the bottle.
 -->
 
 <div class="wine-card">
-  <a class="wine-card__media" href="/products/PRODUCT-HANDLE">
-    <img src="IMAGE-URL" alt="WEINNAME">
+  <a class="wine-card__stage" href="/products/PRODUCT-HANDLE">
+    <ul class="wine-card__aromas">
+      <li><img src="AROMA-IMAGE-URL-1" alt=""></li>
+      <li><img src="AROMA-IMAGE-URL-2" alt=""></li>
+    </ul>
+    <img class="wine-card__bottle" src="BOTTLE-IMAGE-URL" alt="WEINNAME">
   </a>
-  <div class="wine-card__body">
-    <div class="wine-card__eyebrow">REGION · REBSORTE</div>
-    <h3 class="wine-card__title">WEINNAME</h3>
-    <p class="wine-card__notes">Kurze Verkostungsnotiz — z. B. „Saftig, mit Noten von Kirsche und einem Hauch Vanille."</p>
-    <div class="wine-card__foot">
-      <span class="wine-card__price">€19,90</span>
-      <a class="wine-card__btn" href="/products/PRODUCT-HANDLE">In den Warenkorb</a>
-    </div>
-  </div>
+  <h3 class="wine-card__title"><a href="/products/PRODUCT-HANDLE">WEINNAME &middot; REGION</a></h3>
+  <div class="wine-card__price">&euro;19,00</div>
+  <a class="wine-card__btn" href="/products/PRODUCT-HANDLE">In den Warenkorb</a>
 </div>
