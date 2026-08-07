@@ -149,16 +149,21 @@
   }
   .wa-tag:hover { background: rgba(255,99,21,0.10); }
 
-  /* Footer CTA */
+  /* Footer CTA with photo background */
   .wa-cta {
-    margin-top: 56px; padding: 34px 28px; text-align: center;
-    background: #fff; border: 1px solid var(--line); border-radius: 20px;
+    position: relative; overflow: hidden;
+    margin-top: 56px; padding: 72px 28px; text-align: center;
+    border: none; border-radius: 20px; color: #fff;
+    background: #2d2d2d url("https://wynch.wine/cdn/shop/files/email_pet_nat_eng_8_2800x.png") center / cover no-repeat;
   }
+  .wa-cta::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.42); }
+  .wa-cta > * { position: relative; z-index: 1; }
   .wa-cta h3 {
-    font-family: var(--font-head); font-weight: 700; color: var(--accent);
-    text-transform: uppercase; font-size: clamp(26px, 4vw, 34px); line-height: 1.05; margin: 0 0 10px;
+    font-family: var(--font-head); font-weight: 700; color: #fff;
+    text-transform: uppercase; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; margin: 0 auto 12px; max-width: 18ch;
   }
-  .wa-cta p { margin: 0 0 20px; font-size: 16px; color: var(--text); }
+  .wa-cta p { margin: 0 0 24px; font-size: 18px; color: #fff; }
+  .wa-cta p strong { color: var(--accent); }
   .wa-btn {
     display: inline-block; text-decoration: none;
     background: var(--accent); color: #fff;
@@ -257,11 +262,11 @@
       </div>
     {% endif %}
 
-    <!-- Footer CTA to the club -->
+    <!-- Footer CTA to the club (photo background) -->
     <div class="wa-cta">
-      <h3>Trink besseren Wein</h3>
-      <p>Werde Mitglied im WYNCH Club und starte mit 50 € Guthaben.</p>
-      <a class="wa-btn" href="/pages/join">Jetzt Mitglied werden</a>
+      <h3>Finde deine Weine mit dem digitalen Sommelier</h3>
+      <p>und sichere dir <strong>50 €</strong> Guthaben.</p>
+      <a class="wa-btn" href="/pages/join">Meine Weine finden</a>
     </div>
 
     {% if blog.comments_enabled? %}
