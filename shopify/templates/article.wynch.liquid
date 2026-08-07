@@ -102,19 +102,21 @@
     background: transparent; border: 1px solid var(--accent);
     border-radius: 20px; padding: 20px; margin: 34px 0;
   }
-  .wynch-article .wine-card__media { flex: 0 0 150px; position: relative; min-height: 190px; align-self: stretch; }
+  .wynch-article .wine-card__media { flex: 0 0 210px; position: relative; min-height: 260px; align-self: stretch; }
   .wynch-article .wine-card__bottle {
     position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
-    height: 100%; width: auto; max-width: 80%; object-fit: contain; border-radius: 0; z-index: 2; margin: 0;
+    height: 100%; width: auto; max-width: 54%; object-fit: contain; border-radius: 0; z-index: 2; margin: 0;
   }
-  /* Aromas sit behind the bottle in the media area */
+  /* Aromas clustered around the bottle, like the catalog */
   .wynch-article .wine-card__aromas { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; z-index: 1; }
-  .wynch-article .wine-card__aromas li { position: absolute; width: 46%; margin: 0; }
+  .wynch-article .wine-card__aromas li { position: absolute; width: 42%; margin: 0; }
   .wynch-article .wine-card__aromas img { width: 100%; height: auto; object-fit: contain; border-radius: 0; display: block; margin: 0; }
-  .wynch-article .wine-card__aromas li:nth-child(1) { top: 2%; left: 0; }
-  .wynch-article .wine-card__aromas li:nth-child(2) { bottom: 4%; left: 4%; }
-  .wynch-article .wine-card__aromas li:nth-child(3) { top: 2%; right: 0; }
-  .wynch-article .wine-card__aromas li:nth-child(4) { bottom: 4%; right: 4%; }
+  .wynch-article .wine-card__aromas li:nth-child(1) { top: 0; left: -2%; }
+  .wynch-article .wine-card__aromas li:nth-child(2) { top: 33%; left: -6%; }
+  .wynch-article .wine-card__aromas li:nth-child(3) { bottom: 0; left: -2%; }
+  .wynch-article .wine-card__aromas li:nth-child(4) { top: 0; right: -2%; }
+  .wynch-article .wine-card__aromas li:nth-child(5) { top: 33%; right: -6%; }
+  .wynch-article .wine-card__aromas li:nth-child(6) { bottom: 0; right: -2%; }
   .wynch-article .wine-card__body { flex: 1 1 auto; min-width: 0; }
   .wynch-article .wine-card__eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .wynch-article .wine-card__title { font-family: var(--font-head); color: var(--accent); text-transform: uppercase; font-size: clamp(22px, 3vw, 28px); line-height: 1.05; margin: 0 0 8px; }
@@ -249,7 +251,7 @@
               {%- if waromas != blank -%}
                 <ul class="wine-card__aromas">
                   {%- assign aroma_list = waromas | remove_first: ',' | split: ',' -%}
-                  {%- for a in aroma_list limit: 4 -%}
+                  {%- for a in aroma_list limit: 6 -%}
                     {%- assign av = a | strip -%}
                     {%- if av != blank -%}
                       {%- assign aslug = av | downcase | replace: ' ', '_' -%}
