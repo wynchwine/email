@@ -149,20 +149,14 @@
   }
   .wa-tag:hover { background: rgba(255,99,21,0.10); }
 
-  /* Footer CTA with photo background */
+  /* Footer CTA with photo background (no overlay; heading uses the site's global h1) */
   .wa-cta {
-    position: relative; overflow: hidden;
     margin-top: 56px; padding: 72px 28px; text-align: center;
-    border: none; border-radius: 20px; color: #fff;
+    border: none; border-radius: 20px;
     background: #2d2d2d url("https://wynch.wine/cdn/shop/files/email_pet_nat_eng_8_2800x.png") center / cover no-repeat;
   }
-  .wa-cta::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.42); }
-  .wa-cta > * { position: relative; z-index: 1; }
-  .wa-cta h3 {
-    font-family: var(--font-head); font-weight: 700; color: #fff;
-    text-transform: uppercase; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; margin: 0 auto 12px; max-width: 18ch;
-  }
-  .wa-cta p { margin: 0 0 24px; font-size: 18px; color: #fff; }
+  .wa-cta h1 { margin: 0 auto 12px; max-width: 20ch; } /* layout only — inherit global h1 styles */
+  .wa-cta p { margin: 0 0 24px; font-size: 18px; }
   .wa-cta p strong { color: var(--accent); }
   .wa-btn {
     display: inline-block; text-decoration: none;
@@ -264,7 +258,7 @@
 
     <!-- Footer CTA to the club (photo background) -->
     <div class="wa-cta">
-      <h3>Finde deine Weine mit dem digitalen Sommelier</h3>
+      <h1>Finde deine Weine mit dem digitalen Sommelier</h1>
       <p>und sichere dir <strong>50 €</strong> Guthaben.</p>
       <a class="wa-btn" href="/pages/join">Meine Weine finden</a>
     </div>
