@@ -108,6 +108,9 @@
   .wynch-article .wine-card__eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .wynch-article .wine-card__title { font-family: var(--font-head); color: var(--accent); text-transform: uppercase; font-size: clamp(22px, 3vw, 28px); line-height: 1.05; margin: 0 0 8px; }
   .wynch-article .wine-card__notes { font-size: 15px; line-height: 1.5; color: var(--ink); margin: 0 0 14px; }
+  .wynch-article .wine-card__aromas { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; padding: 0; }
+  .wynch-article .wine-card__aromas li { margin: 0; }
+  .wynch-article .wine-card__aromas img { width: 40px; height: 40px; border-radius: 9999px; object-fit: cover; display: block; margin: 0; }
   .wynch-article .wine-card__foot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
   .wynch-article .wine-card__price { font-family: var(--font-head); font-size: 22px; color: var(--ink); }
   .wynch-article .wine-card__btn {
@@ -218,11 +221,12 @@
         {%- assign wa_after = wa_chunk | remove_first: wine_handle | remove_first: ']]' -%}
         {%- assign wp = all_products[wine_handle] -%}
         {%- if wp != empty -%}
-          {%- assign wregion = '' -%}{%- assign wgrape = '' -%}
+          {%- assign wregion = '' -%}{%- assign wgrape = '' -%}{%- assign waromas = '' -%}
           {%- for wtag in wp.tags -%}
             {%- assign tp = wtag | split: '::' -%}
             {%- if tp[0] == 'secondary' and tp[1] == 'region' -%}{%- assign wregion = tp[2] -%}{%- endif -%}
             {%- if tp[0] == 'secondary' and tp[1] == 'grape' -%}{%- assign wgrape = tp[2] -%}{%- endif -%}
+            {%- if tp[0] == 'secondary' and tp[1] == 'aroma' -%}{%- assign waromas = waromas | append: ',' | append: tp[2] -%}{%- endif -%}
           {%- endfor -%}
           {%- assign weyebrow = '' -%}
           {%- if wregion != blank and wgrape != blank -%}{%- assign weyebrow = wregion | append: ' · ' | append: wgrape -%}
@@ -234,6 +238,19 @@
               {%- if weyebrow != blank -%}<div class="wine-card__eyebrow">{{ weyebrow }}</div>{%- endif -%}
               <h3 class="wine-card__title"><a href="{{ wp.url }}">{{ wp.title }}</a></h3>
               {%- if wp.description != blank -%}<p class="wine-card__notes">{{ wp.description | strip_html | truncatewords: 22 }}</p>{%- endif -%}
+              {%- if waromas != blank -%}
+                <ul class="wine-card__aromas">
+                  {%- assign aroma_list = waromas | split: ',' -%}
+                  {%- for a in aroma_list -%}
+                    {%- assign av = a | strip -%}
+                    {%- if av != blank -%}
+                      {%- assign aslug = av | downcase | replace: ' ', '_' -%}
+                      {%- assign afile = 'aroma__' | append: aslug | append: '.png' -%}
+                      <li><img src="{{ afile | file_url }}" alt="{{ av | escape }}" title="{{ av | escape }}" loading="lazy" width="40" height="40"></li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
               <div class="wine-card__foot">
                 <span class="wine-card__price">{{ wp.price | money }}</span>
                 {%- if wp.available -%}
