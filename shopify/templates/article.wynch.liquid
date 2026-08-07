@@ -105,9 +105,11 @@
   .wynch-article .wine-card__media { flex: 0 0 130px; }
   .wynch-article .wine-card__media img { width: 130px; height: 175px; object-fit: cover; border-radius: 12px; display: block; margin: 0; }
   /* Aromas as a row of icons in the body */
-  .wynch-article .wine-card__aromas { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; padding: 0; }
+  .wynch-article .wine-card__aromas { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; }
   .wynch-article .wine-card__aromas li { margin: 0; }
   .wynch-article .wine-card__aromas img { width: 44px; height: 44px; object-fit: contain; border-radius: 0; display: block; margin: 0; }
+  /* Desktop: aromas on the left, price + cart button aligned right, same row */
+  .wynch-article .wine-card__actions { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
   .wynch-article .wine-card__body { flex: 1 1 auto; min-width: 0; }
   .wynch-article .wine-card__eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .wynch-article .wine-card__title { font-family: var(--font-head); color: var(--accent); text-transform: uppercase; font-size: clamp(22px, 3vw, 28px); line-height: 1.05; margin: 0 0 8px; }
@@ -129,6 +131,7 @@
     .wynch-article .wine-card { flex-direction: column; align-items: stretch; text-align: center; }
     .wynch-article .wine-card__media { align-self: center; }
     .wynch-article .wine-card__aromas { justify-content: center; }
+    .wynch-article .wine-card__actions { flex-direction: column; align-items: center; gap: 14px; }
     .wynch-article .wine-card__foot { justify-content: center; }
   }
   .wynch-article .wa-rte p:empty { display: none; }
@@ -244,26 +247,28 @@
               {%- if weyebrow != blank -%}<div class="wine-card__eyebrow">{{ weyebrow }}</div>{%- endif -%}
               <h3 class="wine-card__title"><a href="{{ wp.url }}">{{ wp.title }}</a></h3>
               {%- if wp.description != blank -%}<p class="wine-card__notes">{{ wp.description | strip_html | truncatewords: 22 }}</p>{%- endif -%}
-              {%- if waromas != blank -%}
-                <ul class="wine-card__aromas">
-                  {%- assign aroma_list = waromas | remove_first: ',' | split: ',' -%}
-                  {%- for a in aroma_list limit: 6 -%}
-                    {%- assign av = a | strip -%}
-                    {%- if av != blank -%}
-                      {%- assign aslug = av | downcase | replace: ' ', '_' -%}
-                      {%- assign afile = 'aroma__' | append: aslug | append: '.png' -%}
-                      <li><img src="{{ afile | file_url }}" alt="{{ av | escape }}" title="{{ av | escape }}" loading="lazy"></li>
-                    {%- endif -%}
-                  {%- endfor -%}
-                </ul>
-              {%- endif -%}
-              <div class="wine-card__foot">
-                <span class="wine-card__price">{{ wp.price | money }}</span>
-                {%- if wp.available -%}
-                  <form action="/cart/add" method="post"><input type="hidden" name="id" value="{{ wp.selected_or_first_available_variant.id }}"><button class="wine-card__btn" type="submit">In den Warenkorb</button></form>
-                {%- else -%}
-                  <span class="wine-card__btn wine-card__btn--disabled">Ausverkauft</span>
+              <div class="wine-card__actions">
+                {%- if waromas != blank -%}
+                  <ul class="wine-card__aromas">
+                    {%- assign aroma_list = waromas | remove_first: ',' | split: ',' -%}
+                    {%- for a in aroma_list limit: 6 -%}
+                      {%- assign av = a | strip -%}
+                      {%- if av != blank -%}
+                        {%- assign aslug = av | downcase | replace: ' ', '_' -%}
+                        {%- assign afile = 'aroma__' | append: aslug | append: '.png' -%}
+                        <li><img src="{{ afile | file_url }}" alt="{{ av | escape }}" title="{{ av | escape }}" loading="lazy"></li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
                 {%- endif -%}
+                <div class="wine-card__foot">
+                  <span class="wine-card__price">{{ wp.price | money }}</span>
+                  {%- if wp.available -%}
+                    <form action="/cart/add" method="post"><input type="hidden" name="id" value="{{ wp.selected_or_first_available_variant.id }}"><button class="wine-card__btn" type="submit">In den Warenkorb</button></form>
+                  {%- else -%}
+                    <span class="wine-card__btn wine-card__btn--disabled">Ausverkauft</span>
+                  {%- endif -%}
+                </div>
               </div>
             </div>
           </div>
