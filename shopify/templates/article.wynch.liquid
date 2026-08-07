@@ -123,6 +123,14 @@
   .wynch-article .wine-card__title a { color: inherit; text-decoration: none; }
   .wynch-article .wine-card form { margin: 0; }
   .wynch-article .wa-rte p:empty { display: none; }
+  /* Hide any wishlist/heart widget the theme injects into product links */
+  .wynch-article .wine-card [class*="wishlist" i],
+  .wynch-article .wine-card [class*="wish-list" i],
+  .wynch-article .wine-card [data-wishlist],
+  .wynch-article .wine-card [aria-label*="wish" i],
+  .wynch-article .wine-card [aria-label*="wunsch" i],
+  .wynch-article .wine-card [aria-label*="merk" i],
+  .wynch-article .wine-card [aria-label*="favorit" i] { display: none !important; }
   @media (max-width: 560px) {
     .wynch-article .wine-card { flex-direction: column; align-items: stretch; text-align: center; }
     .wynch-article .wine-card__media { align-self: center; }
