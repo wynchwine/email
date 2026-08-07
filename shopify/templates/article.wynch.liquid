@@ -99,7 +99,7 @@
   /* Wine card (paste the snippet into the article HTML) */
   .wynch-article .wine-card {
     display: flex; gap: 22px; align-items: center;
-    background: #fff; border: 1px solid var(--accent);
+    background: transparent; border: 1px solid var(--accent);
     border-radius: 20px; padding: 20px; margin: 34px 0;
   }
   .wynch-article .wine-card__media { flex: 0 0 130px; }
@@ -159,8 +159,8 @@
     color: #fff; /* only override colour — size & font come from the global h1 */
     margin: 0 auto 12px; max-width: 20ch;
   }
-  .wa-cta p { margin: 0 0 24px; font-size: 18px; }
-  .wa-cta p strong { color: var(--accent); }
+  .wa-cta p { margin: 0 0 24px; font-size: 18px; color: #fff; }
+  .wa-cta p strong { display: inline-block; background: var(--accent); color: #fff; font-weight: 700; padding: 3px 14px; border-radius: 9999px; }
   .wa-btn {
     display: inline-block; text-decoration: none;
     background: var(--accent); color: #fff;
