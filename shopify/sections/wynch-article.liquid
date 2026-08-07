@@ -326,7 +326,7 @@
         .then(function (r) { return r.json(); })
         .then(function (cart) {
           var n = cart.item_count;
-          var sels = ['.cart-count', '[data-cart-count]', '.cart-count-bubble span', '#CartCount', '.header__cart-count', '.js-cart-count'];
+          var sels = ['#item_count', '.cart-count', '[data-cart-count]', '.cart-count-bubble span', '#CartCount', '.header__cart-count', '.js-cart-count'];
           sels.forEach(function (s) { document.querySelectorAll(s).forEach(function (el) { el.textContent = n; }); });
           // Heuristic: any count/bubble/badge number inside a cart link.
           document.querySelectorAll('a[href*="/cart"]').forEach(function (link) {
