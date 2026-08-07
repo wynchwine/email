@@ -102,19 +102,12 @@
     background: transparent; border: 1px solid var(--accent);
     border-radius: 20px; padding: 20px; margin: 34px 0;
   }
-  .wynch-article .wine-card__media { flex: 0 0 210px; position: relative; min-height: 260px; align-self: stretch; }
-  .wynch-article .wine-card__bottle {
-    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
-    height: 100%; width: auto; max-width: 54%; object-fit: contain; border-radius: 0; z-index: 2; margin: 0;
-  }
-  /* Aromas clustered around the bottle, like the catalog */
-  .wynch-article .wine-card__aromas { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; z-index: 1; }
-  .wynch-article .wine-card__aromas li { position: absolute; width: 42%; margin: 0; }
-  .wynch-article .wine-card__aromas img { width: 100%; height: auto; object-fit: contain; border-radius: 0; display: block; margin: 0; }
-  .wynch-article .wine-card__aromas li:nth-child(1) { top: 2%; left: -2%; }
-  .wynch-article .wine-card__aromas li:nth-child(2) { bottom: 2%; left: -2%; }
-  .wynch-article .wine-card__aromas li:nth-child(3) { top: 2%; right: -2%; }
-  .wynch-article .wine-card__aromas li:nth-child(4) { bottom: 2%; right: -2%; }
+  .wynch-article .wine-card__media { flex: 0 0 130px; }
+  .wynch-article .wine-card__media img { width: 130px; height: 175px; object-fit: cover; border-radius: 12px; display: block; margin: 0; }
+  /* Aromas as a row of icons in the body */
+  .wynch-article .wine-card__aromas { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; padding: 0; }
+  .wynch-article .wine-card__aromas li { margin: 0; }
+  .wynch-article .wine-card__aromas img { width: 44px; height: 44px; object-fit: contain; border-radius: 0; display: block; margin: 0; }
   .wynch-article .wine-card__body { flex: 1 1 auto; min-width: 0; }
   .wynch-article .wine-card__eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .wynch-article .wine-card__title { font-family: var(--font-head); color: var(--accent); text-transform: uppercase; font-size: clamp(22px, 3vw, 28px); line-height: 1.05; margin: 0 0 8px; }
@@ -134,7 +127,8 @@
   .wynch-article .wine-card form { margin: 0; }
   @media (max-width: 560px) {
     .wynch-article .wine-card { flex-direction: column; align-items: stretch; text-align: center; }
-    .wynch-article .wine-card__media { align-self: center; width: 60%; }
+    .wynch-article .wine-card__media { align-self: center; }
+    .wynch-article .wine-card__aromas { justify-content: center; }
     .wynch-article .wine-card__foot { justify-content: center; }
   }
   .wynch-article .wa-rte p:empty { display: none; }
@@ -245,26 +239,24 @@
           {%- elsif wregion != blank -%}{%- assign weyebrow = wregion -%}
           {%- elsif wgrape != blank -%}{%- assign weyebrow = wgrape -%}{%- endif -%}
           <div class="wine-card">
-            <a class="wine-card__media" href="{{ wp.url }}">
-              {%- if waromas != blank -%}
-                <ul class="wine-card__aromas">
-                  {%- assign aroma_list = waromas | remove_first: ',' | split: ',' -%}
-                  {%- for a in aroma_list limit: 4 -%}
-                    {%- assign av = a | strip -%}
-                    {%- if av != blank -%}
-                      {%- assign aslug = av | downcase | replace: ' ', '_' -%}
-                      {%- assign afile = 'aroma__' | append: aslug | append: '.png' -%}
-                      <li><img src="{{ afile | file_url }}" alt="{{ av | escape }}" loading="lazy"></li>
-                    {%- endif -%}
-                  {%- endfor -%}
-                </ul>
-              {%- endif -%}
-              {%- if wp.featured_image -%}<img class="wine-card__bottle" src="{{ wp.featured_image | image_url: width: 400 }}" alt="{{ wp.title | escape }}">{%- endif -%}
-            </a>
+            <a class="wine-card__media" href="{{ wp.url }}">{%- if wp.featured_image -%}<img src="{{ wp.featured_image | image_url: width: 300 }}" alt="{{ wp.title | escape }}">{%- endif -%}</a>
             <div class="wine-card__body">
               {%- if weyebrow != blank -%}<div class="wine-card__eyebrow">{{ weyebrow }}</div>{%- endif -%}
               <h3 class="wine-card__title"><a href="{{ wp.url }}">{{ wp.title }}</a></h3>
               {%- if wp.description != blank -%}<p class="wine-card__notes">{{ wp.description | strip_html | truncatewords: 22 }}</p>{%- endif -%}
+              {%- if waromas != blank -%}
+                <ul class="wine-card__aromas">
+                  {%- assign aroma_list = waromas | remove_first: ',' | split: ',' -%}
+                  {%- for a in aroma_list limit: 6 -%}
+                    {%- assign av = a | strip -%}
+                    {%- if av != blank -%}
+                      {%- assign aslug = av | downcase | replace: ' ', '_' -%}
+                      {%- assign afile = 'aroma__' | append: aslug | append: '.png' -%}
+                      <li><img src="{{ afile | file_url }}" alt="{{ av | escape }}" title="{{ av | escape }}" loading="lazy"></li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
               <div class="wine-card__foot">
                 <span class="wine-card__price">{{ wp.price | money }}</span>
                 {%- if wp.available -%}
