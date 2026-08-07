@@ -155,7 +155,11 @@
     border: none; border-radius: 20px;
     background: #2d2d2d url("https://wynch.wine/cdn/shop/files/email_pet_nat_eng_8_2800x.png") center / cover no-repeat;
   }
-  .wa-cta h1 { margin: 0 auto 12px; max-width: 20ch; } /* layout only — inherit global h1 styles */
+  .wa-cta .wa-cta-title {
+    font-family: var(--font-head); font-weight: 700; color: #fff;
+    text-transform: uppercase; font-size: clamp(30px, 5vw, 46px); line-height: 1.05;
+    margin: 0 auto 12px; max-width: 20ch;
+  }
   .wa-cta p { margin: 0 0 24px; font-size: 18px; }
   .wa-cta p strong { color: var(--accent); }
   .wa-btn {
@@ -258,7 +262,7 @@
 
     <!-- Footer CTA to the club (photo background) -->
     <div class="wa-cta">
-      <h1>Finde deine Weine mit dem digitalen Sommelier</h1>
+      <h1 class="wa-cta-title">Finde deine Weine mit dem digitalen Sommelier</h1>
       <p>und sichere dir <strong>50 €</strong> Guthaben.</p>
       <a class="wa-btn" href="/pages/join">Meine Weine finden</a>
     </div>
