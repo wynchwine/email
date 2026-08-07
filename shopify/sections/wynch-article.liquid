@@ -300,6 +300,41 @@
   </div>
 </article>
 
+<script>
+  // AJAX add-to-cart for the wine cards (no page redirect).
+  (function () {
+    document.addEventListener('submit', function (e) {
+      var form = e.target;
+      if (!form || !form.matches || !form.matches('.wynch-article .wine-card form')) return;
+      e.preventDefault();
+      var btn = form.querySelector('button[type="submit"]');
+      var label = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = '…'; }
+      fetch('/cart/add.js', { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error((res.d && res.d.description) || 'add failed');
+          if (btn) btn.textContent = 'Im Warenkorb ✓';
+          refreshCart();
+          setTimeout(function () { if (btn) { btn.textContent = label; btn.disabled = false; } }, 2500);
+        })
+        .catch(function () { if (btn) { btn.textContent = label; btn.disabled = false; } form.submit(); });
+    });
+
+    function refreshCart() {
+      fetch('/cart.js', { headers: { Accept: 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (cart) {
+          var sels = ['.cart-count', '[data-cart-count]', '.cart-count-bubble span', '#CartCount', '.header__cart-count', '.js-cart-count'];
+          sels.forEach(function (s) { document.querySelectorAll(s).forEach(function (el) { el.textContent = cart.item_count; }); });
+          document.dispatchEvent(new CustomEvent('cart:refresh', { detail: cart }));
+          document.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
+        })
+        .catch(function () {});
+    }
+  })();
+</script>
+
 {% schema %}
 {
   "name": "WYNCH Article",
