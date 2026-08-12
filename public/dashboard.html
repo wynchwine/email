@@ -86,7 +86,7 @@
         <div class="scroll">
           <table id="table">
             <thead>
-              <tr><th>Имя</th><th>Email</th><th>Источник</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th></th></tr>
+              <tr><th>Имя</th><th>Email</th><th>Источник</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th></th></tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
@@ -156,12 +156,20 @@
       var visibleCount = (typeof reg.count === 'number') ? Math.max(0, reg.count - hiddenShown) : rows.length;
 
       // Derived metrics from the visible rows.
-      var buyers = 0, subs = 0, totalSpent = 0;
+      var buyers = 0, subs = 0, totalSpent = 0, daysSum = 0, daysN = 0;
       rows.forEach(function (c) {
         if ((c.orders || 0) > 0) buyers++;
         if (c.marketing) subs++;
         if (c.spent != null) totalSpent += (Number(c.spent) || 0);
+        if (c.purchase_date && c.created_at) {
+          var reg = new Date(c.created_at), buy = new Date(c.purchase_date);
+          if (!isNaN(reg) && !isNaN(buy)) {
+            var d = (buy - reg) / 86400000;
+            if (d >= 0) { daysSum += d; daysN++; }
+          }
+        }
       });
+      var avgDays = daysN ? (daysSum / daysN) : null;
       var denom = rows.length;
       function pct(n) { return denom ? Math.round((n / denom) * 100) + '%' : '—'; }
       function card(label, value) {
@@ -174,14 +182,15 @@
         card('Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : ''), (typeof sub.count === 'number' ? sub.count : '—')) +
         card('Сумма продаж', '€' + totalSpent.toFixed(2)) +
         card('Конверсия в покупку', reg.error ? '—' : pct(buyers)) +
-        card('Конверсия в подписку', reg.error ? '—' : pct(subs));
+        card('Конверсия в подписку', reg.error ? '—' : pct(subs)) +
+        card('Ср. время до покупки', avgDays != null ? (Math.round(avgDays * 10) / 10 + ' дн.') : '—');
 
       if (reg.error) errBox.innerHTML += '<div class="err-box">Klaviyo (профили): ' + esc(reg.error) + (reg.detail ? ' — ' + esc(reg.detail) : '') + '</div>';
       if (sub.error) errBox.innerHTML += '<div class="err-box">Klaviyo (список): ' + esc(sub.error) + '</div>';
 
       var tbody = document.getElementById('tbody');
       if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="msg">Пока нет данных</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="msg">Пока нет данных</td></tr>';
       } else {
         tbody.innerHTML = rows.map(function (c) {
           var orders = (typeof c.orders === 'number') ? c.orders : null;
@@ -194,6 +203,7 @@
             '<td>' + (c.marketing ? '<span class="pill yes">Да</span>' : '<span class="pill no">Нет</span>') + '</td>' +
             '<td>' + (orders != null ? orders : '<span class="muted">—</span>') + '</td>' +
             '<td class="muted">' + (spent != null ? esc(spent) : '—') + '</td>' +
+            '<td class="muted">' + (c.purchase_date ? esc(fmtDate(c.purchase_date)) : '—') + '</td>' +
             '<td class="act"><button class="del" type="button" data-email="' + esc(c.email) + '">Удалить</button></td>' +
             '</tr>';
         }).join('');

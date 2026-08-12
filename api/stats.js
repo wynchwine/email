@@ -111,6 +111,19 @@ export default async function handler(req, res) {
         // ignore — purchase columns just stay empty
       }
 
+      // Enrich with first-order date (needs read_orders scope). Best-effort.
+      try {
+        const orderMap = await shopifyFirstOrderMap();
+        if (orderMap) {
+          profiles.forEach((p) => {
+            const d = orderMap[String(p.email || '').toLowerCase()];
+            if (d) p.purchase_date = d;
+          });
+        }
+      } catch (e) {
+        // ignore — purchase date just stays empty
+      }
+
       out.registrations = { count: profiles.length, profiles: profiles.slice(0, 200) };
     }
   } catch (e) {
@@ -134,6 +147,30 @@ async function shopifyPurchaseMap() {
     const j = await r.json().catch(() => ({}));
     (j.customers || []).forEach((c) => {
       if (c.email) map[c.email.toLowerCase()] = { orders: c.orders_count || 0, spent: c.total_spent || '0.00' };
+    });
+    const link = r.headers.get('link') || r.headers.get('Link') || '';
+    const m = link.match(/<([^>]+)>;\s*rel="next"/);
+    url = m ? m[1] : null;
+  }
+  return map;
+}
+
+// Map of lowercased email -> earliest order created_at (ISO). Needs read_orders.
+async function shopifyFirstOrderMap() {
+  const shop = process.env.SHOPIFY_SHOP;
+  if (!shop) return null;
+  const token = await getShopifyAccessToken();
+  const headers = { 'X-Shopify-Access-Token': token, Accept: 'application/json' };
+  let url = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/orders.json?status=any&limit=250&fields=email,customer,created_at`;
+  const map = {};
+  for (let page = 0; page < 12 && url; page++) {
+    const r = await fetch(url, { headers });
+    if (!r.ok) { if (page === 0) throw new Error(`Shopify ${r.status}`); break; }
+    const j = await r.json().catch(() => ({}));
+    (j.orders || []).forEach((o) => {
+      const em = String((o.customer && o.customer.email) || o.email || '').toLowerCase();
+      if (!em || !o.created_at) return;
+      if (!map[em] || o.created_at < map[em]) map[em] = o.created_at; // keep earliest
     });
     const link = r.headers.get('link') || r.headers.get('Link') || '';
     const m = link.match(/<([^>]+)>;\s*rel="next"/);
