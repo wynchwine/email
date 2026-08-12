@@ -93,6 +93,11 @@ export default async function handler(req, res) {
   if (password !== password2) return res.status(400).json({ error: 'Passwords do not match.' });
 
   const marketing = body.marketing !== false; // default: subscribe to marketing
+  const utm = {
+    utm_source: String(body.utm_source ?? '').trim().slice(0, 100),
+    utm_medium: String(body.utm_medium ?? '').trim().slice(0, 100),
+    utm_campaign: String(body.utm_campaign ?? '').trim().slice(0, 100),
+  };
   const { first, last } = splitName(name);
 
   try {
@@ -109,7 +114,7 @@ export default async function handler(req, res) {
     // customer and a duplicate one, so returning/re-registering users still get
     // the profile + double opt-in confirmation email.
     try {
-      await subscribeKlaviyo({ email, firstName: first, marketing });
+      await subscribeKlaviyo({ email, firstName: first, marketing, utm });
     } catch (err) {
       console.error('[register] klaviyo subscribe error:', err);
     }

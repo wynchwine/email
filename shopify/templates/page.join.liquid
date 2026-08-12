@@ -773,19 +773,30 @@
 
       // Create the Shopify customer (Admin API) + Klaviyo profile. Resolves to
       // { ok, status, error } and is awaited by loginAndGo before logging in.
+      function getUtm() {
+        try {
+          var p = new URLSearchParams(location.search);
+          return {
+            utm_source: p.get('utm_source') || '',
+            utm_medium: p.get('utm_medium') || '',
+            utm_campaign: p.get('utm_campaign') || ''
+          };
+        } catch (e) { return {}; }
+      }
+
       function createAccount(marketing) {
         if (!signupData) return Promise.resolve({ ok: false, error: 'no signup data (fill the form first)' });
         var full = (signupData.firstName + ' ' + signupData.lastName).trim();
         return fetch(API_BASE + '/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: JSON.stringify(Object.assign({
             name: full,
             email: signupData.email,
             password: signupData.password,
             password2: signupData.password,
             marketing: marketing
-          })
+          }, getUtm()))
         }).then(function (res) {
           return res.json().catch(function () { return {}; }).then(function (d) {
             return { ok: res.ok, status: res.status, error: d.error };

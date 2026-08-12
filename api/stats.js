@@ -86,12 +86,14 @@ export default async function handler(req, res) {
         })
         .map((p) => {
           const a = p.attributes || {};
+          const props = a.properties || {};
           const consent = a.subscriptions && a.subscriptions.email && a.subscriptions.email.marketing && a.subscriptions.email.marketing.consent;
           return {
             name: [a.first_name, a.last_name].filter(Boolean).join(' '),
             email: a.email,
             created_at: a.created,
             marketing: consent === 'SUBSCRIBED',
+            utm_source: props.utm_source || '',
           };
         });
       // Enrich with Shopify purchase data (orders count + total spent),

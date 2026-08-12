@@ -765,13 +765,24 @@
       }
 
       // Create the Klaviyo profile (and subscribe to marketing when opted in).
+      function getUtm() {
+        try {
+          var p = new URLSearchParams(location.search);
+          return {
+            utm_source: p.get('utm_source') || '',
+            utm_medium: p.get('utm_medium') || '',
+            utm_campaign: p.get('utm_campaign') || ''
+          };
+        } catch (e) { return {}; }
+      }
+
       function saveToKlaviyo(marketing) {
         if (!signupData) return;
         var full = (signupData.firstName + ' ' + signupData.lastName).trim();
         fetch('/api/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: full, email: signupData.email, marketing: marketing })
+          body: JSON.stringify(Object.assign({ name: full, email: signupData.email, marketing: marketing }, getUtm()))
         }).catch(function () { /* best-effort */ });
       }
 
