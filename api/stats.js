@@ -125,8 +125,11 @@ export default async function handler(req, res) {
         const orderMap = await shopifyFirstOrderMap();
         if (orderMap) {
           profiles.forEach((p) => {
-            const d = orderMap[String(p.email || '').toLowerCase()];
-            if (d) p.purchase_date = d;
+            const o = orderMap[String(p.email || '').toLowerCase()];
+            if (o) {
+              if (o.date) p.purchase_date = o.date;
+              if (o.utm && !p.utm_source) p.utm_source = o.utm; // Shopify auto-captured UTM
+            }
           });
         }
       } catch (e) {
@@ -182,13 +185,26 @@ async function shopifyPurchaseMap() {
   return map;
 }
 
-// Map of lowercased email -> earliest order created_at (ISO). Needs read_orders.
+// Extract a UTM value from an order landing_site URL (Shopify captures this
+// automatically). Prefers utm_campaign, then utm_source.
+function utmFromLanding(landing) {
+  try {
+    const s = String(landing || '');
+    const qi = s.indexOf('?');
+    if (qi < 0) return '';
+    const params = new URLSearchParams(s.slice(qi + 1));
+    return params.get('utm_campaign') || params.get('utm_source') || '';
+  } catch (e) { return ''; }
+}
+
+// Map of lowercased email -> { date, utm } from Shopify orders (earliest
+// order date + UTM auto-captured in landing_site). Needs read_orders.
 async function shopifyFirstOrderMap() {
   const shop = process.env.SHOPIFY_SHOP;
   if (!shop) return null;
   const token = await getShopifyAccessToken();
   const headers = { 'X-Shopify-Access-Token': token, Accept: 'application/json' };
-  let url = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/orders.json?status=any&limit=250&fields=email,customer,created_at`;
+  let url = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/orders.json?status=any&limit=250&fields=email,customer,created_at,landing_site`;
   const map = {};
   for (let page = 0; page < 12 && url; page++) {
     const r = await fetch(url, { headers });
@@ -197,7 +213,13 @@ async function shopifyFirstOrderMap() {
     (j.orders || []).forEach((o) => {
       const em = String((o.customer && o.customer.email) || o.email || '').toLowerCase();
       if (!em || !o.created_at) return;
-      if (!map[em] || o.created_at < map[em]) map[em] = o.created_at; // keep earliest
+      const u = utmFromLanding(o.landing_site);
+      if (!map[em]) {
+        map[em] = { date: o.created_at, utm: u };
+      } else {
+        if (o.created_at < map[em].date) map[em].date = o.created_at; // keep earliest date
+        if (!map[em].utm && u) map[em].utm = u;
+      }
     });
     const link = r.headers.get('link') || r.headers.get('Link') || '';
     const m = link.match(/<([^>]+)>;\s*rel="next"/);
