@@ -93,7 +93,13 @@ export default async function handler(req, res) {
             email: a.email,
             created_at: a.created,
             marketing: consent === 'SUBSCRIBED',
-            utm_source: props.utm_source || '',
+            // Read the source from whatever key the profile carries it in.
+            utm_source: props.utm_source
+              || props['$utm_source']
+              || props['$source']
+              || props.utm_source_last
+              || (props.source && props.source !== 'landing_signup' ? props.source : '')
+              || '',
           };
         });
       // Enrich with Shopify purchase data (orders count + total spent),
