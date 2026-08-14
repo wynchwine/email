@@ -93,12 +93,12 @@ export default async function handler(req, res) {
             email: a.email,
             created_at: a.created,
             marketing: consent === 'SUBSCRIBED',
-            // Read the source from whatever key the profile carries it in.
-            utm_source: props.utm_source
-              || props['$utm_source']
+            // Source is stored in the profile's "UTM Campaign" property.
+            utm_source: props['UTM Campaign']
+              || props.utm_campaign
+              || props['UTM Source']
+              || props.utm_source
               || props['$source']
-              || props.utm_source_last
-              || (props.source && props.source !== 'landing_signup' ? props.source : '')
               || '',
           };
         });
