@@ -21,6 +21,9 @@
     header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
     h1 { font-size: 24px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
     .refresh { font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+    .filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filters label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .filters input[type="date"] { font-family: var(--font); font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: #fff; }
     .refresh:hover { border-color: var(--accent); color: var(--accent); }
 
     /* Login gate */
@@ -77,7 +80,12 @@
     <div id="app" hidden>
       <header>
         <h1>Dashboard</h1>
-        <button class="refresh" id="refreshBtn" type="button">Обновить</button>
+        <div class="filters">
+          <label>С <input type="date" id="dateFrom"></label>
+          <label>По <input type="date" id="dateTo"></label>
+          <button class="refresh" id="dateClear" type="button">Сбросить</button>
+          <button class="refresh" id="refreshBtn" type="button">Обновить</button>
+        </div>
       </header>
       <div id="errBox"></div>
       <div class="cards" id="cards"></div>
@@ -151,9 +159,19 @@
       var rows = allRows.filter(function (c) { return !hidden.has(String(c.email || '').toLowerCase()); });
       var hiddenShown = allRows.length - rows.length;
 
-      // Registrations count reflects the visible rows (server total minus what
-      // we've hidden locally).
-      var visibleCount = (typeof reg.count === 'number') ? Math.max(0, reg.count - hiddenShown) : rows.length;
+      // Date-range filter (by registration date).
+      var fromEl = document.getElementById('dateFrom');
+      var toEl = document.getElementById('dateTo');
+      var from = fromEl ? fromEl.value : '';
+      var to = toEl ? toEl.value : '';
+      if (from) rows = rows.filter(function (c) { return c.created_at && c.created_at.slice(0, 10) >= from; });
+      if (to) rows = rows.filter(function (c) { return c.created_at && c.created_at.slice(0, 10) <= to; });
+      var dateActive = !!(from || to);
+
+      // Registrations count reflects the visible rows.
+      var visibleCount = dateActive
+        ? rows.length
+        : ((typeof reg.count === 'number') ? Math.max(0, reg.count - hiddenShown) : rows.length);
 
       // Derived metrics from the visible rows.
       var buyers = 0, subs = 0, totalSpent = 0, daysSum = 0, daysN = 0;
@@ -233,6 +251,16 @@
         })
         .catch(function () { showGate('Ошибка сети. Попробуйте ещё раз.'); });
     }
+
+    // Date-range filter → re-render from cached data.
+    function applyDates() { if (lastData) render(lastData); }
+    document.getElementById('dateFrom').addEventListener('change', applyDates);
+    document.getElementById('dateTo').addEventListener('change', applyDates);
+    document.getElementById('dateClear').addEventListener('click', function () {
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      applyDates();
+    });
 
     // Delete a subscriber from Klaviyo — event delegation on the table body.
     document.getElementById('tbody').addEventListener('click', function (e) {
