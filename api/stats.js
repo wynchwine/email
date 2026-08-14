@@ -108,7 +108,11 @@ export default async function handler(req, res) {
         if (map) {
           profiles.forEach((p) => {
             const m = map[String(p.email || '').toLowerCase()];
-            if (m) { p.orders = m.orders; p.spent = m.spent; }
+            if (m) {
+              p.orders = m.orders;
+              p.spent = m.spent;
+              if (m.utm) p.utm_source = m.utm; // Shopify tag wins as the source
+            }
           });
           out.purchases = true;
         }
@@ -155,14 +159,21 @@ async function shopifyPurchaseMap() {
   if (!shop) return null;
   const token = await getShopifyAccessToken();
   const headers = { 'X-Shopify-Access-Token': token, Accept: 'application/json' };
-  let url = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers.json?limit=250&fields=email,orders_count,total_spent`;
+  let url = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers.json?limit=250&fields=email,orders_count,total_spent,tags`;
   const map = {};
   for (let page = 0; page < 8 && url; page++) {
     const r = await fetch(url, { headers });
     if (!r.ok) { if (page === 0) throw new Error(`Shopify ${r.status}`); break; }
     const j = await r.json().catch(() => ({}));
     (j.customers || []).forEach((c) => {
-      if (c.email) map[c.email.toLowerCase()] = { orders: c.orders_count || 0, spent: c.total_spent || '0.00' };
+      if (!c.email) return;
+      // Signup source stored as a "utm:<source>" tag at registration.
+      let utm = '';
+      (c.tags || '').split(',').forEach((t) => {
+        const tag = t.trim();
+        if (tag.toLowerCase().indexOf('utm:') === 0) utm = tag.slice(4).trim();
+      });
+      map[c.email.toLowerCase()] = { orders: c.orders_count || 0, spent: c.total_spent || '0.00', utm: utm };
     });
     const link = r.headers.get('link') || r.headers.get('Link') || '';
     const m = link.match(/<([^>]+)>;\s*rel="next"/);

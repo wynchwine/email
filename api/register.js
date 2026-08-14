@@ -26,9 +26,14 @@ function splitName(full) {
 
 // Create an enabled Shopify customer account with a password.
 // Shopify hashes and stores the password; we never persist it ourselves.
-async function createShopifyCustomer({ firstName, lastName, email, password, marketing }) {
+async function createShopifyCustomer({ firstName, lastName, email, password, marketing, utm }) {
   const token = await getShopifyAccessToken();
   const shop = process.env.SHOPIFY_SHOP;
+
+  // Store the signup source as a tag (utm:<source>) so the dashboard can read
+  // it straight from the Shopify customer (no dependency on Klaviyo keys).
+  const utmSrc = String((utm && utm.utm_source) || '').replace(/,/g, ' ').trim().slice(0, 60);
+  const tags = utmSrc ? ('wynch-landing, utm:' + utmSrc) : 'wynch-landing';
 
   const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/customers.json`, {
     method: 'POST',
@@ -44,9 +49,9 @@ async function createShopifyCustomer({ firstName, lastName, email, password, mar
         email,
         password,
         password_confirmation: password,
-        // Mark customers created via the landing so the dashboard can show
-        // only people who signed up through our service.
-        tags: 'wynch-landing',
+        // Mark customers created via the landing (+ signup source) so the
+        // dashboard can filter and show the source from Shopify directly.
+        tags: tags,
         // Send Shopify's default account welcome email on registration.
         send_email_welcome: true,
         // Marketing consent is owned entirely by Klaviyo (the Club list). Do
@@ -101,7 +106,7 @@ export default async function handler(req, res) {
   const { first, last } = splitName(name);
 
   try {
-    const result = await createShopifyCustomer({ firstName: first, lastName: last, email, password, marketing });
+    const result = await createShopifyCustomer({ firstName: first, lastName: last, email, password, marketing, utm });
 
     // Hard failure (not a duplicate) — stop here.
     if (!result.ok && !result.duplicate) {
