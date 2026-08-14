@@ -94,7 +94,7 @@
         <div class="scroll">
           <table id="table">
             <thead>
-              <tr><th>Имя</th><th>Email</th><th>Источник</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th></th></tr>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th>Источник</th><th></th></tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
@@ -216,12 +216,12 @@
           return '<tr>' +
             '<td>' + (esc(c.name) || '<span class="muted">—</span>') + '</td>' +
             '<td>' + esc(c.email) + '</td>' +
-            '<td>' + (c.utm_source ? esc(c.utm_source) : '<span class="muted">—</span>') + '</td>' +
             '<td class="muted">' + esc(fmtDate(c.created_at)) + '</td>' +
             '<td>' + (c.marketing ? '<span class="pill yes">Да</span>' : '<span class="pill no">Нет</span>') + '</td>' +
             '<td>' + (orders != null ? orders : '<span class="muted">—</span>') + '</td>' +
             '<td class="muted">' + (spent != null ? esc(spent) : '—') + '</td>' +
             '<td class="muted">' + (c.purchase_date ? esc(fmtDate(c.purchase_date)) : '—') + '</td>' +
+            '<td>' + (c.utm_source ? esc(c.utm_source) : '<span class="muted">—</span>') + '</td>' +
             '<td class="act"><button class="del" type="button" data-email="' + esc(c.email) + '">Удалить</button></td>' +
             '</tr>';
         }).join('');
