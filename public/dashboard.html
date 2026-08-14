@@ -197,7 +197,7 @@
       var cards = document.getElementById('cards');
       cards.innerHTML =
         card('Всего регистраций', reg.error ? '—' : visibleCount) +
-        card('Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : ''), (typeof sub.count === 'number' ? sub.count : '—')) +
+        card('Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : ''), reg.error ? '—' : subs) +
         card('Сумма продаж', '€' + totalSpent.toFixed(2)) +
         card('Конверсия в покупку', reg.error ? '—' : pct(buyers)) +
         card('Конверсия в подписку', reg.error ? '—' : pct(subs)) +
