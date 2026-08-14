@@ -93,12 +93,11 @@ export default async function handler(req, res) {
             email: a.email,
             created_at: a.created,
             marketing: consent === 'SUBSCRIBED',
-            // Source is stored in the profile's "UTM Campaign" property.
+            // Source is stored in the profile's "UTM Campaign" custom property.
             utm_source: props['UTM Campaign']
               || props.utm_campaign
               || props['UTM Source']
               || props.utm_source
-              || props['$source']
               || '',
           };
         });
@@ -128,6 +127,17 @@ export default async function handler(req, res) {
         }
       } catch (e) {
         // ignore — purchase date just stays empty
+      }
+
+      // Debug: /api/stats?key=...&props=1 lists every property key seen across
+      // profiles, so we can find the exact UTM custom-property key.
+      if (req.query && req.query.props === '1') {
+        const keys = {};
+        raw.forEach((p) => {
+          const pr = ((p.attributes || {}).properties) || {};
+          Object.keys(pr).forEach((k) => { keys[k] = true; });
+        });
+        out.debugPropertyKeys = Object.keys(keys);
       }
 
       out.registrations = { count: profiles.length, profiles: profiles.slice(0, 200) };
