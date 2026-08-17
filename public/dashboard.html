@@ -94,26 +94,8 @@
       </header>
       <div id="errBox"></div>
       <div class="cards" id="cards"></div>
-      <div class="panel">
-        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-          <span>Последние регистрации</span>
-          <button class="refresh" id="utmToggle" type="button">Показать UTM</button>
-        </h3>
-        <div class="scroll">
-          <table id="table" class="hide-utm">
-            <thead>
-              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th class="grp utm-col">Рег source</th><th class="utm-col">Рег medium</th><th class="utm-col">Рег campaign</th><th class="utm-col">Рег term</th><th class="utm-col">Рег content</th><th class="grp utm-col">Пок source</th><th class="utm-col">Пок medium</th><th class="utm-col">Пок campaign</th><th class="utm-col">Пок term</th><th class="utm-col">Пок content</th><th></th></tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-        <div class="hidden-bar" id="hiddenBar" hidden>
-          <span id="hiddenInfo"></span>
-          <button type="button" id="unhideBtn">Показать скрытые</button>
-        </div>
-      </div>
 
-      <div class="panel" style="margin-top:26px;">
+      <div class="panel">
         <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
           <span>Флоу · Welcome_Club_New</span>
           <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;">
@@ -133,6 +115,25 @@
             </thead>
             <tbody id="flowsBody"><tr><td colspan="7" class="msg">Загрузка…</td></tr></tbody>
           </table>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:26px;">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <span>Последние регистрации</span>
+          <button class="refresh" id="utmToggle" type="button">Показать UTM</button>
+        </h3>
+        <div class="scroll">
+          <table id="table" class="hide-utm">
+            <thead>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th class="grp utm-col">Рег source</th><th class="utm-col">Рег medium</th><th class="utm-col">Рег campaign</th><th class="utm-col">Рег term</th><th class="utm-col">Рег content</th><th class="grp utm-col">Пок source</th><th class="utm-col">Пок medium</th><th class="utm-col">Пок campaign</th><th class="utm-col">Пок term</th><th class="utm-col">Пок content</th><th></th></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="hidden-bar" id="hiddenBar" hidden>
+          <span id="hiddenInfo"></span>
+          <button type="button" id="unhideBtn">Показать скрытые</button>
         </div>
       </div>
     </div>
