@@ -52,18 +52,29 @@ export default async function handler(req, res) {
   } catch (e) { /* names are best-effort */ }
 
   // ---- 2. Conversion metric id (required by flow-values-reports) ----
-  // Prefer the Shopify "Placed Order" metric; fall back to the first metric.
-  let conversionMetricId = '';
-  try {
-    const r = await fetch(`${KLAVIYO_BASE}/metrics/?page[size]=100`, { headers });
-    const b = await r.json().catch(() => ({}));
-    const metrics = b.data || [];
-    const placed = metrics.find((m) => /placed order/i.test((m.attributes && m.attributes.name) || ''));
-    conversionMetricId = (placed || metrics[0] || {}).id || '';
-  } catch (e) { /* handled below */ }
+  // Use the explicit env override if set (no metrics read needed); otherwise
+  // auto-discover the Shopify "Placed Order" metric, falling back to the first.
+  let conversionMetricId = process.env.KLAVIYO_CONVERSION_METRIC_ID || '';
+  let metricErr = '';
+  if (!conversionMetricId) {
+    try {
+      const r = await fetch(`${KLAVIYO_BASE}/metrics/?page[size]=100`, { headers });
+      const b = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        metricErr = `Klaviyo ${r.status}: ${JSON.stringify(b).slice(0, 200)}`;
+      } else {
+        const metrics = b.data || [];
+        const placed = metrics.find((m) => /placed order/i.test((m.attributes && m.attributes.name) || ''));
+        conversionMetricId = (placed || metrics[0] || {}).id || '';
+      }
+    } catch (e) { metricErr = String(e && e.message ? e.message : e); }
+  }
 
   if (!conversionMetricId) {
-    return res.status(200).json({ error: 'Could not resolve a conversion metric (needs metrics read access).' });
+    return res.status(200).json({
+      error: 'Could not resolve a conversion metric. Set KLAVIYO_CONVERSION_METRIC_ID in Vercel, or grant the API key Metrics (Analytics) read access.',
+      detail: metricErr,
+    });
   }
 
   // ---- 3. Flow values report ----
