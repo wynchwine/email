@@ -62,6 +62,8 @@
     /* Visual separator between the UTM groups (registration | purchase). */
     th.grp, td.grp { border-left: 2px solid var(--line); }
     th.grp { color: var(--accent); }
+    /* UTM columns are collapsed by default; toggled by the "Показать UTM" button. */
+    table.hide-utm th.utm-col, table.hide-utm td.utm-col { display: none; }
     .hidden-bar { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .hidden-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
     .hidden-bar button:hover { border-color: var(--accent); }
@@ -93,11 +95,14 @@
       <div id="errBox"></div>
       <div class="cards" id="cards"></div>
       <div class="panel">
-        <h3>Последние регистрации</h3>
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <span>Последние регистрации</span>
+          <button class="refresh" id="utmToggle" type="button">Показать UTM</button>
+        </h3>
         <div class="scroll">
-          <table id="table">
+          <table id="table" class="hide-utm">
             <thead>
-              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th class="grp">Рег source</th><th>Рег medium</th><th>Рег campaign</th><th>Рег term</th><th>Рег content</th><th class="grp">Пок source</th><th>Пок medium</th><th>Пок campaign</th><th>Пок term</th><th>Пок content</th><th></th></tr>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th class="grp utm-col">Рег source</th><th class="utm-col">Рег medium</th><th class="utm-col">Рег campaign</th><th class="utm-col">Рег term</th><th class="utm-col">Рег content</th><th class="grp utm-col">Пок source</th><th class="utm-col">Пок medium</th><th class="utm-col">Пок campaign</th><th class="utm-col">Пок term</th><th class="utm-col">Пок content</th><th></th></tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
@@ -135,7 +140,7 @@
 
     function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     // A UTM table cell; `grp` adds the group separator border.
-    function utmTd(v, grp) { return '<td class="muted' + (grp ? ' grp' : '') + '">' + (v ? esc(v) : '—') + '</td>'; }
+    function utmTd(v, grp) { return '<td class="muted utm-col' + (grp ? ' grp' : '') + '">' + (v ? esc(v) : '—') + '</td>'; }
     function fmtDate(iso) {
       if (!iso) return '';
       var d = new Date(iso);
@@ -295,6 +300,12 @@
         .catch(function () { alert('Ошибка сети'); btn.disabled = false; btn.textContent = 'Удалить'; });
     });
     document.getElementById('unhideBtn').addEventListener('click', unhideAll);
+
+    // Toggle the UTM columns (collapsed by default).
+    document.getElementById('utmToggle').addEventListener('click', function () {
+      var stillHidden = document.getElementById('table').classList.toggle('hide-utm');
+      this.textContent = stillHidden ? 'Показать UTM' : 'Скрыть UTM';
+    });
 
     document.getElementById('gateBtn').addEventListener('click', function () {
       var t = document.getElementById('tokenInput').value.trim();
