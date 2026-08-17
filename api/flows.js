@@ -120,8 +120,6 @@ export default async function handler(req, res) {
 
   // ---- 4a. Single-flow drill-down: per-message rows ----
   if (flowFilter) {
-    const msgMap = await fetchFlowMessages(flowFilter, headers);
-
     // Sum report rows per message (across channels).
     const statsByMsg = {};
     results.forEach((row) => {
@@ -140,15 +138,22 @@ export default async function handler(req, res) {
       acc.revenue += Number(s.conversion_value || 0);
     });
 
-    // Union of the flow's actual messages (for names) and any message with
-    // stats — so every email shows, even ones with no sends in the period.
-    const ids = new Set([...Object.keys(msgMap), ...Object.keys(statsByMsg)]);
-    const messages = Array.from(ids).map((mid) => {
+    // All message ids: those with stats + the flow's full message list (so
+    // emails with no sends in the period still show).
+    const actionIds = await fetchFlowMessageIds(flowFilter, headers);
+    const ids = Array.from(new Set([...actionIds, ...Object.keys(statsByMsg)]));
+
+    // Resolve each message's name by fetching the message resource directly.
+    const nameList = await Promise.all(ids.map((mid) => fetchMessageName(mid, headers)));
+    const nameById = {};
+    ids.forEach((mid, i) => { nameById[mid] = nameList[i]; });
+
+    const messages = ids.map((mid) => {
       const st = statsByMsg[mid] || { recipients: 0, opens_unique: 0, clicks_unique: 0, conversions: 0, revenue: 0, channel: '' };
       const rec = st.recipients || 0;
       return {
         message_id: mid,
-        name: msgMap[mid] || 'Без названия',
+        name: nameById[mid] || 'Без названия',
         channel: st.channel || '',
         recipients: rec,
         open_rate: rec ? st.opens_unique / rec : 0,
@@ -208,22 +213,37 @@ export default async function handler(req, res) {
   return res.status(200).json({ timeframe, flows });
 }
 
-// Map of flow_message_id -> message name for a single flow, via its actions.
-async function fetchFlowMessages(flowId, headers) {
-  const map = {};
+// The message ids of a flow, read from its actions' relationships (in flow
+// order). Handles both singular/plural relationship keys.
+async function fetchFlowMessageIds(flowId, headers) {
+  const ids = [];
   try {
-    let url = `${KLAVIYO_BASE}/flows/${flowId}/flow-actions/?include=flow-messages&fields[flow-message]=name&page[size]=50`;
+    let url = `${KLAVIYO_BASE}/flows/${flowId}/flow-actions/?page[size]=50`;
     for (let page = 0; page < 6 && url; page++) {
       const r = await fetch(url, { headers });
       const b = await r.json().catch(() => ({}));
       if (!r.ok) break;
-      (b.included || []).forEach((inc) => {
-        if (inc.type === 'flow-message') {
-          map[inc.id] = (inc.attributes && inc.attributes.name) || '';
+      (b.data || []).forEach((act) => {
+        const rel = act.relationships || {};
+        const m = rel['flow-messages'] || rel['flow-message'];
+        if (m && m.data) {
+          if (Array.isArray(m.data)) m.data.forEach((d) => { if (d && d.id) ids.push(d.id); });
+          else if (m.data.id) ids.push(m.data.id);
         }
       });
       url = b.links && b.links.next ? b.links.next : null;
     }
-  } catch (e) { /* names are best-effort — fall back to id */ }
-  return map;
+  } catch (e) { /* best-effort — messages with stats still resolve by id */ }
+  return ids;
+}
+
+// A flow message's display name (falls back to the email subject line).
+async function fetchMessageName(messageId, headers) {
+  try {
+    const r = await fetch(`${KLAVIYO_BASE}/flow-messages/${messageId}/`, { headers });
+    if (!r.ok) return '';
+    const b = await r.json().catch(() => ({}));
+    const a = (b.data && b.data.attributes) || {};
+    return a.name || (a.content && a.content.subject) || '';
+  } catch (e) { return ''; }
 }
