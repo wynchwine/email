@@ -64,6 +64,12 @@
     th.grp { color: var(--accent); }
     /* UTM columns are collapsed by default; toggled by the "Показать UTM" button. */
     table.hide-utm th.utm-col, table.hide-utm td.utm-col { display: none; }
+    /* Flow drill-down: clickable flow rows + nested per-message rows. */
+    tr.flow-row { cursor: pointer; }
+    tr.flow-row:hover { background: #faf9f7; }
+    tr.flow-row .caret { display: inline-block; color: var(--muted); margin-right: 6px; transition: transform 0.15s; }
+    tr.flow-row.open .caret { transform: rotate(90deg); }
+    tr.msg-detail td { background: #faf9f7; }
     .hidden-bar { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .hidden-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
     .hidden-bar button:hover { border-color: var(--accent); }
@@ -289,8 +295,8 @@
       if (!flows.length) { body.innerHTML = '<tr><td colspan="7" class="msg">Нет данных за период</td></tr>'; return; }
       body.innerHTML = flows.map(function (f) {
         var live = /live|manual/i.test(f.status || '');
-        return '<tr>' +
-          '<td>' + esc(f.name) + '</td>' +
+        return '<tr class="flow-row" data-flow="' + esc(f.flow_id) + '">' +
+          '<td><span class="caret">▸</span>' + esc(f.name) + '</td>' +
           '<td>' + (f.status ? '<span class="pill ' + (live ? 'yes' : 'no') + '">' + esc(f.status) + '</span>' : '<span class="muted">—</span>') + '</td>' +
           '<td>' + (f.recipients || 0) + '</td>' +
           '<td class="muted">' + fmtPct(f.open_rate) + '</td>' +
@@ -314,6 +320,65 @@
 
     document.getElementById('flowPeriod').addEventListener('change', function () {
       loadFlows(localStorage.getItem(LS_KEY) || '');
+    });
+
+    // Expand a flow row to show per-message stats (fetched from /api/flows?flow=…).
+    function msgRow(fid, html) {
+      var tr = document.createElement('tr');
+      tr.className = 'msg-detail';
+      tr.setAttribute('data-parent', fid);
+      tr.innerHTML = html;
+      return tr;
+    }
+    document.getElementById('flowsBody').addEventListener('click', function (e) {
+      var row = e.target.closest ? e.target.closest('tr.flow-row') : null;
+      if (!row) return;
+      var fid = row.getAttribute('data-flow');
+
+      // Collapse if already open.
+      var n = row.nextElementSibling;
+      if (n && n.getAttribute('data-parent') === fid) {
+        while (n && n.getAttribute('data-parent') === fid) { var nx = n.nextElementSibling; n.remove(); n = nx; }
+        row.classList.remove('open');
+        return;
+      }
+
+      row.classList.add('open');
+      var loading = msgRow(fid, '<td colspan="7" class="muted" style="padding-left:34px">Загрузка писем…</td>');
+      row.parentNode.insertBefore(loading, row.nextElementSibling);
+
+      var token = localStorage.getItem(LS_KEY) || '';
+      var period = document.getElementById('flowPeriod').value || 'last_30_days';
+      fetch('/api/flows?key=' + encodeURIComponent(token) + '&flow=' + encodeURIComponent(fid) + '&timeframe=' + encodeURIComponent(period))
+        .then(function (r) { return r.json().catch(function () { return { error: 'HTTP ' + r.status }; }); })
+        .then(function (data) {
+          loading.remove();
+          if (data && data.error) {
+            row.parentNode.insertBefore(msgRow(fid, '<td colspan="7" class="muted" style="padding-left:34px">' + esc(data.error) + (data.detail ? ' — ' + esc(data.detail) : '') + '</td>'), row.nextElementSibling);
+            return;
+          }
+          var msgs = (data && data.messages) || [];
+          if (!msgs.length) {
+            row.parentNode.insertBefore(msgRow(fid, '<td colspan="7" class="muted" style="padding-left:34px">Нет писем/данных за период</td>'), row.nextElementSibling);
+            return;
+          }
+          var anchor = row;
+          msgs.forEach(function (m) {
+            var tr = msgRow(fid,
+              '<td class="muted" style="padding-left:34px">↳ ' + esc(m.name) + '</td>' +
+              '<td class="muted">' + esc(m.channel || '') + '</td>' +
+              '<td>' + (m.recipients || 0) + '</td>' +
+              '<td class="muted">' + fmtPct(m.open_rate) + '</td>' +
+              '<td class="muted">' + fmtPct(m.click_rate) + '</td>' +
+              '<td>' + (m.conversions || 0) + '</td>' +
+              '<td class="muted">' + fmtEur(m.revenue) + '</td>');
+            anchor.parentNode.insertBefore(tr, anchor.nextElementSibling);
+            anchor = tr;
+          });
+        })
+        .catch(function () {
+          loading.innerHTML = '<td colspan="7" class="muted" style="padding-left:34px">Ошибка сети</td>';
+        });
     });
 
     function load(token) {

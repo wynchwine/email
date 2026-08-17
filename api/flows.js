@@ -24,6 +24,9 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(200).json({ error: 'KLAVIYO_API_KEY is not set in Vercel.' });
 
   const timeframe = TIMEFRAMES.has(String(req.query.timeframe || '')) ? String(req.query.timeframe) : 'last_30_days';
+  // When set, return per-message rows for this single flow instead of the
+  // aggregated one-row-per-flow overview.
+  const flowFilter = req.query && req.query.flow ? String(req.query.flow).replace(/[^A-Za-z0-9]/g, '') : '';
 
   const headers = {
     Authorization: `Klaviyo-API-Key ${apiKey}`,
@@ -77,6 +80,7 @@ export default async function handler(req, res) {
             statistics,
             timeframe: { key: timeframe },
             conversion_metric_id: conversionMetricId,
+            ...(flowFilter ? { filter: `equals(flow_id,"${flowFilter}")` } : {}),
           },
         },
       }),
@@ -88,6 +92,36 @@ export default async function handler(req, res) {
     results = (b.data && b.data.attributes && b.data.attributes.results) || [];
   } catch (e) {
     return res.status(200).json({ error: String(e && e.message ? e.message : e) });
+  }
+
+  // ---- 4a. Single-flow drill-down: per-message rows ----
+  if (flowFilter) {
+    const msgMap = await fetchFlowMessages(flowFilter, headers);
+    const messages = results
+      .filter((row) => (row.groupings || {}).flow_message_id)
+      .map((row) => {
+        const g = row.groupings || {};
+        const s = row.statistics || {};
+        const mid = g.flow_message_id;
+        const rec = Number(s.recipients || 0);
+        return {
+          message_id: mid,
+          name: msgMap[mid] || mid,
+          channel: g.send_channel || '',
+          recipients: rec,
+          open_rate: rec ? Number(s.opens_unique || 0) / rec : 0,
+          click_rate: rec ? Number(s.clicks_unique || 0) / rec : 0,
+          conversions: Number(s.conversion_uniques || 0),
+          revenue: Number(s.conversion_value || 0),
+        };
+      })
+      .sort((a, b) => b.recipients - a.recipients);
+    const meta = flowMap[flowFilter] || {};
+    return res.status(200).json({
+      timeframe,
+      flow: { id: flowFilter, name: meta.name || flowFilter, status: meta.status || '' },
+      messages,
+    });
   }
 
   // ---- 4. Aggregate per-message rows into one row per flow ----
@@ -130,4 +164,24 @@ export default async function handler(req, res) {
     .sort((a, b) => b.recipients - a.recipients);
 
   return res.status(200).json({ timeframe, flows });
+}
+
+// Map of flow_message_id -> message name for a single flow, via its actions.
+async function fetchFlowMessages(flowId, headers) {
+  const map = {};
+  try {
+    let url = `${KLAVIYO_BASE}/flows/${flowId}/flow-actions/?include=flow-messages&fields[flow-message]=name&page[size]=50`;
+    for (let page = 0; page < 6 && url; page++) {
+      const r = await fetch(url, { headers });
+      const b = await r.json().catch(() => ({}));
+      if (!r.ok) break;
+      (b.included || []).forEach((inc) => {
+        if (inc.type === 'flow-message') {
+          map[inc.id] = (inc.attributes && inc.attributes.name) || '';
+        }
+      });
+      url = b.links && b.links.next ? b.links.next : null;
+    }
+  } catch (e) { /* names are best-effort — fall back to id */ }
+  return map;
 }
