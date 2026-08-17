@@ -112,6 +112,29 @@
           <button type="button" id="unhideBtn">Показать скрытые</button>
         </div>
       </div>
+
+      <div class="panel" style="margin-top:26px;">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span>Флоу · Klaviyo</span>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;">
+            Период
+            <select id="flowPeriod" style="font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:#fff;">
+              <option value="last_7_days">7 дней</option>
+              <option value="last_30_days" selected>30 дней</option>
+              <option value="last_3_months">3 месяца</option>
+              <option value="last_12_months">12 месяцев</option>
+            </select>
+          </label>
+        </h3>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>Флоу</th><th>Статус</th><th>Получатели</th><th>Open rate</th><th>Click rate</th><th>Конверсии</th><th>Выручка</th></tr>
+            </thead>
+            <tbody id="flowsBody"><tr><td colspan="7" class="msg">Загрузка…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -250,6 +273,49 @@
       }
     }
 
+    // ---- Flows (Klaviyo) ----
+    function fmtPct(x) { return (x == null || isNaN(x)) ? '—' : (Math.round(x * 1000) / 10) + '%'; }
+    function fmtEur(x) { return '€' + (Number(x) || 0).toFixed(2); }
+
+    function renderFlows(data) {
+      var body = document.getElementById('flowsBody');
+      if (!data || data.error) {
+        body.innerHTML = '<tr><td colspan="7" class="msg">' +
+          esc(data && data.error ? data.error : 'Ошибка') +
+          (data && data.detail ? ' — ' + esc(data.detail) : '') + '</td></tr>';
+        return;
+      }
+      var flows = data.flows || [];
+      if (!flows.length) { body.innerHTML = '<tr><td colspan="7" class="msg">Нет данных за период</td></tr>'; return; }
+      body.innerHTML = flows.map(function (f) {
+        var live = /live|manual/i.test(f.status || '');
+        return '<tr>' +
+          '<td>' + esc(f.name) + '</td>' +
+          '<td>' + (f.status ? '<span class="pill ' + (live ? 'yes' : 'no') + '">' + esc(f.status) + '</span>' : '<span class="muted">—</span>') + '</td>' +
+          '<td>' + (f.recipients || 0) + '</td>' +
+          '<td class="muted">' + fmtPct(f.open_rate) + '</td>' +
+          '<td class="muted">' + fmtPct(f.click_rate) + '</td>' +
+          '<td>' + (f.conversions || 0) + '</td>' +
+          '<td class="muted">' + fmtEur(f.revenue) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function loadFlows(token) {
+      if (!token) return;
+      var period = document.getElementById('flowPeriod').value || 'last_30_days';
+      var body = document.getElementById('flowsBody');
+      body.innerHTML = '<tr><td colspan="7" class="msg">Загрузка…</td></tr>';
+      fetch('/api/flows?key=' + encodeURIComponent(token) + '&timeframe=' + encodeURIComponent(period))
+        .then(function (r) { return r.json().catch(function () { return { error: 'HTTP ' + r.status }; }); })
+        .then(renderFlows)
+        .catch(function () { renderFlows({ error: 'Ошибка сети' }); });
+    }
+
+    document.getElementById('flowPeriod').addEventListener('change', function () {
+      loadFlows(localStorage.getItem(LS_KEY) || '');
+    });
+
     function load(token) {
       fetch('/api/stats?key=' + encodeURIComponent(token))
         .then(function (r) {
@@ -261,6 +327,7 @@
           if (data.error) { render({ registrations: { error: data.error }, subscribers: {} }); return; }
           localStorage.setItem(LS_KEY, token);
           render(data);
+          loadFlows(token);
         })
         .catch(function () { showGate('Ошибка сети. Попробуйте ещё раз.'); });
     }
