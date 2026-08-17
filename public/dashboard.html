@@ -17,7 +17,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; padding: 24px; }
-    .wrap { max-width: 960px; margin: 0 auto; }
+    .wrap { max-width: 1280px; margin: 0 auto; }
     header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
     h1 { font-size: 24px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
     .refresh { font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
@@ -59,6 +59,9 @@
     .del { background: none; border: 1px solid var(--line); color: #c0392b; cursor: pointer; font-size: 13px; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
     .del:hover { background: #fdecea; border-color: #f5c6c0; }
     td.act { text-align: right; }
+    /* Visual separator between the UTM groups (registration | purchase). */
+    th.grp, td.grp { border-left: 2px solid var(--line); }
+    th.grp { color: var(--accent); }
     .hidden-bar { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .hidden-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
     .hidden-bar button:hover { border-color: var(--accent); }
@@ -94,7 +97,7 @@
         <div class="scroll">
           <table id="table">
             <thead>
-              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th>Источник</th><th></th></tr>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th class="grp">Рег source</th><th>Рег medium</th><th>Рег campaign</th><th>Рег term</th><th>Рег content</th><th class="grp">Пок source</th><th>Пок medium</th><th>Пок campaign</th><th>Пок term</th><th>Пок content</th><th></th></tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
@@ -131,6 +134,8 @@
     }
 
     function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    // A UTM table cell; `grp` adds the group separator border.
+    function utmTd(v, grp) { return '<td class="muted' + (grp ? ' grp' : '') + '">' + (v ? esc(v) : '—') + '</td>'; }
     function fmtDate(iso) {
       if (!iso) return '';
       var d = new Date(iso);
@@ -208,11 +213,13 @@
 
       var tbody = document.getElementById('tbody');
       if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="msg">Пока нет данных</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="18" class="msg">Пока нет данных</td></tr>';
       } else {
         tbody.innerHTML = rows.map(function (c) {
           var orders = (typeof c.orders === 'number') ? c.orders : null;
           var spent = (c.spent != null) ? ('€' + Number(c.spent).toFixed(2)) : null;
+          var r = c.reg_utm || {};
+          var b = c.buy_utm || {};
           return '<tr>' +
             '<td>' + (esc(c.name) || '<span class="muted">—</span>') + '</td>' +
             '<td>' + esc(c.email) + '</td>' +
@@ -221,7 +228,8 @@
             '<td>' + (orders != null ? orders : '<span class="muted">—</span>') + '</td>' +
             '<td class="muted">' + (spent != null ? esc(spent) : '—') + '</td>' +
             '<td class="muted">' + (c.purchase_date ? esc(fmtDate(c.purchase_date)) : '—') + '</td>' +
-            '<td>' + (c.utm_source ? esc(c.utm_source) : '<span class="muted">—</span>') + '</td>' +
+            utmTd(r.source, true) + utmTd(r.medium) + utmTd(r.campaign) + utmTd(r.term) + utmTd(r.content) +
+            utmTd(b.source, true) + utmTd(b.medium) + utmTd(b.campaign) + utmTd(b.term) + utmTd(b.content) +
             '<td class="act"><button class="del" type="button" data-email="' + esc(c.email) + '">Удалить</button></td>' +
             '</tr>';
         }).join('');

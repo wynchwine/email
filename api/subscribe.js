@@ -44,6 +44,8 @@ export default async function handler(req, res) {
     utm_source: String(body.utm_source ?? '').trim().slice(0, 100),
     utm_medium: String(body.utm_medium ?? '').trim().slice(0, 100),
     utm_campaign: String(body.utm_campaign ?? '').trim().slice(0, 100),
+    utm_term: String(body.utm_term ?? '').trim().slice(0, 100),
+    utm_content: String(body.utm_content ?? '').trim().slice(0, 100),
   };
 
   try {

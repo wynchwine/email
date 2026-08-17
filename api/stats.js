@@ -93,12 +93,10 @@ export default async function handler(req, res) {
             email: a.email,
             created_at: a.created,
             marketing: consent === 'SUBSCRIBED',
-            // Source is stored in the profile's "UTM Campaign" custom property.
-            utm_source: props['UTM Campaign']
-              || props.utm_campaign
-              || props['UTM Source']
-              || props.utm_source
-              || '',
+            // UTM captured at registration (stored on the Klaviyo profile).
+            reg_utm: regUtmFromProps(props),
+            // UTM from the first Shopify order (filled by shopifyFirstOrderMap).
+            buy_utm: emptyUtm(),
           };
         });
       // Enrich with Shopify purchase data (orders count + total spent),
@@ -111,7 +109,8 @@ export default async function handler(req, res) {
             if (m) {
               p.orders = m.orders;
               p.spent = m.spent;
-              if (m.utm) p.utm_source = m.utm; // Shopify tag wins as the source
+              // Fall back to the Shopify "utm:<source>" tag for the reg source.
+              if (m.utm && !p.reg_utm.source) p.reg_utm.source = m.utm;
             }
           });
           out.purchases = true;
@@ -128,7 +127,7 @@ export default async function handler(req, res) {
             const o = orderMap[String(p.email || '').toLowerCase()];
             if (o) {
               if (o.date) p.purchase_date = o.date;
-              if (o.utm && !p.utm_source) p.utm_source = o.utm; // Shopify auto-captured UTM
+              if (o.utm) p.buy_utm = o.utm; // Shopify auto-captured UTM on the order
             }
           });
         }
@@ -185,16 +184,45 @@ async function shopifyPurchaseMap() {
   return map;
 }
 
-// Extract a UTM value from an order landing_site URL (Shopify captures this
-// automatically). Prefers utm_campaign, then utm_source.
-function utmFromLanding(landing) {
+function emptyUtm() {
+  return { source: '', medium: '', campaign: '', term: '', content: '' };
+}
+
+function utmHasAny(u) {
+  return !!(u && (u.source || u.medium || u.campaign || u.term || u.content));
+}
+
+// Registration UTM stored on the Klaviyo profile. Prefer our own lowercase
+// keys (written by lib/klaviyo.js), fall back to Klaviyo's auto-tracked
+// "UTM Source"/… properties.
+function regUtmFromProps(props) {
+  props = props || {};
+  const pick = (a, b) => props[a] || props[b] || '';
+  return {
+    source: pick('utm_source', 'UTM Source'),
+    medium: pick('utm_medium', 'UTM Medium'),
+    campaign: pick('utm_campaign', 'UTM Campaign'),
+    term: pick('utm_term', 'UTM Term'),
+    content: pick('utm_content', 'UTM Content'),
+  };
+}
+
+// Extract all five UTM values from an order landing_site URL (Shopify captures
+// this automatically at checkout).
+function parseUtmAll(landing) {
+  const out = emptyUtm();
   try {
     const s = String(landing || '');
     const qi = s.indexOf('?');
-    if (qi < 0) return '';
+    if (qi < 0) return out;
     const params = new URLSearchParams(s.slice(qi + 1));
-    return params.get('utm_campaign') || params.get('utm_source') || '';
-  } catch (e) { return ''; }
+    out.source = params.get('utm_source') || '';
+    out.medium = params.get('utm_medium') || '';
+    out.campaign = params.get('utm_campaign') || '';
+    out.term = params.get('utm_term') || '';
+    out.content = params.get('utm_content') || '';
+  } catch (e) { /* ignore */ }
+  return out;
 }
 
 // Map of lowercased email -> { date, utm } from Shopify orders (earliest
@@ -213,12 +241,12 @@ async function shopifyFirstOrderMap() {
     (j.orders || []).forEach((o) => {
       const em = String((o.customer && o.customer.email) || o.email || '').toLowerCase();
       if (!em || !o.created_at) return;
-      const u = utmFromLanding(o.landing_site);
+      const u = parseUtmAll(o.landing_site);
       if (!map[em]) {
         map[em] = { date: o.created_at, utm: u };
       } else {
         if (o.created_at < map[em].date) map[em].date = o.created_at; // keep earliest date
-        if (!map[em].utm && u) map[em].utm = u;
+        if (!utmHasAny(map[em].utm) && utmHasAny(u)) map[em].utm = u; // keep first non-empty UTM
       }
     });
     const link = r.headers.get('link') || r.headers.get('Link') || '';

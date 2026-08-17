@@ -679,9 +679,11 @@
         return {
           utm_source: p.get('utm_source') || '',
           utm_medium: p.get('utm_medium') || '',
-          utm_campaign: p.get('utm_campaign') || ''
+          utm_campaign: p.get('utm_campaign') || '',
+          utm_term: p.get('utm_term') || '',
+          utm_content: p.get('utm_content') || ''
         };
-      } catch (e) { return { utm_source: '', utm_medium: '', utm_campaign: '' }; }
+      } catch (e) { return { utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: '' }; }
     }
 
     // Persist UTM for the whole visit: if the landing URL carries any utm_*,
@@ -690,7 +692,7 @@
     // the params in the URL.
     (function () {
       var u = readUrlUtm();
-      if (u.utm_source || u.utm_medium || u.utm_campaign) {
+      if (u.utm_source || u.utm_medium || u.utm_campaign || u.utm_term || u.utm_content) {
         try { localStorage.setItem('wynch_utm', JSON.stringify(u)); } catch (e) { /* ignore */ }
       }
     })();
@@ -800,7 +802,7 @@
       // touch (see the localStorage capture near the top of the script).
       function getUtm() {
         var u = readUrlUtm();
-        if (u.utm_source || u.utm_medium || u.utm_campaign) return u;
+        if (u.utm_source || u.utm_medium || u.utm_campaign || u.utm_term || u.utm_content) return u;
         try {
           var s = localStorage.getItem('wynch_utm');
           if (s) return JSON.parse(s);
