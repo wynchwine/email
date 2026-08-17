@@ -672,6 +672,29 @@
     var signupData = null;
     var registerPromise = null;
 
+    // Read UTM params from the current URL.
+    function readUrlUtm() {
+      try {
+        var p = new URLSearchParams(location.search);
+        return {
+          utm_source: p.get('utm_source') || '',
+          utm_medium: p.get('utm_medium') || '',
+          utm_campaign: p.get('utm_campaign') || ''
+        };
+      } catch (e) { return { utm_source: '', utm_medium: '', utm_campaign: '' }; }
+    }
+
+    // Persist UTM for the whole visit: if the landing URL carries any utm_*,
+    // stash it in localStorage. That way registration still attributes the
+    // source even when the user refreshes or navigates to /pages/join without
+    // the params in the URL.
+    (function () {
+      var u = readUrlUtm();
+      if (u.utm_source || u.utm_medium || u.utm_campaign) {
+        try { localStorage.setItem('wynch_utm', JSON.stringify(u)); } catch (e) { /* ignore */ }
+      }
+    })();
+
     // Log the user in via Shopify's native customer_login form (rendered by the
     // Liquid form tag below, so it carries the required token), then redirect.
     function submitLogin(returnPath) {
@@ -773,15 +796,16 @@
 
       // Create the Shopify customer (Admin API) + Klaviyo profile. Resolves to
       // { ok, status, error } and is awaited by loginAndGo before logging in.
+      // UTM from the URL if present, otherwise the value stashed at first
+      // touch (see the localStorage capture near the top of the script).
       function getUtm() {
+        var u = readUrlUtm();
+        if (u.utm_source || u.utm_medium || u.utm_campaign) return u;
         try {
-          var p = new URLSearchParams(location.search);
-          return {
-            utm_source: p.get('utm_source') || '',
-            utm_medium: p.get('utm_medium') || '',
-            utm_campaign: p.get('utm_campaign') || ''
-          };
-        } catch (e) { return {}; }
+          var s = localStorage.getItem('wynch_utm');
+          if (s) return JSON.parse(s);
+        } catch (e) { /* ignore */ }
+        return u;
       }
 
       function createAccount(marketing) {

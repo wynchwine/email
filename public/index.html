@@ -665,6 +665,28 @@
     var SHOP_ORIGIN = 'https://wynch.wine';
     var signupData = null;
 
+    // Read UTM params from the current URL.
+    function readUrlUtm() {
+      try {
+        var p = new URLSearchParams(location.search);
+        return {
+          utm_source: p.get('utm_source') || '',
+          utm_medium: p.get('utm_medium') || '',
+          utm_campaign: p.get('utm_campaign') || ''
+        };
+      } catch (e) { return { utm_source: '', utm_medium: '', utm_campaign: '' }; }
+    }
+
+    // Persist UTM for the whole visit so registration still attributes the
+    // source even after a refresh or an internal navigation that drops the
+    // ?utm_ params from the URL.
+    (function () {
+      var u = readUrlUtm();
+      if (u.utm_source || u.utm_medium || u.utm_campaign) {
+        try { localStorage.setItem('wynch_utm', JSON.stringify(u)); } catch (e) { /* ignore */ }
+      }
+    })();
+
     // Create the Shopify customer account and log the user in via the storefront
     // "create_customer" form (classic accounts), then land on returnPath.
     function loginAndGo(returnPath) {
@@ -765,15 +787,16 @@
       }
 
       // Create the Klaviyo profile (and subscribe to marketing when opted in).
+      // UTM from the URL if present, otherwise the value stashed at first
+      // touch (see the localStorage capture near the top of the script).
       function getUtm() {
+        var u = readUrlUtm();
+        if (u.utm_source || u.utm_medium || u.utm_campaign) return u;
         try {
-          var p = new URLSearchParams(location.search);
-          return {
-            utm_source: p.get('utm_source') || '',
-            utm_medium: p.get('utm_medium') || '',
-            utm_campaign: p.get('utm_campaign') || ''
-          };
-        } catch (e) { return {}; }
+          var s = localStorage.getItem('wynch_utm');
+          if (s) return JSON.parse(s);
+        } catch (e) { /* ignore */ }
+        return u;
       }
 
       function saveToKlaviyo(marketing) {
