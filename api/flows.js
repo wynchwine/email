@@ -8,6 +8,9 @@
 
 const KLAVIYO_BASE = 'https://a.klaviyo.com/api';
 const KLAVIYO_REVISION = '2024-10-15';
+// Conversion metric for the flow report (Klaviyo "Placed Order"). Used when
+// KLAVIYO_CONVERSION_METRIC_ID isn't set, so no Metrics read access is needed.
+const DEFAULT_CONVERSION_METRIC_ID = 'St6RYY';
 
 // Timeframe keys we allow the dashboard to request (mapped straight to Klaviyo).
 const TIMEFRAMES = new Set(['last_7_days', 'last_30_days', 'last_3_months', 'last_12_months']);
@@ -54,7 +57,7 @@ export default async function handler(req, res) {
   // ---- 2. Conversion metric id (required by flow-values-reports) ----
   // Use the explicit env override if set (no metrics read needed); otherwise
   // auto-discover the Shopify "Placed Order" metric, falling back to the first.
-  let conversionMetricId = process.env.KLAVIYO_CONVERSION_METRIC_ID || '';
+  let conversionMetricId = process.env.KLAVIYO_CONVERSION_METRIC_ID || DEFAULT_CONVERSION_METRIC_ID || '';
   let metricErr = '';
   if (!conversionMetricId) {
     try {
