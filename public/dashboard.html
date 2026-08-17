@@ -64,12 +64,6 @@
     th.grp { color: var(--accent); }
     /* UTM columns are collapsed by default; toggled by the "Показать UTM" button. */
     table.hide-utm th.utm-col, table.hide-utm td.utm-col { display: none; }
-    /* Flow drill-down: clickable flow rows + nested per-message rows. */
-    tr.flow-row { cursor: pointer; }
-    tr.flow-row:hover { background: #faf9f7; }
-    tr.flow-row .caret { display: inline-block; color: var(--muted); margin-right: 6px; transition: transform 0.15s; }
-    tr.flow-row.open .caret { transform: rotate(90deg); }
-    tr.msg-detail td { background: #faf9f7; }
     .hidden-bar { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .hidden-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
     .hidden-bar button:hover { border-color: var(--accent); }
@@ -121,7 +115,7 @@
 
       <div class="panel" style="margin-top:26px;">
         <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-          <span>Флоу · Klaviyo</span>
+          <span>Флоу · Welcome_Club_New</span>
           <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;">
             Период
             <select id="flowPeriod" style="font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:#fff;">
@@ -135,7 +129,7 @@
         <div class="scroll">
           <table>
             <thead>
-              <tr><th>Флоу</th><th>Статус</th><th>Получатели</th><th>Open rate</th><th>Click rate</th><th>Конверсии</th><th>Выручка</th></tr>
+              <tr><th>Письмо</th><th>Канал</th><th>Получатели</th><th>Open rate</th><th>Click rate</th><th>Конверсии</th><th>Выручка</th></tr>
             </thead>
             <tbody id="flowsBody"><tr><td colspan="7" class="msg">Загрузка…</td></tr></tbody>
           </table>
@@ -283,7 +277,10 @@
     function fmtPct(x) { return (x == null || isNaN(x)) ? '—' : (Math.round(x * 1000) / 10) + '%'; }
     function fmtEur(x) { return '€' + (Number(x) || 0).toFixed(2); }
 
-    function renderFlows(data) {
+    // Single flow shown in the dashboard, with its emails expanded by default.
+    var FLOW_NAME = 'Welcome_Club_New';
+
+    function renderFlow(data) {
       var body = document.getElementById('flowsBody');
       if (!data || data.error) {
         body.innerHTML = '<tr><td colspan="7" class="msg">' +
@@ -291,18 +288,17 @@
           (data && data.detail ? ' — ' + esc(data.detail) : '') + '</td></tr>';
         return;
       }
-      var flows = data.flows || [];
-      if (!flows.length) { body.innerHTML = '<tr><td colspan="7" class="msg">Нет данных за период</td></tr>'; return; }
-      body.innerHTML = flows.map(function (f) {
-        var live = /live|manual/i.test(f.status || '');
-        return '<tr class="flow-row" data-flow="' + esc(f.flow_id) + '">' +
-          '<td><span class="caret">▸</span>' + esc(f.name) + '</td>' +
-          '<td>' + (f.status ? '<span class="pill ' + (live ? 'yes' : 'no') + '">' + esc(f.status) + '</span>' : '<span class="muted">—</span>') + '</td>' +
-          '<td>' + (f.recipients || 0) + '</td>' +
-          '<td class="muted">' + fmtPct(f.open_rate) + '</td>' +
-          '<td class="muted">' + fmtPct(f.click_rate) + '</td>' +
-          '<td>' + (f.conversions || 0) + '</td>' +
-          '<td class="muted">' + fmtEur(f.revenue) + '</td>' +
+      var msgs = data.messages || [];
+      if (!msgs.length) { body.innerHTML = '<tr><td colspan="7" class="msg">Нет писем/данных за период</td></tr>'; return; }
+      body.innerHTML = msgs.map(function (m) {
+        return '<tr>' +
+          '<td>' + esc(m.name) + '</td>' +
+          '<td class="muted">' + esc(m.channel || '') + '</td>' +
+          '<td>' + (m.recipients || 0) + '</td>' +
+          '<td class="muted">' + fmtPct(m.open_rate) + '</td>' +
+          '<td class="muted">' + fmtPct(m.click_rate) + '</td>' +
+          '<td>' + (m.conversions || 0) + '</td>' +
+          '<td class="muted">' + fmtEur(m.revenue) + '</td>' +
           '</tr>';
       }).join('');
     }
@@ -312,73 +308,14 @@
       var period = document.getElementById('flowPeriod').value || 'last_30_days';
       var body = document.getElementById('flowsBody');
       body.innerHTML = '<tr><td colspan="7" class="msg">Загрузка…</td></tr>';
-      fetch('/api/flows?key=' + encodeURIComponent(token) + '&timeframe=' + encodeURIComponent(period))
+      fetch('/api/flows?key=' + encodeURIComponent(token) + '&flowName=' + encodeURIComponent(FLOW_NAME) + '&timeframe=' + encodeURIComponent(period))
         .then(function (r) { return r.json().catch(function () { return { error: 'HTTP ' + r.status }; }); })
-        .then(renderFlows)
-        .catch(function () { renderFlows({ error: 'Ошибка сети' }); });
+        .then(renderFlow)
+        .catch(function () { renderFlow({ error: 'Ошибка сети' }); });
     }
 
     document.getElementById('flowPeriod').addEventListener('change', function () {
       loadFlows(localStorage.getItem(LS_KEY) || '');
-    });
-
-    // Expand a flow row to show per-message stats (fetched from /api/flows?flow=…).
-    function msgRow(fid, html) {
-      var tr = document.createElement('tr');
-      tr.className = 'msg-detail';
-      tr.setAttribute('data-parent', fid);
-      tr.innerHTML = html;
-      return tr;
-    }
-    document.getElementById('flowsBody').addEventListener('click', function (e) {
-      var row = e.target.closest ? e.target.closest('tr.flow-row') : null;
-      if (!row) return;
-      var fid = row.getAttribute('data-flow');
-
-      // Collapse if already open.
-      var n = row.nextElementSibling;
-      if (n && n.getAttribute('data-parent') === fid) {
-        while (n && n.getAttribute('data-parent') === fid) { var nx = n.nextElementSibling; n.remove(); n = nx; }
-        row.classList.remove('open');
-        return;
-      }
-
-      row.classList.add('open');
-      var loading = msgRow(fid, '<td colspan="7" class="muted" style="padding-left:34px">Загрузка писем…</td>');
-      row.parentNode.insertBefore(loading, row.nextElementSibling);
-
-      var token = localStorage.getItem(LS_KEY) || '';
-      var period = document.getElementById('flowPeriod').value || 'last_30_days';
-      fetch('/api/flows?key=' + encodeURIComponent(token) + '&flow=' + encodeURIComponent(fid) + '&timeframe=' + encodeURIComponent(period))
-        .then(function (r) { return r.json().catch(function () { return { error: 'HTTP ' + r.status }; }); })
-        .then(function (data) {
-          loading.remove();
-          if (data && data.error) {
-            row.parentNode.insertBefore(msgRow(fid, '<td colspan="7" class="muted" style="padding-left:34px">' + esc(data.error) + (data.detail ? ' — ' + esc(data.detail) : '') + '</td>'), row.nextElementSibling);
-            return;
-          }
-          var msgs = (data && data.messages) || [];
-          if (!msgs.length) {
-            row.parentNode.insertBefore(msgRow(fid, '<td colspan="7" class="muted" style="padding-left:34px">Нет писем/данных за период</td>'), row.nextElementSibling);
-            return;
-          }
-          var anchor = row;
-          msgs.forEach(function (m) {
-            var tr = msgRow(fid,
-              '<td class="muted" style="padding-left:34px">↳ ' + esc(m.name) + '</td>' +
-              '<td class="muted">' + esc(m.channel || '') + '</td>' +
-              '<td>' + (m.recipients || 0) + '</td>' +
-              '<td class="muted">' + fmtPct(m.open_rate) + '</td>' +
-              '<td class="muted">' + fmtPct(m.click_rate) + '</td>' +
-              '<td>' + (m.conversions || 0) + '</td>' +
-              '<td class="muted">' + fmtEur(m.revenue) + '</td>');
-            anchor.parentNode.insertBefore(tr, anchor.nextElementSibling);
-            anchor = tr;
-          });
-        })
-        .catch(function () {
-          loading.innerHTML = '<td colspan="7" class="muted" style="padding-left:34px">Ошибка сети</td>';
-        });
     });
 
     function load(token) {

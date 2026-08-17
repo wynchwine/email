@@ -27,9 +27,10 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(200).json({ error: 'KLAVIYO_API_KEY is not set in Vercel.' });
 
   const timeframe = TIMEFRAMES.has(String(req.query.timeframe || '')) ? String(req.query.timeframe) : 'last_30_days';
-  // When set, return per-message rows for this single flow instead of the
-  // aggregated one-row-per-flow overview.
-  const flowFilter = req.query && req.query.flow ? String(req.query.flow).replace(/[^A-Za-z0-9]/g, '') : '';
+  // When set (by id via ?flow= or by name via ?flowName=), return per-message
+  // rows for this single flow instead of the aggregated overview.
+  let flowFilter = req.query && req.query.flow ? String(req.query.flow).replace(/[^A-Za-z0-9]/g, '') : '';
+  const flowNameReq = req.query && req.query.flowName ? String(req.query.flowName) : '';
 
   const headers = {
     Authorization: `Klaviyo-API-Key ${apiKey}`,
@@ -53,6 +54,15 @@ export default async function handler(req, res) {
       url = b.links && b.links.next ? b.links.next : null;
     }
   } catch (e) { /* names are best-effort */ }
+
+  // Resolve ?flowName= to an id (exact, case-insensitive) once flows are known.
+  if (!flowFilter && flowNameReq) {
+    const found = Object.keys(flowMap).find(
+      (id) => (flowMap[id].name || '').toLowerCase() === flowNameReq.toLowerCase()
+    );
+    if (!found) return res.status(200).json({ error: 'Flow not found: ' + flowNameReq });
+    flowFilter = found;
+  }
 
   // ---- 2. Conversion metric id (required by flow-values-reports) ----
   // Use the explicit env override if set (no metrics read needed); otherwise
@@ -111,25 +121,43 @@ export default async function handler(req, res) {
   // ---- 4a. Single-flow drill-down: per-message rows ----
   if (flowFilter) {
     const msgMap = await fetchFlowMessages(flowFilter, headers);
-    const messages = results
-      .filter((row) => (row.groupings || {}).flow_message_id)
-      .map((row) => {
-        const g = row.groupings || {};
-        const s = row.statistics || {};
-        const mid = g.flow_message_id;
-        const rec = Number(s.recipients || 0);
-        return {
-          message_id: mid,
-          name: msgMap[mid] || mid,
-          channel: g.send_channel || '',
-          recipients: rec,
-          open_rate: rec ? Number(s.opens_unique || 0) / rec : 0,
-          click_rate: rec ? Number(s.clicks_unique || 0) / rec : 0,
-          conversions: Number(s.conversion_uniques || 0),
-          revenue: Number(s.conversion_value || 0),
-        };
-      })
-      .sort((a, b) => b.recipients - a.recipients);
+
+    // Sum report rows per message (across channels).
+    const statsByMsg = {};
+    results.forEach((row) => {
+      const g = row.groupings || {};
+      const mid = g.flow_message_id;
+      if (!mid) return;
+      const s = row.statistics || {};
+      if (!statsByMsg[mid]) {
+        statsByMsg[mid] = { recipients: 0, opens_unique: 0, clicks_unique: 0, conversions: 0, revenue: 0, channel: g.send_channel || '' };
+      }
+      const acc = statsByMsg[mid];
+      acc.recipients += Number(s.recipients || 0);
+      acc.opens_unique += Number(s.opens_unique || 0);
+      acc.clicks_unique += Number(s.clicks_unique || 0);
+      acc.conversions += Number(s.conversion_uniques || 0);
+      acc.revenue += Number(s.conversion_value || 0);
+    });
+
+    // Union of the flow's actual messages (for names) and any message with
+    // stats — so every email shows, even ones with no sends in the period.
+    const ids = new Set([...Object.keys(msgMap), ...Object.keys(statsByMsg)]);
+    const messages = Array.from(ids).map((mid) => {
+      const st = statsByMsg[mid] || { recipients: 0, opens_unique: 0, clicks_unique: 0, conversions: 0, revenue: 0, channel: '' };
+      const rec = st.recipients || 0;
+      return {
+        message_id: mid,
+        name: msgMap[mid] || 'Без названия',
+        channel: st.channel || '',
+        recipients: rec,
+        open_rate: rec ? st.opens_unique / rec : 0,
+        click_rate: rec ? st.clicks_unique / rec : 0,
+        conversions: st.conversions || 0,
+        revenue: st.revenue || 0,
+      };
+    }).sort((a, b) => b.recipients - a.recipients);
+
     const meta = flowMap[flowFilter] || {};
     return res.status(200).json({
       timeframe,
