@@ -93,6 +93,9 @@ export default async function handler(req, res) {
             email: a.email,
             created_at: a.created,
             marketing: consent === 'SUBSCRIBED',
+            // Our own "source" property written at signup (falls back to
+            // Klaviyo's built-in $source that records how the profile was added).
+            klaviyo_source: props.source || props['$source'] || '',
             // UTM captured at registration (stored on the Klaviyo profile).
             reg_utm: regUtmFromProps(props),
             // UTM from the first Shopify order (filled by shopifyFirstOrderMap).
