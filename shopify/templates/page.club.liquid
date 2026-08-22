@@ -102,6 +102,8 @@
   }
   .wynch-landing .btn-primary:hover { filter: brightness(1.05); }
   .wynch-landing .fineprint { color: var(--muted); font-size: 11.5px; line-height: 1.5; margin-top: 16px; }
+  .wynch-landing .form-note { font-size: 13px; margin-top: 8px; min-height: 18px; color: var(--muted); }
+  .wynch-landing .form-note.err { color: #c0392b; }
 
   .wynch-landing .hero-media { position: relative; min-height: 320px; }
   .wynch-landing .hero-media img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
@@ -198,6 +200,70 @@
   @media (max-width: 480px) {
     .wynch-landing .form-row { grid-template-columns: 1fr; }
   }
+
+  /* Step 2 — full-screen post-signup opt-in */
+  .wynch-landing .step2 {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg); padding: 40px; text-align: center;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    font-family: var(--font-body); color: var(--ink);
+  }
+  .wynch-landing .step2[hidden] { display: none; }
+  .wynch-landing .step2-frame {
+    width: 100%; min-height: 100%;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  @media (max-width: 760px) {
+    .wynch-landing .step2 { padding: 16px; }
+    .wynch-landing .step2-yes, .wynch-landing .step2-alt { font-size: 19px; padding: 21px; max-width: none; }
+  }
+  .wynch-landing .step2-inner { max-width: 560px; width: 100%; }
+  .wynch-landing .confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 5; }
+  .wynch-landing .confetti svg { width: 100% !important; height: 100% !important; }
+  .wynch-landing .step2-photo-wrap { position: relative; display: inline-block; margin: 0 auto 30px; }
+  .wynch-landing .step2-photo { width: min(280px, 72vw); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 28px; display: block; }
+  .wynch-landing .step2-badge {
+    position: absolute; top: -10px; right: -10px; width: 88px; height: 88px; border-radius: 9999px;
+    background: var(--accent); color: #fff; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 700;
+    text-transform: uppercase; font-size: 24px; line-height: 1; transform: rotate(-8deg);
+  }
+  .wynch-landing .step2-badge small { font-family: var(--font-body); font-size: 10px; letter-spacing: 1.5px; margin-top: 4px; opacity: 0.9; }
+  .wynch-landing .step2 h2 {
+    font-family: var(--font-head); font-weight: 700; color: var(--accent); text-transform: uppercase;
+    font-size: clamp(40px, 8vw, 58px); line-height: 1.0; margin-bottom: 18px;
+  }
+  .wynch-landing .step2 p { color: var(--ink); font-size: 19px; line-height: 1.55; margin: 0 auto 32px; max-width: 32ch; }
+  .wynch-landing .step2-deposit {
+    margin: 0 auto 30px; max-width: 34ch; background: rgba(255,99,21,0.08);
+    border: 1px solid rgba(255,99,21,0.35); border-radius: 16px; padding: 18px 22px;
+    color: var(--ink); font-size: 18px; line-height: 1.5;
+  }
+  .wynch-landing .step2-deposit strong { color: var(--accent); font-weight: 700; }
+  .wynch-landing .step2 .step2-confirm {
+    margin: 0 auto 30px; max-width: 40ch; background: rgba(255,99,21,0.12);
+    border: 1px dashed rgba(255,99,21,0.55); border-radius: 16px; padding: 18px 22px;
+    color: var(--ink); font-size: 16px; line-height: 1.55; word-break: break-word;
+  }
+  .wynch-landing .step2 .step2-confirm strong { color: var(--accent); }
+  .wynch-landing .step2-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .wynch-landing .step2 .step2-legal { margin: 20px auto 0; max-width: 40ch; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .wynch-landing .step2 .step2-legal a { color: var(--accent); text-decoration: underline; }
+  .wynch-landing .step2-yes, .wynch-landing .step2-alt {
+    width: 100%; max-width: 340px; box-sizing: border-box; display: inline-block; text-align: center;
+    text-decoration: none; border-radius: 9999px; padding: 18px; font-family: var(--font-body);
+    font-size: 17px; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: background 0.15s ease;
+  }
+  .wynch-landing .step2-yes { background: var(--accent); color: #fff; border: none; }
+  .wynch-landing .step2-yes:hover { background: #e5570f; }
+  .wynch-landing .step2-alt { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .wynch-landing .step2-alt:hover { background: rgba(255,99,21,0.10); }
+  .wynch-landing .step2-no {
+    background: transparent; border: none; color: var(--muted); font-family: var(--font-body);
+    font-size: 14px; text-decoration: underline; cursor: pointer; padding: 6px;
+  }
+  .wynch-landing .step2-no:hover { color: var(--accent); }
 </style>
 
 <div class="wynch-landing">
@@ -216,14 +282,15 @@
 
         <span class="eyebrow">Lieferung deutschlandweit innerhalb von 2 Tagen 🇩🇪</span>
 
-        <form id="signupForm" onsubmit="return false">
+        <form id="signupForm">
           <div class="form-row">
-            <input class="field" type="text" name="name" placeholder="Dein Name" autocomplete="name">
-            <input class="field" type="email" name="email" placeholder="deine@email.de" autocomplete="email">
+            <input class="field" id="name" type="text" name="name" placeholder="Dein Name" autocomplete="name" required>
+            <input class="field" id="email" type="email" name="email" placeholder="deine@email.de" autocomplete="email" required>
           </div>
-          <input class="field" type="password" name="password" placeholder="Passwort" autocomplete="new-password">
-          <input class="field" type="password" name="password2" placeholder="Passwort wiederholen" autocomplete="new-password">
-          <button class="btn-primary" type="submit">Jetzt Mitglied werden</button>
+          <input class="field" id="password" type="password" name="password" placeholder="Passwort" autocomplete="new-password" minlength="8" required>
+          <input class="field" id="password2" type="password" name="password2" placeholder="Passwort wiederholen" autocomplete="new-password" minlength="8" required>
+          <button class="btn-primary" id="submitBtn" type="submit">Jetzt Mitglied werden</button>
+          <p class="form-note" id="formNote"></p>
         </form>
 
         <p class="fineprint">
@@ -359,17 +426,228 @@
     </footer>
 
   </div>
+
+  <!-- Post-signup opt-in screen -->
+  <div class="step2" id="step2" role="dialog" aria-modal="true" aria-labelledby="step2Title" hidden>
+    <div class="step2-frame">
+      <div class="step2-inner" id="step2Inner">
+        <div class="step2-photo-wrap">
+          <span class="step2-badge">Gratis<small>geschenk</small></span>
+          <img class="step2-photo" id="step2Photo" alt="Eine Flasche Cava mit einem gefüllten Glas">
+        </div>
+        <h2 id="step2Title">Eine Sache noch…</h2>
+        <p>Möchtest du nützliche News, Sommelier-Empfehlungen und eine kostenlose Flasche Cava direkt in dein Postfach?</p>
+        <div class="step2-actions">
+          <button class="step2-yes" id="step2Yes" type="button">Ja, ich bin dabei</button>
+          <button class="step2-no" id="step2No" type="button">Nein, keine kostenlose Cava</button>
+        </div>
+        <p class="step2-legal">
+          Mit „Ja, ich bin dabei“ stimmst du zu, Marketing-E-Mails von WYNCH zu erhalten. Abmeldung jederzeit möglich.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Native Shopify login form (carries the required token); filled + submitted from JS -->
+  <div id="wynchWrap" style="display:none" aria-hidden="true">
+    {% form 'customer_login' %}
+      <input type="hidden" name="customer[email]" id="ccEmail">
+      <input type="hidden" name="customer[password]" id="ccPassword">
+      <input type="hidden" name="return_url" id="ccReturn">
+    {% endform %}
+  </div>
 </div>
 
+<script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
 <script>
-  // Hero photo placeholder — replace ASSET_BASE (or swap for a Shopify asset URL).
-  var ASSET_BASE = 'https://REPLACE-WITH-YOUR-VERCEL-DOMAIN';
+  // Set this to your Vercel prod URL (serves /api/register + the placeholder photos).
+  var API_BASE = 'https://REPLACE-WITH-YOUR-VERCEL-DOMAIN';
+
+  // Hero + step2 photos are hosted on Vercel (public/), not the Shopify domain.
   (function () {
     var h = document.getElementById('heroPhoto');
-    if (h) h.src = ASSET_BASE + '/Bottle_and_wine_glass_202607141610.jpeg';
+    if (h) h.src = API_BASE + '/Bottle_and_wine_glass_202607141610.jpeg';
+    var p = document.getElementById('step2Photo');
+    if (p) p.src = API_BASE + '/Bottle_and_wine_glass_202607141610.jpeg';
   })();
 
-  // Visual-only FAQ accordion.
+  var signupData = null;      // credentials captured from the form (in memory only)
+  var registerPromise = null; // account-creation request kicked off on opt-in
+
+  // ---- UTM: read from URL, persist for the whole visit ----
+  function readUrlUtm() {
+    try {
+      var p = new URLSearchParams(location.search);
+      return {
+        utm_source: p.get('utm_source') || '',
+        utm_medium: p.get('utm_medium') || '',
+        utm_campaign: p.get('utm_campaign') || '',
+        utm_term: p.get('utm_term') || '',
+        utm_content: p.get('utm_content') || ''
+      };
+    } catch (e) { return { utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: '' }; }
+  }
+  (function () {
+    var u = readUrlUtm();
+    if (u.utm_source || u.utm_medium || u.utm_campaign || u.utm_term || u.utm_content) {
+      try { localStorage.setItem('wynch_utm', JSON.stringify(u)); } catch (e) { /* ignore */ }
+    }
+  })();
+  function getUtm() {
+    var u = readUrlUtm();
+    if (u.utm_source || u.utm_medium || u.utm_campaign || u.utm_term || u.utm_content) return u;
+    try { var s = localStorage.getItem('wynch_utm'); if (s) return JSON.parse(s); } catch (e) { /* ignore */ }
+    return u;
+  }
+
+  // ---- Log in via Shopify's native customer_login form (carries the token) ----
+  function submitLogin(returnPath) {
+    var form = document.querySelector('#wynchWrap form');
+    if (!signupData || !form) { window.location.href = returnPath; return; }
+    document.getElementById('ccEmail').value = signupData.email;
+    document.getElementById('ccPassword').value = signupData.password;
+    var ret = document.getElementById('ccReturn'); if (ret) ret.value = returnPath;
+    form.submit();
+  }
+  function loginAndGo(returnPath) {
+    if (registerPromise && registerPromise.then) {
+      registerPromise.then(function () { submitLogin(returnPath); }, function () { submitLogin(returnPath); });
+    } else {
+      submitLogin(returnPath);
+    }
+  }
+
+  // ---- Post-signup opt-in screen ----
+  (function () {
+    var modal = document.getElementById('step2');
+    var inner = document.getElementById('step2Inner');
+    var yes = document.getElementById('step2Yes');
+    var no = document.getElementById('step2No');
+    if (!modal || !inner) return;
+
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+    var CONFETTI_URL = 'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json';
+    function celebrate() {
+      var cf = document.createElement('lottie-player');
+      cf.className = 'confetti';
+      cf.setAttribute('src', CONFETTI_URL);
+      cf.setAttribute('autoplay', '');
+      cf.setAttribute('background', 'transparent');
+      cf.setAttribute('speed', '1');
+      cf.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+      modal.appendChild(cf);
+    }
+
+    function finish(msg, opts) {
+      opts = opts || {};
+      var confirmHtml = '';
+      if (opts.marketing) {
+        confirmHtml =
+          '<div class="step2-confirm">📩 Deine <strong>kostenlose Cava</strong> ist fast da! Bestätige nur noch deine E-Mail: ' +
+          'wir haben einen Link an <strong>' + esc(opts.email || '') + '</strong> geschickt &mdash; ' +
+          'öffne dein Postfach (auch den Spam-Ordner) und klick auf den Bestätigungslink.</div>';
+      }
+      inner.innerHTML =
+        '<h2>Willkommen bei WYNCH</h2>' +
+        '<p>' + esc(msg) + '</p>' +
+        '<div class="step2-deposit">Du hast jetzt <strong>50&nbsp;€</strong> auf deinem Konto &mdash; nutze davon bis zu <strong>30&nbsp;%</strong> bei jeder Bestellung.</div>' +
+        confirmHtml +
+        '<div class="step2-actions">' +
+          '<button class="step2-yes" type="button" data-go="/pages/quiz">Meine Weine finden &mdash; digitaler Sommelier</button>' +
+          '<button class="step2-alt" type="button" data-go="/collections/all-wines">Zum Shop</button>' +
+        '</div>';
+      inner.querySelectorAll('[data-go]').forEach(function (el) {
+        el.addEventListener('click', function () { loginAndGo(el.getAttribute('data-go')); });
+      });
+      celebrate();
+    }
+
+    // Create the Shopify customer (Admin API) + Klaviyo profile via /api/register.
+    function createAccount(marketing) {
+      if (!signupData) return Promise.resolve({ ok: false, error: 'no signup data (fill the form first)' });
+      var full = (signupData.firstName + ' ' + signupData.lastName).trim();
+      return fetch(API_BASE + '/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({
+          name: full,
+          email: signupData.email,
+          password: signupData.password,
+          password2: signupData.password,
+          marketing: marketing
+        }, getUtm()))
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (d) {
+          return { ok: res.ok, status: res.status, error: d.error };
+        });
+      }).catch(function (e) {
+        return { ok: false, error: 'network error (is API_BASE set to your Vercel URL?) ' + (e && e.message ? e.message : '') };
+      });
+    }
+
+    function handleOptIn(marketing, msg) {
+      registerPromise = createAccount(marketing);
+      finish(msg, { marketing: marketing, email: signupData && signupData.email });
+    }
+
+    if (yes) yes.addEventListener('click', function () {
+      handleOptIn(true, "Fast geschafft — nur noch ein Schritt. 🥂");
+    });
+    if (no) no.addEventListener('click', function () {
+      handleOptIn(false, "Kein Problem — du bist im Club. Die kostenlose Cava wartet, falls du es dir anders überlegst.");
+    });
+
+    // Open the opt-in screen directly via URL hash (for preview/sharing).
+    function maybeOpen() { if (location.hash === '#optin' || location.hash === '#step2') modal.hidden = false; }
+    maybeOpen();
+    window.addEventListener('hashchange', maybeOpen);
+  })();
+
+  // ---- Signup form ----
+  (function () {
+    var form = document.getElementById('signupForm');
+    var nameInput = document.getElementById('name');
+    var input = document.getElementById('email');
+    var pwInput = document.getElementById('password');
+    var pw2Input = document.getElementById('password2');
+    var note = document.getElementById('formNote');
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form) return;
+
+    function setNote(msg, kind) {
+      if (!note) return;
+      note.textContent = msg;
+      note.className = 'form-note ' + (kind || '');
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = nameInput.value.trim();
+      var email = input.value.trim();
+      var pw = pwInput.value;
+      var pw2 = pw2Input.value;
+      if (!name) { setNote('Bitte gib deinen Namen ein.', 'err'); nameInput.focus(); return; }
+      if (!EMAIL_RE.test(email)) { setNote('Bitte gib eine gültige E-Mail-Adresse ein.', 'err'); input.focus(); return; }
+      if (pw.length < 8) { setNote('Das Passwort muss mindestens 8 Zeichen haben.', 'err'); pwInput.focus(); return; }
+      if (pw !== pw2) { setNote('Die Passwörter stimmen nicht überein.', 'err'); pw2Input.focus(); return; }
+
+      var parts = name.split(/\s+/);
+      signupData = {
+        firstName: parts.shift() || '',
+        lastName: parts.join(' '),
+        email: email,
+        password: pw
+      };
+
+      setNote('', '');
+      form.reset();
+      var step2 = document.getElementById('step2');
+      if (step2) step2.hidden = false;
+    });
+  })();
+
+  // ---- FAQ accordion ----
   document.querySelectorAll('.wynch-landing .faq-q').forEach(function (q) {
     q.addEventListener('click', function () {
       var item = q.closest('.faq-item');
