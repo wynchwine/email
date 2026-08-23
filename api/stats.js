@@ -102,14 +102,19 @@ export default async function handler(req, res) {
             buy_utm: emptyUtm(),
           };
         });
+      const DEBUG = req.query && req.query.debug === '1';
+      const dbg = { customers: {}, orders: {} };
+
       // Enrich with Shopify purchase data (orders count + total spent),
       // matched by email. Best-effort: if Shopify is unreachable, leave blank.
       try {
         const map = await shopifyPurchaseMap();
         if (map) {
+          let matched = 0;
           profiles.forEach((p) => {
             const m = map[String(p.email || '').toLowerCase()];
             if (m) {
+              matched++;
               p.orders = m.orders;
               p.spent = m.spent;
               // Fall back to the Shopify "utm:<source>" tag for the reg source.
@@ -117,26 +122,32 @@ export default async function handler(req, res) {
             }
           });
           out.purchases = true;
+          dbg.customers = { ok: true, fetched: Object.keys(map).length, matched };
         }
       } catch (e) {
-        // ignore — purchase columns just stay empty
+        dbg.customers = { ok: false, error: String(e && e.message ? e.message : e) };
       }
 
-      // Enrich with first-order date (needs read_orders scope). Best-effort.
+      // Enrich with first-order date + purchase UTM (needs read_orders scope).
       try {
         const orderMap = await shopifyFirstOrderMap();
         if (orderMap) {
+          let matched = 0, withUtm = 0;
           profiles.forEach((p) => {
             const o = orderMap[String(p.email || '').toLowerCase()];
             if (o) {
+              matched++;
               if (o.date) p.purchase_date = o.date;
-              if (o.utm) p.buy_utm = o.utm; // Shopify auto-captured UTM on the order
+              if (o.utm && utmHasAny(o.utm)) { p.buy_utm = o.utm; withUtm++; } // Shopify auto-captured UTM
             }
           });
+          dbg.orders = { ok: true, fetched: Object.keys(orderMap).length, matched, withUtm };
         }
       } catch (e) {
-        // ignore — purchase date just stays empty
+        dbg.orders = { ok: false, error: String(e && e.message ? e.message : e) };
       }
+
+      if (DEBUG) out.debug = dbg;
 
       // Debug: /api/stats?key=...&props=1 lists every property key seen across
       // profiles, so we can find the exact UTM custom-property key.
