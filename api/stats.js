@@ -12,7 +12,8 @@ const KLAVIYO_REVISION = '2024-10-15';
 const SHOPIFY_API_VERSION = '2024-01';
 const SOURCE = 'landing_signup';
 // false = count ALL Klaviyo profiles as registrations; true = only landing signups.
-const LANDING_ONLY = true;
+// (Dashboard shows every profile; filter by creation source via the UI switcher.)
+const LANDING_ONLY = false;
 const MAX_PAGES = 8; // up to 800 profiles
 // Hide test registrations from before this date (UTC). Set to '' to show all.
 const CUTOFF = '2026-07-27T00:00:00Z';

@@ -23,7 +23,7 @@
     .refresh { font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
     .filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .filters label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
-    .filters input[type="date"] { font-family: var(--font); font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: #fff; }
+    .filters input[type="date"], .filters select { font-family: var(--font); font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: #fff; }
     .refresh:hover { border-color: var(--accent); color: var(--accent); }
 
     /* Login gate */
@@ -86,6 +86,7 @@
       <header>
         <h1>Dashboard</h1>
         <div class="filters">
+          <label>Источник <select id="sourceFilter"><option value="">Все источники</option></select></label>
           <label>С <input type="date" id="dateFrom"></label>
           <label>По <input type="date" id="dateTo"></label>
           <button class="refresh" id="dateClear" type="button">Сбросить</button>
@@ -173,6 +174,25 @@
              ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     }
 
+    // Fill the source switcher from the data, preserving the current choice.
+    function populateSourceOptions(allRows) {
+      var sel = document.getElementById('sourceFilter');
+      if (!sel) return;
+      var cur = sel.value;
+      var set = {};
+      var hasNone = false;
+      allRows.forEach(function (c) {
+        var s = c.klaviyo_source || '';
+        if (s) set[s] = true; else hasNone = true;
+      });
+      var opts = Object.keys(set).sort();
+      var html = '<option value="">Все источники</option>';
+      opts.forEach(function (s) { html += '<option value="' + esc(s) + '">' + esc(s) + '</option>'; });
+      if (hasNone) html += '<option value="__none__">— без источника</option>';
+      sel.innerHTML = html;
+      if (cur && (cur === '__none__' || set[cur])) sel.value = cur;
+    }
+
     function showGate(errMsg) {
       app.hidden = true; gate.hidden = false;
       document.getElementById('gateErr').textContent = errMsg || '';
@@ -193,6 +213,17 @@
       var rows = allRows.filter(function (c) { return !hidden.has(String(c.email || '').toLowerCase()); });
       var hiddenShown = allRows.length - rows.length;
 
+      // Source switcher: fill options from the data, then filter by selection.
+      populateSourceOptions(allRows);
+      var srcSel = document.getElementById('sourceFilter');
+      var srcVal = srcSel ? srcSel.value : '';
+      if (srcVal) {
+        rows = rows.filter(function (c) {
+          var s = c.klaviyo_source || '';
+          return srcVal === '__none__' ? !s : (s === srcVal);
+        });
+      }
+
       // Date-range filter (by registration date).
       var fromEl = document.getElementById('dateFrom');
       var toEl = document.getElementById('dateTo');
@@ -200,10 +231,10 @@
       var to = toEl ? toEl.value : '';
       if (from) rows = rows.filter(function (c) { return c.created_at && c.created_at.slice(0, 10) >= from; });
       if (to) rows = rows.filter(function (c) { return c.created_at && c.created_at.slice(0, 10) <= to; });
-      var dateActive = !!(from || to);
+      var filterActive = !!(from || to || srcVal);
 
       // Registrations count reflects the visible rows.
-      var visibleCount = dateActive
+      var visibleCount = filterActive
         ? rows.length
         : ((typeof reg.count === 'number') ? Math.max(0, reg.count - hiddenShown) : rows.length);
 
@@ -352,9 +383,11 @@
     function applyDates() { if (lastData) render(lastData); }
     document.getElementById('dateFrom').addEventListener('change', applyDates);
     document.getElementById('dateTo').addEventListener('change', applyDates);
+    document.getElementById('sourceFilter').addEventListener('change', applyDates);
     document.getElementById('dateClear').addEventListener('click', function () {
       document.getElementById('dateFrom').value = '';
       document.getElementById('dateTo').value = '';
+      var sf = document.getElementById('sourceFilter'); if (sf) sf.value = '';
       applyDates();
     });
 
