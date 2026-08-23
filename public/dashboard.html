@@ -209,9 +209,16 @@
 
       // Derived metrics from the visible rows.
       var buyers = 0, subs = 0, totalSpent = 0, daysSum = 0, daysN = 0;
+      // Meta = registrations whose source looks like Facebook/Instagram/Meta.
+      var metaRe = /meta|facebook|instagram|\bfb\b|\big\b/i;
+      var metaCount = 0, metaSubs = 0;
       rows.forEach(function (c) {
         if ((c.orders || 0) > 0) buyers++;
         if (c.marketing) subs++;
+        var src = ((c.reg_utm && c.reg_utm.source) || '') + ' ' +
+                  ((c.buy_utm && c.buy_utm.source) || '') + ' ' +
+                  (c.klaviyo_source || '');
+        if (metaRe.test(src)) { metaCount++; if (c.marketing) metaSubs++; }
         if (c.spent != null) totalSpent += (Number(c.spent) || 0);
         if (c.purchase_date && c.created_at) {
           var reg = new Date(c.created_at), buy = new Date(c.purchase_date);
@@ -235,6 +242,8 @@
         card('Сумма продаж', '€' + totalSpent.toFixed(2)) +
         card('Конверсия в покупку', reg.error ? '—' : pct(buyers)) +
         card('Конверсия в подписку', reg.error ? '—' : pct(subs)) +
+        card('Регистрации · Meta', reg.error ? '—' : metaCount) +
+        card('Подписка · Meta', reg.error ? '—' : (metaCount ? Math.round(metaSubs / metaCount * 100) + '%' : '—')) +
         card('Ср. время до покупки', avgDays != null ? (Math.round(avgDays * 10) / 10 + ' дн.') : '—');
 
       if (reg.error) errBox.innerHTML += '<div class="err-box">Klaviyo (профили): ' + esc(reg.error) + (reg.detail ? ' — ' + esc(reg.detail) : '') + '</div>';
