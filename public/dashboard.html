@@ -215,9 +215,12 @@
       rows.forEach(function (c) {
         if ((c.orders || 0) > 0) buyers++;
         if (c.marketing) subs++;
-        var src = ((c.reg_utm && c.reg_utm.source) || '') + ' ' +
-                  ((c.buy_utm && c.buy_utm.source) || '') + ' ' +
-                  (c.klaviyo_source || '');
+        var r = c.reg_utm || {}, b = c.buy_utm || {};
+        var src = [
+          r.source, r.medium, r.campaign, r.term, r.content,
+          b.source, b.medium, b.campaign, b.term, b.content,
+          c.klaviyo_source
+        ].filter(Boolean).join(' ');
         if (metaRe.test(src)) { metaCount++; if (c.marketing) metaSubs++; }
         if (c.spent != null) totalSpent += (Number(c.spent) || 0);
         if (c.purchase_date && c.created_at) {
