@@ -138,22 +138,28 @@ export default async function handler(req, res) {
       acc.revenue += Number(s.conversion_value || 0);
     });
 
-    // All message ids: those with stats + the flow's full message list (so
-    // emails with no sends in the period still show).
+    // All message ids in a STABLE order: the flow's own message order first
+    // (Email 1, 2, 3…), then any extra message that only appears in the report.
     const actionIds = await fetchFlowMessageIds(flowFilter, headers);
     const ids = Array.from(new Set([...actionIds, ...Object.keys(statsByMsg)]));
 
-    // Resolve each message's name by fetching the message resource directly.
-    const nameList = await Promise.all(ids.map((mid) => fetchMessageName(mid, headers)));
+    // Resolve names by fetching each message resource — in small batches with
+    // retries so Klaviyo rate limits don't randomly blank out names.
     const nameById = {};
-    ids.forEach((mid, i) => { nameById[mid] = nameList[i]; });
+    const CHUNK = 4;
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      const names = await Promise.all(chunk.map((mid) => fetchMessageName(mid, headers)));
+      chunk.forEach((mid, j) => { nameById[mid] = names[j]; });
+    }
 
-    const messages = ids.map((mid) => {
+    // Keep flow order (no re-sort by recipients, which made rows jump).
+    const messages = ids.map((mid, idx) => {
       const st = statsByMsg[mid] || { recipients: 0, opens_unique: 0, clicks_unique: 0, conversions: 0, revenue: 0, channel: '' };
       const rec = st.recipients || 0;
       return {
         message_id: mid,
-        name: nameById[mid] || 'Без названия',
+        name: nameById[mid] || ('Письмо ' + (idx + 1)),
         channel: st.channel || '',
         recipients: rec,
         open_rate: rec ? st.opens_unique / rec : 0,
@@ -161,7 +167,7 @@ export default async function handler(req, res) {
         conversions: st.conversions || 0,
         revenue: st.revenue || 0,
       };
-    }).sort((a, b) => b.recipients - a.recipients);
+    });
 
     const meta = flowMap[flowFilter] || {};
     return res.status(200).json({
@@ -237,13 +243,22 @@ async function fetchFlowMessageIds(flowId, headers) {
   return ids;
 }
 
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
 // A flow message's display name (falls back to the email subject line).
+// Retries on rate limits / transient errors so names don't randomly blank out.
 async function fetchMessageName(messageId, headers) {
-  try {
-    const r = await fetch(`${KLAVIYO_BASE}/flow-messages/${messageId}/`, { headers });
-    if (!r.ok) return '';
-    const b = await r.json().catch(() => ({}));
-    const a = (b.data && b.data.attributes) || {};
-    return a.name || (a.content && a.content.subject) || '';
-  } catch (e) { return ''; }
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const r = await fetch(`${KLAVIYO_BASE}/flow-messages/${messageId}/`, { headers });
+      if (r.status === 429) { await sleep(400 * (attempt + 1)); continue; }
+      if (!r.ok) return '';
+      const b = await r.json().catch(() => ({}));
+      const a = (b.data && b.data.attributes) || {};
+      return a.name || (a.content && a.content.subject) || '';
+    } catch (e) {
+      await sleep(250 * (attempt + 1));
+    }
+  }
+  return '';
 }
