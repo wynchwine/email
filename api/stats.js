@@ -16,7 +16,7 @@ const SOURCE = 'landing_signup';
 const LANDING_ONLY = false;
 const MAX_PAGES = 8; // up to 800 profiles
 // Hide test registrations from before this date (UTC). Set to '' to show all.
-const CUTOFF = '2026-07-27T00:00:00Z';
+const CUTOFF = ''; // show all time by default
 // Hide specific test emails / whole test domains from the dashboard (display only).
 const EXCLUDE_EMAILS = new Set([
   'erica2@gmail.com',
