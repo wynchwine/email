@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ page_description | default: shop.description | escape }}">
+  <title>{{ page_title }}</title>
+  <link rel="canonical" href="{{ canonical_url }}">
+  {{ content_for_header }}
+  <style>*,*::before,*::after{box-sizing:border-box}html,body,h1,h2,h3,h4,p,figure,blockquote,ul,ol,hr,button,input{margin:0;padding:0}</style>
+  <script>
+    // Suppress the store's age-gate modal on this standalone landing page.
+    // Matches only age-gate/age-verif/age-check style ids/classes (won't hit
+    // words like "page"/"image"), removes them, and unlocks page scroll.
+    (function () {
+      var RE = /age[-_ ]?(gate|verif|check|confirm|restrict|18|21)/i;
+      function kill() {
+        try {
+          document.querySelectorAll('[id],[class]').forEach(function (el) {
+            var id = el.id || '';
+            var cls = (typeof el.className === 'string') ? el.className : '';
+            if (RE.test(id) || RE.test(cls)) el.remove();
+          });
+          document.documentElement.style.overflow = '';
+          if (document.body) document.body.style.overflow = '';
+        } catch (e) {}
+      }
+      kill();
+      document.addEventListener('DOMContentLoaded', kill);
+      var mo = new MutationObserver(kill);
+      if (document.documentElement) mo.observe(document.documentElement, { childList: true, subtree: true });
+      setTimeout(function () { mo.disconnect(); }, 8000);
+    })();
+  </script>
+</head>
+<body>
+  {{ content_for_layout }}
+</body>
+</html>

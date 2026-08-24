@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>WYNCH — Dashboard</title>
+  <style>
+    :root {
+      --accent: #ff6315;
+      --bg: #eeece7;
+      --card: #ffffff;
+      --text: #3f3f41;
+      --muted: #8a8a8a;
+      --line: #e2ded6;
+      --font: "Helvetica Neue", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; padding: 24px; }
+    .wrap { max-width: 1280px; margin: 0 auto; }
+    header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+    h1 { font-size: 24px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+    .refresh { font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+    .filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filters label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .filters input[type="date"], .filters select { font-family: var(--font); font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: #fff; }
+    .refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Login gate */
+    .gate { max-width: 360px; margin: 60px auto; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 28px; text-align: center; }
+    .gate h2 { font-size: 18px; margin-bottom: 6px; }
+    .gate p { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+    .gate input { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9999px; font-size: 15px; outline: none; margin-bottom: 12px; }
+    .gate input:focus { border-color: var(--accent); }
+    .gate button { width: 100%; padding: 12px; border: none; border-radius: 9999px; background: var(--accent); color: #fff; font-size: 15px; cursor: pointer; }
+    .gate .err { color: #c0392b; font-size: 13px; min-height: 18px; margin-bottom: 8px; }
+
+    /* Stat cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 26px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+    .card .label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .card .value { font-size: 44px; font-weight: 700; color: var(--accent); line-height: 1.1; margin-top: 6px; }
+    .card .value small { font-size: 15px; color: var(--muted); font-weight: 400; }
+
+    /* Table */
+    .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .panel h3 { font-size: 15px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+    .pill { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 9999px; }
+    .pill.yes { background: rgba(255,99,21,0.12); color: var(--accent); }
+    .pill.no { background: #eee; color: #888; }
+    .muted { color: var(--muted); }
+    .msg { padding: 40px; text-align: center; color: var(--muted); }
+    .err-box { background: #fdecea; color: #c0392b; border-radius: 10px; padding: 14px 16px; font-size: 14px; margin-bottom: 20px; }
+    .del { background: none; border: 1px solid var(--line); color: #c0392b; cursor: pointer; font-size: 13px; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
+    .del:hover { background: #fdecea; border-color: #f5c6c0; }
+    td.act { text-align: right; }
+    /* Visual separator between the UTM groups (registration | purchase). */
+    th.grp, td.grp { border-left: 2px solid var(--line); }
+    th.grp { color: var(--accent); }
+    /* UTM columns are collapsed by default; toggled by the "Показать UTM" button. */
+    table.hide-utm th.utm-col, table.hide-utm td.utm-col { display: none; }
+    .hidden-bar { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .hidden-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
+    .hidden-bar button:hover { border-color: var(--accent); }
+    .hidden-bar[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Login gate -->
+    <div class="gate" id="gate" hidden>
+      <h2>WYNCH Dashboard</h2>
+      <p>Введите токен доступа</p>
+      <div class="err" id="gateErr"></div>
+      <input type="password" id="tokenInput" placeholder="Токен" autocomplete="off">
+      <button id="gateBtn" type="button">Войти</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="app" hidden>
+      <header>
+        <h1>Dashboard</h1>
+        <div class="filters">
+          <label>Источник <select id="sourceFilter"><option value="">Все источники</option></select></label>
+          <label>С <input type="date" id="dateFrom"></label>
+          <label>По <input type="date" id="dateTo"></label>
+          <button class="refresh" id="dateClear" type="button">Сбросить</button>
+          <button class="refresh" id="refreshBtn" type="button">Обновить</button>
+        </div>
+      </header>
+      <div id="errBox"></div>
+      <div class="cards" id="cards"></div>
+
+      <div class="panel">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span>Флоу · Welcome_Club_Flow</span>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;">
+            Период
+            <select id="flowPeriod" style="font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:#fff;">
+              <option value="last_7_days">7 дней</option>
+              <option value="last_30_days" selected>30 дней</option>
+              <option value="last_3_months">3 месяца</option>
+              <option value="last_12_months">12 месяцев</option>
+            </select>
+          </label>
+        </h3>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>Письмо</th><th>Канал</th><th>Получатели</th><th>Open rate</th><th>Click rate</th><th>Конверсии</th><th>Выручка</th></tr>
+            </thead>
+            <tbody id="flowsBody"><tr><td colspan="7" class="msg">Загрузка…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:26px;">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <span>Последние регистрации</span>
+          <button class="refresh" id="utmToggle" type="button">Показать UTM</button>
+        </h3>
+        <div class="scroll">
+          <table id="table" class="hide-utm">
+            <thead>
+              <tr><th>Имя</th><th>Email</th><th>Дата</th><th>Рассылка</th><th>Заказы</th><th>Сумма</th><th>Куплено</th><th>Источник · Klaviyo</th><th class="grp utm-col">Рег source</th><th class="utm-col">Рег medium</th><th class="utm-col">Рег campaign</th><th class="utm-col">Рег term</th><th class="utm-col">Рег content</th><th class="grp utm-col">Пок source</th><th class="utm-col">Пок medium</th><th class="utm-col">Пок campaign</th><th class="utm-col">Пок term</th><th class="utm-col">Пок content</th><th></th></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="hidden-bar" id="hiddenBar" hidden>
+          <span id="hiddenInfo"></span>
+          <button type="button" id="unhideBtn">Показать скрытые</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var gate = document.getElementById('gate');
+    var app = document.getElementById('app');
+    var LS_KEY = 'wynch_dash_token';
+    var HIDDEN_KEY = 'wynch_dash_hidden';
+    var lastData = null;
+
+    // Emails hidden from the dashboard (kept in this browser only).
+    function getHidden() {
+      try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]')); } catch (e) { return new Set(); }
+    }
+    function setHidden(set) {
+      try { localStorage.setItem(HIDDEN_KEY, JSON.stringify(Array.from(set))); } catch (e) {}
+    }
+    function hideEmail(email) {
+      var h = getHidden(); h.add(String(email).toLowerCase()); setHidden(h);
+      if (lastData) render(lastData);
+    }
+    function unhideAll() {
+      setHidden(new Set());
+      if (lastData) render(lastData);
+    }
+
+    function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    // A UTM table cell; `grp` adds the group separator border.
+    function utmTd(v, grp) { return '<td class="muted utm-col' + (grp ? ' grp' : '') + '">' + (v ? esc(v) : '—') + '</td>'; }
+    function fmtDate(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      if (isNaN(d)) return iso;
+      return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
+             ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Fill the source switcher from the data, preserving the current choice.
+    function populateSourceOptions(allRows) {
+      var sel = document.getElementById('sourceFilter');
+      if (!sel) return;
+      var cur = sel.value;
+      var set = {};
+      var hasNone = false;
+      allRows.forEach(function (c) {
+        var s = c.klaviyo_source || '';
+        if (s) set[s] = true; else hasNone = true;
+      });
+      var opts = Object.keys(set).sort();
+      var html = '<option value="">Все источники</option>';
+      opts.forEach(function (s) { html += '<option value="' + esc(s) + '">' + esc(s) + '</option>'; });
+      if (hasNone) html += '<option value="__none__">— без источника</option>';
+      sel.innerHTML = html;
+      if (cur && (cur === '__none__' || set[cur])) sel.value = cur;
+    }
+
+    function showGate(errMsg) {
+      app.hidden = true; gate.hidden = false;
+      document.getElementById('gateErr').textContent = errMsg || '';
+      document.getElementById('tokenInput').focus();
+    }
+
+    function render(data) {
+      lastData = data;
+      gate.hidden = true; app.hidden = false;
+      var errBox = document.getElementById('errBox');
+      errBox.innerHTML = '';
+
+      var reg = data.registrations || {};
+      var sub = data.subscribers || {};
+
+      var hidden = getHidden();
+      var allRows = (reg.profiles || []);
+      var rows = allRows.filter(function (c) { return !hidden.has(String(c.email || '').toLowerCase()); });
+      var hiddenShown = allRows.length - rows.length;
+
+      // Source switcher: fill options from the data, then filter by selection.
+      populateSourceOptions(allRows);
+      var srcSel = document.getElementById('sourceFilter');
+      var srcVal = srcSel ? srcSel.value : '';
+      if (srcVal) {
+        rows = rows.filter(function (c) {
+          var s = c.klaviyo_source || '';
+          return srcVal === '__none__' ? !s : (s === srcVal);
+        });
+      }
+
+      // Date-range filter (by registration date).
+      var fromEl = document.getElementById('dateFrom');
+      var toEl = document.getElementById('dateTo');
+      var from = fromEl ? fromEl.value : '';
+      var to = toEl ? toEl.value : '';
+      if (from) rows = rows.filter(function (c) { return c.created_at && c.created_at.slice(0, 10) >= from; });
+      if (to) rows = rows.filter(function (c) { return c.created_at && c.created_at.slice(0, 10) <= to; });
+      var filterActive = !!(from || to || srcVal);
+
+      // Registrations count reflects the visible rows.
+      var visibleCount = filterActive
+        ? rows.length
+        : ((typeof reg.count === 'number') ? Math.max(0, reg.count - hiddenShown) : rows.length);
+
+      // Derived metrics from the visible rows.
+      var buyers = 0, subs = 0, totalSpent = 0, daysSum = 0, daysN = 0;
+      // Meta = registrations whose source looks like Facebook/Instagram/Meta.
+      var metaRe = /meta|facebook|instagram|\bfb\b|\big\b/i;
+      var metaCount = 0, metaSubs = 0;
+      rows.forEach(function (c) {
+        if ((c.orders || 0) > 0) buyers++;
+        if (c.marketing) subs++;
+        var r = c.reg_utm || {}, b = c.buy_utm || {};
+        var src = [
+          r.source, r.medium, r.campaign, r.term, r.content,
+          b.source, b.medium, b.campaign, b.term, b.content,
+          c.klaviyo_source
+        ].filter(Boolean).join(' ');
+        if (metaRe.test(src)) { metaCount++; if (c.marketing) metaSubs++; }
+        if (c.spent != null) totalSpent += (Number(c.spent) || 0);
+        if (c.purchase_date && c.created_at) {
+          var reg = new Date(c.created_at), buy = new Date(c.purchase_date);
+          if (!isNaN(reg) && !isNaN(buy)) {
+            var d = (buy - reg) / 86400000;
+            if (d >= 0) { daysSum += d; daysN++; }
+          }
+        }
+      });
+      var avgDays = daysN ? (daysSum / daysN) : null;
+      var denom = rows.length;
+      function pct(n) { return denom ? Math.round((n / denom) * 100) + '%' : '—'; }
+      function card(label, value) {
+        return '<div class="card"><div class="label">' + label + '</div><div class="value">' + value + '</div></div>';
+      }
+
+      var cards = document.getElementById('cards');
+      cards.innerHTML =
+        card('Всего регистраций', reg.error ? '—' : visibleCount) +
+        card('Подписчиков' + (sub.listName ? ' · ' + esc(sub.listName) : ''), reg.error ? '—' : subs) +
+        card('Сумма продаж', '€' + totalSpent.toFixed(2)) +
+        card('Конверсия в покупку', reg.error ? '—' : pct(buyers)) +
+        card('Конверсия в подписку', reg.error ? '—' : pct(subs)) +
+        card('Регистрации · Meta', reg.error ? '—' : metaCount) +
+        card('Подписка · Meta', reg.error ? '—' : (metaCount ? Math.round(metaSubs / metaCount * 100) + '%' : '—')) +
+        card('Ср. время до покупки', avgDays != null ? (Math.round(avgDays * 10) / 10 + ' дн.') : '—');
+
+      if (reg.error) errBox.innerHTML += '<div class="err-box">Klaviyo (профили): ' + esc(reg.error) + (reg.detail ? ' — ' + esc(reg.detail) : '') + '</div>';
+      if (sub.error) errBox.innerHTML += '<div class="err-box">Klaviyo (список): ' + esc(sub.error) + '</div>';
+
+      var tbody = document.getElementById('tbody');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="19" class="msg">Пока нет данных</td></tr>';
+      } else {
+        tbody.innerHTML = rows.map(function (c) {
+          var orders = (typeof c.orders === 'number') ? c.orders : null;
+          var spent = (c.spent != null) ? ('€' + Number(c.spent).toFixed(2)) : null;
+          var r = c.reg_utm || {};
+          var b = c.buy_utm || {};
+          return '<tr>' +
+            '<td>' + (esc(c.name) || '<span class="muted">—</span>') + '</td>' +
+            '<td>' + esc(c.email) + '</td>' +
+            '<td class="muted">' + esc(fmtDate(c.created_at)) + '</td>' +
+            '<td>' + (c.marketing ? '<span class="pill yes">Да</span>' : '<span class="pill no">Нет</span>') + '</td>' +
+            '<td>' + (orders != null ? orders : '<span class="muted">—</span>') + '</td>' +
+            '<td class="muted">' + (spent != null ? esc(spent) : '—') + '</td>' +
+            '<td class="muted">' + (c.purchase_date ? esc(fmtDate(c.purchase_date)) : '—') + '</td>' +
+            '<td class="muted">' + (c.klaviyo_source ? esc(c.klaviyo_source) : '—') + '</td>' +
+            utmTd(r.source, true) + utmTd(r.medium) + utmTd(r.campaign) + utmTd(r.term) + utmTd(r.content) +
+            utmTd(b.source, true) + utmTd(b.medium) + utmTd(b.campaign) + utmTd(b.term) + utmTd(b.content) +
+            '<td class="act"><button class="del" type="button" data-email="' + esc(c.email) + '">Удалить</button></td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      // Hidden-rows bar
+      var bar = document.getElementById('hiddenBar');
+      if (hidden.size > 0) {
+        document.getElementById('hiddenInfo').textContent = 'Скрыто записей: ' + hidden.size;
+        bar.hidden = false;
+      } else {
+        bar.hidden = true;
+      }
+    }
+
+    // ---- Flows (Klaviyo) ----
+    function fmtPct(x) { return (x == null || isNaN(x)) ? '—' : (Math.round(x * 1000) / 10) + '%'; }
+    function fmtEur(x) { return '€' + (Number(x) || 0).toFixed(2); }
+
+    // Single flow shown in the dashboard, with its emails expanded by default.
+    var FLOW_NAME = 'Welcome_Club_Flow';
+
+    function renderFlow(data) {
+      var body = document.getElementById('flowsBody');
+      if (!data || data.error) {
+        body.innerHTML = '<tr><td colspan="7" class="msg">' +
+          esc(data && data.error ? data.error : 'Ошибка') +
+          (data && data.detail ? ' — ' + esc(data.detail) : '') + '</td></tr>';
+        return;
+      }
+      var msgs = data.messages || [];
+      if (!msgs.length) { body.innerHTML = '<tr><td colspan="7" class="msg">Нет писем/данных за период</td></tr>'; return; }
+      body.innerHTML = msgs.map(function (m) {
+        return '<tr>' +
+          '<td>' + esc(m.name) + '</td>' +
+          '<td class="muted">' + esc(m.channel || '') + '</td>' +
+          '<td>' + (m.recipients || 0) + '</td>' +
+          '<td class="muted">' + fmtPct(m.open_rate) + '</td>' +
+          '<td class="muted">' + fmtPct(m.click_rate) + '</td>' +
+          '<td>' + (m.conversions || 0) + '</td>' +
+          '<td class="muted">' + fmtEur(m.revenue) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function loadFlows(token) {
+      if (!token) return;
+      var period = document.getElementById('flowPeriod').value || 'last_30_days';
+      var body = document.getElementById('flowsBody');
+      body.innerHTML = '<tr><td colspan="7" class="msg">Загрузка…</td></tr>';
+      fetch('/api/flows?key=' + encodeURIComponent(token) + '&flowName=' + encodeURIComponent(FLOW_NAME) + '&timeframe=' + encodeURIComponent(period))
+        .then(function (r) { return r.json().catch(function () { return { error: 'HTTP ' + r.status }; }); })
+        .then(renderFlow)
+        .catch(function () { renderFlow({ error: 'Ошибка сети' }); });
+    }
+
+    document.getElementById('flowPeriod').addEventListener('change', function () {
+      loadFlows(localStorage.getItem(LS_KEY) || '');
+    });
+
+    function load(token) {
+      fetch('/api/stats?key=' + encodeURIComponent(token))
+        .then(function (r) {
+          if (r.status === 401) { localStorage.removeItem(LS_KEY); showGate('Неверный токен'); return null; }
+          return r.json();
+        })
+        .then(function (data) {
+          if (!data) return;
+          if (data.error) { render({ registrations: { error: data.error }, subscribers: {} }); return; }
+          localStorage.setItem(LS_KEY, token);
+          render(data);
+          loadFlows(token);
+        })
+        .catch(function () { showGate('Ошибка сети. Попробуйте ещё раз.'); });
+    }
+
+    // Date-range filter → re-render from cached data.
+    function applyDates() { if (lastData) render(lastData); }
+    document.getElementById('dateFrom').addEventListener('change', applyDates);
+    document.getElementById('dateTo').addEventListener('change', applyDates);
+    document.getElementById('sourceFilter').addEventListener('change', applyDates);
+    document.getElementById('dateClear').addEventListener('click', function () {
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      var sf = document.getElementById('sourceFilter'); if (sf) sf.value = '';
+      applyDates();
+    });
+
+    // Delete a subscriber from Klaviyo — event delegation on the table body.
+    document.getElementById('tbody').addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('.del') : null;
+      if (!btn || !btn.dataset.email) return;
+      var email = btn.dataset.email;
+      if (!confirm('Подписчика ' + email + ' удалить из Klaviyo? Действие необратимо.')) return;
+      var token = localStorage.getItem(LS_KEY) || '';
+      btn.disabled = true; btn.textContent = 'Удаляю…';
+      fetch('/api/delete-profile?key=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, d: d }; }); })
+        .then(function (res) {
+          if (res.status === 200 && res.d && res.d.ok) {
+            hideEmail(email); // remove from view now; Klaviyo processes deletion async
+          } else {
+            alert('Не удалось удалить: ' + (res.d && res.d.error ? res.d.error : ('HTTP ' + res.status)));
+            btn.disabled = false; btn.textContent = 'Удалить';
+          }
+        })
+        .catch(function () { alert('Ошибка сети'); btn.disabled = false; btn.textContent = 'Удалить'; });
+    });
+    document.getElementById('unhideBtn').addEventListener('click', unhideAll);
+
+    // Toggle the UTM columns (collapsed by default).
+    document.getElementById('utmToggle').addEventListener('click', function () {
+      var stillHidden = document.getElementById('table').classList.toggle('hide-utm');
+      this.textContent = stillHidden ? 'Показать UTM' : 'Скрыть UTM';
+    });
+
+    document.getElementById('gateBtn').addEventListener('click', function () {
+      var t = document.getElementById('tokenInput').value.trim();
+      if (t) load(t);
+    });
+    document.getElementById('tokenInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') document.getElementById('gateBtn').click();
+    });
+    document.getElementById('refreshBtn').addEventListener('click', function () {
+      var t = localStorage.getItem(LS_KEY);
+      if (t) load(t); else showGate();
+    });
+
+    // Boot: token from URL (?key=) or localStorage, else show gate.
+    (function () {
+      var url = new URLSearchParams(location.search);
+      var fromUrl = url.get('key');
+      var saved = localStorage.getItem(LS_KEY);
+      if (fromUrl) load(fromUrl);
+      else if (saved) load(saved);
+      else showGate();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,920 @@
+{% layout 'join' %}
+<link rel="preconnect" href="https://wynch.wine" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="https://wynch.wine/cdn/shop/t/22/assets/giorgio-sans-medium.static.woff2?v=132781297963084722121782491269">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="https://wynch.wine/cdn/shop/t/22/assets/aktiv-grotesk-regular.static.woff2?v=138786277528983394311782491269">
+
+  <style>
+    @font-face {
+      font-family: "Giorgio Sans Medium";
+      src: url("https://wynch.wine/cdn/shop/t/22/assets/giorgio-sans-medium.static.woff2?v=132781297963084722121782491269") format("woff2");
+      font-weight: 400 700; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: "Aktiv Grotesk Regular";
+      src: url("https://wynch.wine/cdn/shop/t/22/assets/aktiv-grotesk-regular.static.woff2?v=138786277528983394311782491269") format("woff2");
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+
+    :root {
+      --accent: #ff6315;
+      --bg: #eeece7;
+      --line: #ff6315;
+      --text: #5d5e60;
+      --muted: #999999;
+      --font-head: "Giorgio Sans Medium", "Futura", "Century Gothic", "Helvetica Neue", Arial, sans-serif;
+      --font-body: "Aktiv Grotesk Regular", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* Scoped reset: box-sizing everywhere, but only zero the margins/padding
+       on our own elements so injected third-party widgets (e.g. the store's
+       age-gate modal) keep their intended spacing and don't stretch. */
+    *, *::before, *::after { box-sizing: border-box; }
+    body, h1, h2, h3, h4, p, figure, blockquote, ul, ol, hr, button, input { margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Framed editorial column */
+    .frame {
+      max-width: none;
+      margin: 40px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+    }
+    @media (max-width: 760px) { .frame { margin: 16px; } }
+
+    .divider { border: none; border-top: 1px solid var(--line); }
+
+    .pad { padding-left: 40px; padding-right: 40px; }
+    @media (max-width: 520px) { .pad { padding-left: 20px; padding-right: 20px; } }
+
+    /* Logo */
+    .logo-row { text-align: center; padding: 18px 20px; }
+    .logo-row img { display: inline-block; width: 160px; max-width: 60%; height: auto; }
+
+    /* Hero: two columns on desktop (text+form left, photo flush right) */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "copy media" "form media";
+      align-items: center;
+    }
+    .hero-copy { grid-area: copy; padding: 40px 24px 0 40px; }
+    .hero-form { grid-area: form; padding: 8px 24px 44px 40px; }
+    .hero-media {
+      grid-area: media; align-self: stretch;
+      display: flex; align-items: flex-end; justify-content: flex-end;
+    }
+    .hero-media .hero-photo { max-width: 100%; width: 100%; margin: 0; }
+    @media (max-width: 760px) {
+      .hero-grid { grid-template-columns: 1fr; grid-template-areas: "copy" "media" "form"; }
+      .hero-copy { padding: 30px 20px 8px; text-align: center; }
+      .hero-form { padding: 20px 20px 30px; }
+      .hero-media { justify-content: center; }
+      .hero-media .hero-photo { max-width: 100%; width: 100%; margin: 0; }
+    }
+
+    /* Hero */
+    .hero { text-align: center; padding-top: 34px; padding-bottom: 30px; }
+    h1.hero-head {
+      font-family: var(--font-head);
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-size: clamp(54px, 8vw, 68px);
+      line-height: 0.98;
+      letter-spacing: -0.5px;
+    }
+    .hero-sub {
+      margin: 18px 0 0;
+      max-width: 46ch;
+      font-size: 17px;
+      color: var(--text);
+    }
+    .hero-ship {
+      margin-top: 16px; font-size: 15px; font-weight: 700;
+      color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .hero-form .signup { padding: 0; max-width: none; margin: 0; }
+    @media (max-width: 760px) {
+      .hero-sub { margin-left: auto; margin-right: auto; }
+    }
+    .eyebrow {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+    }
+
+    /* Hero photo (16:9) */
+    .media-cell { padding: 0 18px 28px; }
+    .hero-photo {
+      position: relative;
+      width: 100%;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+    .hero-photo img { display: block; width: 100%; height: auto; }
+    .gift-badge {
+      position: absolute; top: -1px; right: -1px; z-index: 2;
+      width: 118px; height: 118px; border-radius: 9999px;
+      background: var(--accent); color: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; font-family: var(--font-head); font-weight: 700;
+      text-transform: uppercase; font-size: 40px; line-height: 1; letter-spacing: 0.5px;
+      transform: rotate(-8deg);
+    }
+    .gift-badge small { font-family: var(--font-body); font-size: 11px; letter-spacing: 1.5px; margin-top: 6px; opacity: 0.9; }
+    @media (max-width: 760px) {
+      .gift-badge { width: 100px; height: 100px; font-size: 34px; }
+      .gift-badge small { font-size: 9px; margin-top: 4px; }
+    }
+
+    /* Signup form */
+    .signup { padding: 4px 40px 30px; max-width: 640px; margin: 0 auto; }
+    @media (max-width: 520px) { .signup { padding: 4px 20px 26px; } }
+    form.email-form { display: flex; gap: 10px; flex-wrap: wrap; }
+    .email-form input {
+      flex: 1 1 240px; min-width: 0;
+      font-family: var(--font-body); font-size: 16px;
+      padding: 15px 22px; background: #fff;
+      border: 1px solid var(--accent); border-radius: 9999px;
+      color: #2c2c2c; outline: none;
+    }
+    .email-form input.field-full { flex: 1 1 100%; }
+    .email-form input::placeholder { color: #a7a49e; }
+    .btn {
+      flex: 1 1 100%; width: 100%;
+      font-family: var(--font-body); font-size: 16px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      background: var(--accent); color: var(--bg);
+      border: none; border-radius: 9999px;
+      padding: 16px 40px; cursor: pointer;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+    .btn:hover { background: #e5570f; }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.55; cursor: default; }
+    .form-note { margin-top: 14px; font-size: 15px; min-height: 22px; }
+    .form-note.ok { color: var(--accent); }
+    .form-note.err { color: var(--accent); font-weight: 700; }
+    .fine { margin-top: 14px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .fine a { color: var(--accent); text-decoration: underline; }
+
+    /* Perks section heading */
+    .perks-title {
+      text-align: center;
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      font-size: clamp(40px, 6vw, 56px); line-height: 1.02;
+      padding: 46px 40px 6px;
+    }
+    @media (max-width: 760px) {
+      h2.perks-title, h2.about-title { font-size: clamp(54px, 8vw, 68px); }
+    }
+    .perks-sub {
+      text-align: center; padding: 0 40px 8px;
+      font-size: 16px; color: var(--muted);
+    }
+
+    /* Editorial split rows with icons */
+    .split { display: grid; grid-template-columns: 46% 54%; align-items: center; max-width: 940px; margin: 0 auto; }
+    .split-left {
+      display: flex; align-items: center; gap: 22px;
+      padding: 40px 15px 40px 40px;
+    }
+    .split-icon { flex: 0 0 auto; color: var(--accent); }
+    .split-icon svg { width: 60px; height: 60px; display: block; }
+    .split-head {
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      font-size: 34px; line-height: 1.02;
+    }
+    .split-body { padding: 40px 40px 40px 5px; font-size: 18px; line-height: 1.55; color: var(--text); }
+    @media (max-width: 560px) {
+      .split { grid-template-columns: 1fr; text-align: center; }
+      .split-left { flex-direction: column; gap: 14px; padding: 32px 20px 10px; }
+      .split-head { font-size: 40px; }
+      .split-icon svg { width: 66px; height: 66px; }
+      .split-body { padding: 0 20px 32px; font-size: 19px; }
+    }
+
+    /* What is WYNCH */
+    .about {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      gap: 28px; padding: 50px 24px 0;
+    }
+    .about-title {
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      font-size: clamp(40px, 6vw, 56px); line-height: 1.02; margin-bottom: 16px;
+    }
+    .about-text { max-width: 560px; }
+    .about-text p { font-size: 18px; line-height: 1.6; color: var(--text); }
+    .about-media { display: flex; justify-content: center; }
+    .about-cta {
+      display: inline-block; text-decoration: none;
+      background: var(--accent); color: #fff;
+      border-radius: 9999px; padding: 16px 34px;
+      font-family: var(--font-body); font-size: 16px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      transition: background 0.15s ease;
+    }
+    .about-cta:hover { background: #e5570f; }
+    .about-photo { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto; border-radius: 40px 40px 0 0; }
+    @media (max-width: 640px) {
+      .about { gap: 22px; padding: 34px 16px 0; }
+      .about-photo { max-width: 230px; }
+    }
+
+    /* Reviews slider */
+    .reviews { padding: 8px 40px 48px; }
+    @media (max-width: 520px) { .reviews { padding: 8px 16px 40px; } }
+    .tslider { max-width: 720px; margin: 0 auto; overflow: hidden; }
+    .ttrack { display: flex; transition: transform 0.4s ease; }
+    .tcard { flex: 0 0 100%; box-sizing: border-box; padding: 6px 12px 0; text-align: center; }
+    .tmark { font-family: Georgia, serif; font-size: 58px; line-height: 0.8; color: var(--accent); margin-bottom: 10px; }
+    .tquote { font-size: 22px; line-height: 1.5; color: #3f3f41; min-height: 120px; }
+    @media (max-width: 520px) { .tquote { font-size: 19px; min-height: 160px; } }
+    .tperson { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 22px; }
+    .tavatar {
+      width: 54px; height: 54px; border-radius: 9999px; flex: 0 0 auto;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-weight: 700; font-size: 19px;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25);
+      object-fit: cover; overflow: hidden;
+    }
+    img.tavatar { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25), 0 2px 8px rgba(0,0,0,0.12); }
+    /* Distinct, wine-themed colour per reviewer */
+    .tcard:nth-child(1) .tavatar { background: radial-gradient(circle at 30% 25%, #9a3a4a, #7b2d3b); }
+    .tcard:nth-child(2) .tavatar { background: radial-gradient(circle at 30% 25%, #d76a2a, #c2571f); }
+    .tcard:nth-child(3) .tavatar { background: radial-gradient(circle at 30% 25%, #6d7d58, #55643f); }
+    .tcard:nth-child(4) .tavatar { background: radial-gradient(circle at 30% 25%, #71487f, #5f3b6b); }
+    .tcard:nth-child(5) .tavatar { background: radial-gradient(circle at 30% 25%, #c99a3e, #b8862f); }
+    .tname { font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .tnav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 26px; }
+    .tbtn {
+      width: 44px; height: 44px; border-radius: 9999px; flex: 0 0 auto;
+      border: 1px solid var(--accent); background: transparent; color: var(--accent);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .tbtn:hover { background: var(--accent); color: #fff; }
+    .tbtn svg { width: 20px; height: 20px; }
+    .tdots { display: flex; gap: 9px; }
+    .tdot {
+      width: 9px; height: 9px; border-radius: 9999px; padding: 0;
+      background: transparent; border: 1.5px solid var(--accent); cursor: pointer;
+    }
+    .tdot.active { background: var(--accent); }
+
+    /* FAQ */
+    .faq { padding: 8px 40px 46px; }
+    @media (max-width: 520px) { .faq { padding: 8px 20px 40px; } }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-item summary {
+      list-style: none; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 20px 0;
+      font-family: var(--font-body); font-weight: 400;
+      color: var(--accent); text-transform: uppercase; font-size: 21px; line-height: 1.15;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: "+"; font-size: 28px; line-height: 1; color: var(--accent); flex: 0 0 auto; }
+    .faq-item[open] summary::after { content: "\2013"; }
+    .faq-a { padding: 0 0 22px; font-size: 16px; line-height: 1.6; color: var(--text); max-width: 60ch; }
+
+    /* Footer */
+    .foot {
+      text-align: center; padding: 20px 18px;
+      font-size: 14px; color: #777; line-height: 1.6;
+    }
+    .foot a.mail { color: var(--accent); text-decoration: underline; }
+    .foot .tag { color: #777; }
+
+    /* Step 2 — full-screen post-signup opt-in */
+    .step2 {
+      position: fixed; inset: 0; z-index: 100;
+      background: var(--bg); padding: 40px; text-align: center;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    .step2[hidden] { display: none; }
+    .step2-frame {
+      width: 100%; min-height: 100%;
+      border: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    @media (max-width: 760px) {
+      .step2 { padding: 16px; }
+      .step2-yes, .step2-alt { font-size: 19px; padding: 21px; max-width: none; }
+    }
+    .step2-inner { max-width: 560px; width: 100%; }
+    .confetti {
+      position: fixed; inset: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 5;
+    }
+    .confetti svg { width: 100% !important; height: 100% !important; }
+    .step2-logo { width: 150px; max-width: 50%; height: auto; margin: 0 auto 28px; display: block; }
+    .step2-photo-wrap { position: relative; display: inline-block; margin: 0 auto 30px; }
+    .step2-photo { width: min(280px, 72vw); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 28px; display: block; }
+    .step2-badge {
+      position: absolute; top: -10px; right: -10px;
+      width: 88px; height: 88px; border-radius: 9999px;
+      background: var(--accent); color: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-weight: 700; text-transform: uppercase;
+      font-size: 24px; line-height: 1; transform: rotate(-8deg);
+    }
+    .step2-badge small { font-family: var(--font-body); font-size: 10px; letter-spacing: 1.5px; margin-top: 4px; opacity: 0.9; }
+    .step2 h2 {
+      font-family: var(--font-head); font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      font-size: clamp(48px, 9vw, 62px); line-height: 1.0; margin-bottom: 18px;
+    }
+    .step2 p {
+      color: var(--text); font-size: 19px; line-height: 1.55;
+      margin: 0 auto 32px; max-width: 32ch;
+    }
+    .step2-deposit {
+      margin: 0 auto 30px; max-width: 34ch;
+      background: rgba(255, 99, 21, 0.08);
+      border: 1px solid rgba(255, 99, 21, 0.35);
+      border-radius: 16px; padding: 18px 22px;
+      color: var(--text); font-size: 18px; line-height: 1.5;
+    }
+    .step2-deposit strong { color: var(--accent); font-weight: 700; }
+    .step2 .step2-confirm {
+      margin: 0 auto 30px; max-width: 40ch;
+      background: rgba(255, 99, 21, 0.12);
+      border: 1px dashed rgba(255, 99, 21, 0.55);
+      border-radius: 16px; padding: 18px 22px;
+      color: var(--text); font-size: 16px; line-height: 1.55; word-break: break-word;
+    }
+    .step2 .step2-confirm strong { color: var(--accent); }
+    .step2-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+    .step2 .step2-legal { margin: 20px auto 0; max-width: 40ch; font-size: 13px; line-height: 1.5; color: var(--muted); }
+    .step2 .step2-legal a { color: var(--accent); text-decoration: underline; }
+    .step2-yes, .step2-alt {
+      width: 100%; max-width: 340px; box-sizing: border-box;
+      display: inline-block; text-align: center; text-decoration: none;
+      border-radius: 9999px; padding: 18px;
+      font-family: var(--font-body); font-size: 17px;
+      text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .step2-yes { background: var(--accent); color: #fff; border: none; }
+    .step2-yes:hover { background: #e5570f; }
+    .step2-alt { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .step2-alt:hover { background: rgba(255, 99, 21, 0.10); }
+    .step2-no {
+      background: transparent; border: none; color: var(--muted);
+      font-family: var(--font-body); font-size: 14px; text-decoration: underline;
+      cursor: pointer; padding: 6px;
+    }
+    .step2-no:hover { color: var(--accent); }
+
+    /* Sticky mobile CTA */
+    .sticky-cta { display: none; }
+    @media (max-width: 760px) {
+      .sticky-cta {
+        display: block;
+        position: fixed; left: 37px; right: 37px; bottom: 20px;
+        z-index: 60;
+        text-align: center; text-decoration: none;
+        background: var(--accent); color: #fff;
+        font-family: var(--font-body); font-size: 17px;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        padding: 17px 20px; border-radius: 9999px;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+      .sticky-cta.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
+      body { padding-bottom: 84px; }
+    }
+  </style>
+<div class="frame">
+
+    <!-- Logo -->
+    <div class="logo-row">
+      <a href="https://wynch.wine" target="_blank" rel="noopener" aria-label="WYNCH">
+        <img alt="WYNCH" src="https://wynch.wine/cdn/shop/files/WYNCH_logo_orange_23393be7-386b-4a36-92fb-384933593fcc.png?v=1779214380">
+      </a>
+    </div>
+    <hr class="divider">
+
+    <!-- Hero: text/form left, photo right -->
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <h1 class="hero-head">Tritt dem Club bei,<br>trink besseren Wein.</h1>
+        <p class="hero-sub">
+          Unterstütze unabhängige Winzer, zahle faire Preise und starte mit
+          50 € Guthaben für deine ersten Weine.
+        </p>
+        <p class="hero-ship">Lieferung deutschlandweit innerhalb von 2 Tagen 🇩🇪</p>
+      </div>
+
+      <div class="hero-media">
+        <figure class="hero-photo">
+          <span class="gift-badge">50&nbsp;€<small>Guthaben</small></span>
+          <img src="https://d3k81ch9hvuctc.cloudfront.net/company/XaKdGV/images/85d6738e-5c16-4904-af0d-8237e6994bab.png"
+               alt="Eine Hand hebt eine Weinflasche über eine Reihe von Flaschen unabhängiger Winzer">
+        </figure>
+      </div>
+
+      <div class="hero-form" id="join">
+        <div class="signup">
+          <form class="email-form" id="signupForm" novalidate>
+            <input type="text" id="name" name="name" placeholder="Dein Name" autocomplete="given-name" required aria-label="Dein Name">
+            <input type="email" id="email" name="email" placeholder="deine@email.de" autocomplete="email" required aria-label="E-Mail-Adresse">
+            <input type="password" id="password" name="password" class="field-full" placeholder="Passwort" autocomplete="new-password" minlength="8" required aria-label="Passwort">
+            <input type="password" id="password2" name="password2" class="field-full" placeholder="Passwort wiederholen" autocomplete="new-password" minlength="8" required aria-label="Passwort wiederholen">
+            <button type="submit" class="btn" id="submitBtn">Jetzt Mitglied werden</button>
+          </form>
+          <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
+          <p class="fine">
+            Mit dem Absenden akzeptierst du unsere
+            <a href="https://wynch.wine/policies/terms-of-service" target="_blank" rel="noopener">AGB</a>
+            und <a href="https://wynch.wine/policies/privacy-policy" target="_blank" rel="noopener">Datenschutz&shy;erklärung</a>.
+            50 € Willkommensguthaben für neue Mitglieder — es gelten die Bedingungen.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- What you get -->
+    <hr class="divider">
+    <h2 class="perks-title">Deine Vorteile</h2>
+    <p class="perks-sub">Fünf gute Gründe, dem Club beizutreten.</p>
+
+    <div class="split">
+      <div class="split-left">
+        <span class="split-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="11" width="36" height="26" rx="3"/>
+            <line x1="6" y1="19" x2="42" y2="19"/>
+            <line x1="12" y1="29" x2="20" y2="29"/>
+          </svg>
+        </span>
+        <div class="split-head">50&nbsp;€ Guthaben</div>
+      </div>
+      <div class="split-body">Starte mit 50 € auf deinem Konto — damit bezahlst du bis zu 30 % jeder Bestellung.</div>
+    </div>
+
+    <div class="split">
+      <div class="split-left">
+        <span class="split-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M39 24a15 15 0 1 1-4.4-10.6"/>
+            <path d="M39 9v7h-7"/>
+            <circle cx="24" cy="24" r="4.5"/>
+          </svg>
+        </span>
+        <div class="split-head">Cashback</div>
+      </div>
+      <div class="split-body">Sammle Cashback auf jede Bestellung — es landet auf deinem Konto für das nächste Mal.</div>
+    </div>
+
+    <div class="split">
+      <div class="split-left">
+        <span class="split-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M24 5l15 5v10c0 10-7 16-15 19-8-3-15-9-15-19V10z"/>
+            <path d="M17 23l5 5 9-10"/>
+          </svg>
+        </span>
+        <div class="split-head">Gefällt's nicht, Geld zurück</div>
+      </div>
+      <div class="split-body">Eine Flasche nicht dein Fall? Schick sie zurück und wir schreiben dir das Geld direkt gut — ganz unkompliziert.</div>
+    </div>
+
+    <div class="split">
+      <div class="split-left">
+        <span class="split-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 4h4v11c0 1.5 5 3.5 5 10v14a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3V25c0-6.5 5-8.5 5-10z"/>
+            <line x1="19" y1="31" x2="29" y2="31"/>
+          </svg>
+        </span>
+        <div class="split-head">Exklusive Weine</div>
+      </div>
+      <div class="split-body">Weine von kleinen, besonderen Weingütern, die du in keinem Supermarktregal findest.</div>
+    </div>
+
+    <div class="split">
+      <div class="split-left">
+        <span class="split-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="16" r="5"/>
+            <path d="M9 37c0-5.5 4-9 9-9s9 3.5 9 9"/>
+            <circle cx="34" cy="14" r="4"/>
+            <path d="M31 26c4-0.5 8 2 8 8"/>
+          </svg>
+        </span>
+        <div class="split-head">Empfehlen &amp; profitieren</div>
+      </div>
+      <div class="split-body">Lade Freunde in den Club ein und erhalte zusätzliches Guthaben, wenn sie ihre erste Bestellung aufgeben.</div>
+    </div>
+
+    <!-- What is WYNCH -->
+    <hr class="divider">
+    <div class="about">
+      <div class="about-text">
+        <h2 class="about-title">Was ist WYNCH?</h2>
+        <p>
+          WYNCH ist ein neuer Wein-Lieferservice in Deutschland mit integriertem digitalen Sommelier,
+          der die perfekte Flasche für deinen Geschmack auswählt. Und wenn eine davon nichts für dich
+          ist, schick sie einfach zurück — wir schreiben sie dir ohne Nachfragen wieder gut.
+        </p>
+      </div>
+      <a class="about-cta" href="/pages/quiz">Meine Weine finden</a>
+      <div class="about-media">
+        <img class="about-photo" src="https://d3k81ch9hvuctc.cloudfront.net/company/XaKdGV/images/3f7418f8-0f84-41f9-bb41-671aa181639e.png"
+             alt="WYNCH Wein von unabhängigen Winzern">
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <hr class="divider">
+    <h2 class="perks-title">Das sagen Mitglieder</h2>
+    <p class="perks-sub">Aus dem Club — in ihren eigenen Worten.</p>
+    <div class="reviews">
+      <div class="tslider">
+        <div class="ttrack" id="tTrack">
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Endlich Weine, die ich nirgendwo sonst finde. Jede Lieferung ist eine kleine Entdeckung.</blockquote>
+            <figcaption class="tperson"><img class="tavatar" src="https://thumbnailer.mixcloud.com/unsafe/96x96/profile/3/4/7/b/b258-7c08-4112-9443-c399db984685" alt="Lena M." loading="lazy" referrerpolicy="no-referrer"><span class="tname">Lena M. · Berlin</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Die Winzergeschichten machen jeden Schluck persönlicher. Es fühlt sich an, als kenne ich die Menschen hinter der Flasche.</blockquote>
+            <figcaption class="tperson"><img class="tavatar" src="https://thumbnailer.mixcloud.com/unsafe/96x96/profile/0/0/5/f/ef39-f5a4-4fb6-8f31-3c522282a3d9" alt="Jonas K." loading="lazy" referrerpolicy="no-referrer"><span class="tname">Jonas K. · Hamburg</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Eine Flasche war nicht mein Fall — das Geld war ohne Diskussion sofort auf meinem Konto. Wirklich top.</blockquote>
+            <figcaption class="tperson"><img class="tavatar" src="https://thumbnailer.mixcloud.com/unsafe/96x96/profile/b/4/8/5/862d-8075-49da-a046-7a3389648f68" alt="Sophie R." loading="lazy" referrerpolicy="no-referrer"><span class="tname">Sophie R. · München</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Guthaben und Cashback rechnen sich wirklich. Ich trinke besser und zahle trotzdem fair.</blockquote>
+            <figcaption class="tperson"><img class="tavatar" src="https://thumbnailer.mixcloud.com/unsafe/96x96/profile/9/e/7/f/3d06-181a-4659-8bf6-c63207fef3a7" alt="Markus W." loading="lazy" referrerpolicy="no-referrer"><span class="tname">Markus W. · Köln</span></figcaption>
+          </figure>
+          <figure class="tcard">
+            <div class="tmark">&bdquo;</div>
+            <blockquote class="tquote">Der beste Weinclub, den ich kenne. Kleine Weingüter, große Qualität — und ein Team, das mitdenkt.</blockquote>
+            <figcaption class="tperson"><img class="tavatar" src="https://thumbnailer.mixcloud.com/unsafe/96x96/profile/3/c/1/5/7fd1-188b-4faa-a192-264210f1e7db" alt="Anna T." loading="lazy" referrerpolicy="no-referrer"><span class="tname">Anna T. · Wien</span></figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="tnav">
+        <button class="tbtn" id="tPrev" type="button" aria-label="Vorheriges Zitat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="tdots" id="tDots"></div>
+        <button class="tbtn" id="tNext" type="button" aria-label="Nächstes Zitat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <hr class="divider">
+    <h2 class="perks-title">FAQ</h2>
+    <p class="perks-sub">Kurz und knapp.</p>
+    <div class="faq">
+      <details class="faq-item">
+        <summary>Was kostet der Club?</summary>
+        <div class="faq-a">Der Beitritt ist kostenlos. Du zahlst nur für den Wein, den du bestellst — Mitglieder bekommen einfach bessere Preise, Cashback und Vorteile.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Wie funktioniert das 50&nbsp;€-Guthaben?</summary>
+        <div class="faq-a">Beim Beitritt erhältst du 50 € auf dein Konto. Du kannst damit bis zu 30 % jeder Bestellung bezahlen, bis es aufgebraucht ist.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Kann ich eine Flasche wirklich zurückgeben?</summary>
+        <div class="faq-a">Ja. Wenn eine Flasche nichts für dich ist, sag uns einfach Bescheid und wir schreiben dir das Geld direkt wieder gut — ohne Formulare, ohne Aufwand.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Was ist Cashback genau?</summary>
+        <div class="faq-a">Du bekommst bei jeder Bestellung einen Prozentsatz zurück — gespeichert auf deinem Konto für deine nächsten Weine.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Liefert ihr in ganz Deutschland?</summary>
+        <div class="faq-a">Ja — wir liefern überallhin in Deutschland, meist innerhalb von 2 Tagen.</div>
+      </details>
+    </div>
+
+    <!-- Footer -->
+    <hr class="divider">
+    <div class="foot">
+      Fragen? Schreib uns an <a class="mail" href="mailto:hi@wynch.wine">hi@wynch.wine</a><br>
+      <span class="tag">WYNCH &#129505; WIR WÄHLEN DEN WEIN FÜR DICH</span>
+    </div>
+
+  </div>
+
+  <!-- Post-signup opt-in screen -->
+  <div class="step2" id="step2" role="dialog" aria-modal="true" aria-labelledby="step2Title" hidden>
+    <div class="step2-frame">
+    <div class="step2-inner" id="step2Inner">
+      <div class="step2-photo-wrap">
+        <span class="step2-badge">Gratis<small>geschenk</small></span>
+        <img class="step2-photo" id="step2Photo" alt="Eine Flasche Cava mit einem gefüllten Glas">
+      </div>
+      <h2 id="step2Title">Eine Sache noch…</h2>
+      <p>Möchtest du nützliche News, Sommelier-Empfehlungen und eine kostenlose Flasche Cava direkt in dein Postfach?</p>
+      <div class="step2-actions">
+        <button class="step2-yes" id="step2Yes" type="button">Ja, ich bin dabei</button>
+        <button class="step2-no" id="step2No" type="button">Nein, keine kostenlose Cava</button>
+      </div>
+      <p class="step2-legal">
+        Mit „Ja, ich bin dabei“ stimmst du zu, Marketing-E-Mails von WYNCH zu erhalten. Abmeldung jederzeit möglich.
+      </p>
+    </div>
+    </div>
+  </div>
+
+  <!-- Sticky mobile CTA -->
+  <a href="#join" class="sticky-cta hidden" id="stickyCta">Mitglied werden — 50 € sichern</a>
+
+  <!-- Lottie player for the celebration animation -->
+  <!-- Native Shopify registration form (carries the required token); filled + submitted from JS -->
+  <div id="wynchWrap" style="display:none" aria-hidden="true">
+    {% form 'customer_login' %}
+      <input type="hidden" name="customer[email]" id="ccEmail">
+      <input type="hidden" name="customer[password]" id="ccPassword">
+      <input type="hidden" name="return_url" id="ccReturn">
+    {% endform %}
+  </div>
+
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
+
+  <script>
+    // Signup data captured from the form (kept in memory only) + the account
+    // creation request kicked off on the opt-in step.
+    var API_BASE = 'https://REPLACE-WITH-YOUR-VERCEL-DOMAIN'; // <-- set your Vercel prod URL
+    // The Cava photo is hosted on Vercel (public/), not on the Shopify domain,
+    // so load it from API_BASE rather than a same-origin path.
+    (function () {
+      var p = document.getElementById('step2Photo');
+      if (p) p.src = API_BASE + '/Bottle_and_wine_glass_202607141610.jpeg';
+    })();
+    var signupData = null;
+    var registerPromise = null;
+
+    // Read UTM params from the current URL.
+    function readUrlUtm() {
+      try {
+        var p = new URLSearchParams(location.search);
+        return {
+          utm_source: p.get('utm_source') || '',
+          utm_medium: p.get('utm_medium') || '',
+          utm_campaign: p.get('utm_campaign') || '',
+          utm_term: p.get('utm_term') || '',
+          utm_content: p.get('utm_content') || ''
+        };
+      } catch (e) { return { utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: '' }; }
+    }
+
+    // Persist UTM for the whole visit: if the landing URL carries any utm_*,
+    // stash it in localStorage. That way registration still attributes the
+    // source even when the user refreshes or navigates to /pages/join without
+    // the params in the URL.
+    (function () {
+      var u = readUrlUtm();
+      if (u.utm_source || u.utm_medium || u.utm_campaign || u.utm_term || u.utm_content) {
+        try { localStorage.setItem('wynch_utm', JSON.stringify(u)); } catch (e) { /* ignore */ }
+      }
+    })();
+
+    // Log the user in via Shopify's native customer_login form (rendered by the
+    // Liquid form tag below, so it carries the required token), then redirect.
+    function submitLogin(returnPath) {
+      var form = document.querySelector('#wynchWrap form');
+      if (!signupData || !form) { window.location.href = returnPath; return; }
+      document.getElementById('ccEmail').value = signupData.email;
+      document.getElementById('ccPassword').value = signupData.password;
+      var ret = document.getElementById('ccReturn'); if (ret) ret.value = returnPath;
+      form.submit();
+    }
+
+    // Wait for the account creation (Admin API) to finish, then log in.
+    function loginAndGo(returnPath) {
+      if (registerPromise && registerPromise.then) {
+        registerPromise.then(function () { submitLogin(returnPath); }, function () { submitLogin(returnPath); });
+      } else {
+        submitLogin(returnPath);
+      }
+    }
+
+    // ---- Reviews slider ----
+    (function () {
+      var track = document.getElementById('tTrack');
+      var prev = document.getElementById('tPrev');
+      var next = document.getElementById('tNext');
+      var dotsWrap = document.getElementById('tDots');
+      if (!track || !prev || !next || !dotsWrap) return;
+
+      var count = track.children.length;
+      var i = 0;
+
+      var dots = [];
+      for (var d = 0; d < count; d++) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tdot' + (d === 0 ? ' active' : '');
+        b.setAttribute('aria-label', 'Zu Bewertung ' + (d + 1));
+        (function (idx) { b.addEventListener('click', function () { go(idx); }); })(d);
+        dotsWrap.appendChild(b);
+        dots.push(b);
+      }
+
+      function go(n) {
+        i = (n + count) % count;
+        track.style.transform = 'translateX(' + (-i * 100) + '%)';
+        for (var k = 0; k < dots.length; k++) dots[k].classList.toggle('active', k === i);
+      }
+
+      prev.addEventListener('click', function () { go(i - 1); });
+      next.addEventListener('click', function () { go(i + 1); });
+    })();
+
+    // ---- Post-signup opt-in modal ----
+    (function () {
+      var modal = document.getElementById('step2');
+      var inner = document.getElementById('step2Inner');
+      var yes = document.getElementById('step2Yes');
+      var no = document.getElementById('step2No');
+      if (!modal || !inner) return;
+
+      function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+      // Confetti / party-popper celebration via Lottie.
+      var CONFETTI_URL = 'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json';
+      function celebrate() {
+        var cf = document.createElement('lottie-player');
+        cf.className = 'confetti';
+        cf.setAttribute('src', CONFETTI_URL);
+        cf.setAttribute('autoplay', '');
+        cf.setAttribute('background', 'transparent');
+        cf.setAttribute('speed', '1');
+        cf.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+        modal.appendChild(cf);
+      }
+
+      function finish(msg, opts) {
+        opts = opts || {};
+        var confirmHtml = '';
+        if (opts.marketing) {
+          confirmHtml =
+            '<div class="step2-confirm">📩 Deine <strong>kostenlose Cava</strong> ist fast da! Bestätige nur noch deine E-Mail: ' +
+            'wir haben einen Link an <strong>' + esc(opts.email || '') + '</strong> geschickt &mdash; ' +
+            'öffne dein Postfach (auch den Spam-Ordner) und klick auf den Bestätigungslink.</div>';
+        }
+        inner.innerHTML =
+          '<h2>Willkommen bei WYNCH</h2>' +
+          '<p>' + esc(msg) + '</p>' +
+          '<div class="step2-deposit">Du hast jetzt <strong>50&nbsp;€</strong> auf deinem Konto &mdash; nutze davon bis zu <strong>30&nbsp;%</strong> bei jeder Bestellung.</div>' +
+          confirmHtml +
+          '<div class="step2-actions">' +
+            '<button class="step2-yes" type="button" data-go="/pages/quiz">Meine Weine finden &mdash; digitaler Sommelier</button>' +
+            '<button class="step2-alt" type="button" data-go="/collections/all-wines">Zum Shop</button>' +
+          '</div>';
+        inner.querySelectorAll('[data-go]').forEach(function (el) {
+          el.addEventListener('click', function () { loginAndGo(el.getAttribute('data-go')); });
+        });
+        celebrate();
+      }
+
+      // Create the Shopify customer (Admin API) + Klaviyo profile. Resolves to
+      // { ok, status, error } and is awaited by loginAndGo before logging in.
+      // UTM from the URL if present, otherwise the value stashed at first
+      // touch (see the localStorage capture near the top of the script).
+      function getUtm() {
+        var u = readUrlUtm();
+        if (u.utm_source || u.utm_medium || u.utm_campaign || u.utm_term || u.utm_content) return u;
+        try {
+          var s = localStorage.getItem('wynch_utm');
+          if (s) return JSON.parse(s);
+        } catch (e) { /* ignore */ }
+        return u;
+      }
+
+      function createAccount(marketing) {
+        if (!signupData) return Promise.resolve({ ok: false, error: 'no signup data (fill the form first)' });
+        var full = (signupData.firstName + ' ' + signupData.lastName).trim();
+        return fetch(API_BASE + '/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.assign({
+            name: full,
+            email: signupData.email,
+            password: signupData.password,
+            password2: signupData.password,
+            marketing: marketing
+          }, getUtm()))
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (d) {
+            return { ok: res.ok, status: res.status, error: d.error };
+          });
+        }).catch(function (e) {
+          return { ok: false, error: 'network error (is API_BASE set to your Vercel URL?) ' + (e && e.message ? e.message : '') };
+        });
+      }
+
+      function handleOptIn(marketing, msg) {
+        registerPromise = createAccount(marketing);
+        finish(msg, { marketing: marketing, email: signupData && signupData.email });
+      }
+
+      if (yes) yes.addEventListener('click', function () {
+        handleOptIn(true, "Fast geschafft — nur noch ein Schritt. 🥂");
+      });
+      if (no) no.addEventListener('click', function () {
+        handleOptIn(false, "Kein Problem — du bist im Club. Die kostenlose Cava wartet, falls du es dir anders überlegst.");
+      });
+
+      // Open the opt-in screen directly via URL hash (e.g. …/#optin) for preview/sharing.
+      function maybeOpen() { if (location.hash === '#optin' || location.hash === '#step2') modal.hidden = false; }
+      maybeOpen();
+      window.addEventListener('hashchange', maybeOpen);
+    })();
+
+    // ---- Sticky mobile CTA ----
+    (function () {
+      var cta = document.getElementById('stickyCta');
+      var joinName = document.getElementById('name');
+      var joinBlock = document.getElementById('join');
+      if (!cta || !joinBlock) return;
+
+      // Focus the first field after the smooth scroll finishes.
+      cta.addEventListener('click', function () {
+        setTimeout(function () { if (joinName) joinName.focus({ preventScroll: true }); }, 500);
+      });
+
+      // Show the CTA only once the form has scrolled up out of view (past it),
+      // not before the user has reached it.
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          var e = entries[0];
+          var scrolledPast = !e.isIntersecting && e.boundingClientRect.top < 0;
+          cta.classList.toggle('hidden', !scrolledPast);
+        }, { threshold: 0 });
+        io.observe(joinBlock);
+      }
+    })();
+
+    // ---- Signup form ----
+    (function () {
+      var form = document.getElementById('signupForm');
+      var input = document.getElementById('email');
+      var nameInput = document.getElementById('name');
+      var pwInput = document.getElementById('password');
+      var pw2Input = document.getElementById('password2');
+      var btn = document.getElementById('submitBtn');
+      var note = document.getElementById('formNote');
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function setNote(msg, kind) {
+        note.textContent = msg;
+        note.className = 'form-note ' + (kind || '');
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var name = nameInput.value.trim();
+        var email = input.value.trim();
+        var pw = pwInput.value;
+        var pw2 = pw2Input.value;
+        if (!name) { setNote('Bitte gib deinen Namen ein.', 'err'); nameInput.focus(); return; }
+        if (!EMAIL_RE.test(email)) { setNote('Bitte gib eine gültige E-Mail-Adresse ein.', 'err'); input.focus(); return; }
+        if (pw.length < 8) { setNote('Das Passwort muss mindestens 8 Zeichen haben.', 'err'); pwInput.focus(); return; }
+        if (pw !== pw2) { setNote('Die Passwörter stimmen nicht überein.', 'err'); pw2Input.focus(); return; }
+
+        // Keep the credentials in memory so the step-3 buttons can create the
+        // Shopify account and log the user in (classic-accounts create_customer).
+        var parts = name.split(/\s+/);
+        signupData = {
+          firstName: parts.shift() || '',
+          lastName: parts.join(' '),
+          email: email,
+          password: pw
+        };
+
+        setNote('', '');
+        form.reset();
+        var step2 = document.getElementById('step2');
+        if (step2) step2.hidden = false;
+      });
+    })();
+  </script>
