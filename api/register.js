@@ -98,6 +98,9 @@ export default async function handler(req, res) {
   if (password !== password2) return res.status(400).json({ error: 'Passwords do not match.' });
 
   const marketing = body.marketing !== false; // default: subscribe to marketing
+  // Signup source written to the Klaviyo profile (lets copies of the landing
+  // report a different source). Defaults to landing_signup.
+  const source = String(body.source ?? '').trim().slice(0, 60) || 'landing_signup';
   const utm = {
     utm_source: String(body.utm_source ?? '').trim().slice(0, 100),
     utm_medium: String(body.utm_medium ?? '').trim().slice(0, 100),
@@ -121,7 +124,7 @@ export default async function handler(req, res) {
     // customer and a duplicate one, so returning/re-registering users still get
     // the profile + double opt-in confirmation email.
     try {
-      await subscribeKlaviyo({ email, firstName: first, marketing, utm });
+      await subscribeKlaviyo({ email, firstName: first, marketing, utm, source });
     } catch (err) {
       console.error('[register] klaviyo subscribe error:', err);
     }

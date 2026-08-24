@@ -40,6 +40,7 @@ export default async function handler(req, res) {
   }
 
   const marketing = body.marketing !== false; // default: subscribe to marketing
+  const source = String(body.source ?? '').trim().slice(0, 60) || 'landing_signup';
   const utm = {
     utm_source: String(body.utm_source ?? '').trim().slice(0, 100),
     utm_medium: String(body.utm_medium ?? '').trim().slice(0, 100),
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
   };
 
   try {
-    const result = await subscribeKlaviyo({ email, firstName, marketing, utm });
+    const result = await subscribeKlaviyo({ email, firstName, marketing, utm, source });
     if (!result.ok) {
       console.error('[subscribe] klaviyo rejected signup for', email, result.status, result.body);
       return res.status(502).json({ error: 'Could not save your email right now. Please try again.' });
