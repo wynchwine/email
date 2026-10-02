@@ -91,6 +91,7 @@
           <label>По <input type="date" id="dateTo"></label>
           <button class="refresh" id="dateClear" type="button">Сбросить</button>
           <button class="refresh" id="refreshBtn" type="button">Обновить</button>
+          <a class="refresh" id="ordersLink" href="orders.html" style="text-decoration:none;">Заказы →</a>
         </div>
       </header>
       <div id="errBox"></div>
@@ -375,6 +376,8 @@
           localStorage.setItem(LS_KEY, token);
           render(data);
           loadFlows(token);
+          var ol = document.getElementById('ordersLink');
+          if (ol) ol.href = 'orders.html?key=' + encodeURIComponent(token);
         })
         .catch(function () { showGate('Ошибка сети. Попробуйте ещё раз.'); });
     }
